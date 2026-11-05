@@ -42,4 +42,4 @@
 - Marque itens na seção 15 da SPEC somente quando seus critérios estiverem atendidos. Não mantenha um segundo checklist completo nos planos.
 - Atualize `docs/STATUS.md` com resumo curto, arquivos principais, verificações, pendências e próximo passo. Preserve decisões relevantes, sem transcrever a conversa ou acumular logs.
 - Atualize instruções operacionais no README e documentos complementares quando os comandos existirem e forem verificados.
-- Commits serão feitos pelo usuário no site do GitHub. Não exigir Git local nem fazer publicação automática. Na resposta, liste arquivos novos/alterados/removidos e sugira mensagem de commit; exclua artefatos locais da lista de envio.
+- Commits diretos no repositório virgilio-vpr/EcoWatt estão autorizados pelo usuário, sem confirmação adicional no site. Preferir a integração GitHub, sem exigir Git local; preservar alterações remotas e limitar o envio aos arquivos da entrega. Na resposta, listar arquivos novos/alterados/removidos e informar o commit realizado. Não enviar faturas, planilhas reais ou outros artefatos locais.

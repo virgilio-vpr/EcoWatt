@@ -4,37 +4,40 @@ Atualizado em 05/11/2026. Referência: SPEC versão 3.5.
 
 ## Entrega atual
 
-Preparação documental concluída. Ambiente do projeto e implementação ainda não iniciados. Nenhuma fase de implementação está marcada como concluída na SPEC.
+Fase 0: proposta documental de contratos e casos sintéticos preparada. Aplicação e ambiente não iniciados. Fase 0 ainda não aceita: foram recebidos 12 PDFs e duas planilhas para análise local, mas faltam conferência do conteúdo, condições de uso/anonimização do corpus, gabarito aprovado e fixação das fontes regulatórias/tarifárias. Nenhuma fase ou critério composto da seção 15 foi marcado como concluído.
 
-## Concluído
+## Entregue
 
-- SPEC e README organizados, com backend primeiro e três fases centrais: leitura/armazenamento, simulação e relatório.
-- Criados AGENTS.md, este status e mapas de leitura para as fases 0–8.
-- Definido versionamento por commits manuais no site do GitHub; sem dependência de Git local.
+- Dicionário v0.1: tipos, unidades, obrigatoriedade, estados, proveniência, validações e campos desconhecidos.
+- Contratos v0.1 entre leitura, persistência, motor e relatório, com revisão, idempotência e descarte.
+- Matriz de acesso, separação dono/empresa/autor/titular e cota transacional de duas simulações, inclusive admin.
+- Inventário local, pacote necessário para homologação, dúvidas e dependências com encaminhamento.
+- Vinte casos sintéticos documentais, com entradas e esperados de aritmética, normalização, pendências e bloqueios. Não são testes de aplicação ou evidência comercial.
 
 ## Verificações realizadas
 
-- Estrutura dos planos e referências de seções conferidas nesta entrega; nenhuma dependência instalada, banco criado ou aplicação executada.
-- Inspeção anterior, em 04/11/2026: Python 3.13.14 funcional, SQLite 3.50.4 pelo Python, pip/venv disponíveis e extensões Python/SQLite no VS Code.
-- Nessa inspeção, Git CLI, uv, Tesseract e dependências principais do projeto não foram encontrados; Pango/GObject não carregaram. Isso é histórico, não garantia do estado atual. Revalidar ferramentas específicas antes do uso.
+- Leitura dirigida da SPEC e ampliação para §§4–6, 8.1–8.2, 8.6–8.7, 10–12 e 17 pelas dependências dos contratos.
+- Inventário atualizado: 12 PDFs em `docs/faturas`, sem hashes SHA-256 repetidos; nomes sugerem agosto/2025 a julho/2026, ainda sem conferência dos cabeçalhos. Duas planilhas em `docs/planilhas`: Azul com 5 abas/769 células com fórmulas e Verde com 3 abas/432 células com fórmulas, sem vínculos externos de workbook identificados. Estrutura XLSX lida em memória com recursos existentes; conteúdo financeiro ainda não validado.
+- Conferidos destinos dos links Markdown locais e aritmética dos casos S01–S08 por PowerShell/.NET Decimal, sem instalar recursos ou executar aplicação.
+- Nenhuma consulta regulatória externa, validação de parser/OCR, teste de concorrência, autorização ou persistência foi executado. Esses comportamentos estão especificados para testes futuros.
 
-## Pendências e restrições
+## Pendências e decisões preservadas
 
-- Usuário sem administrador; possibilidade de instalações locais sujeita às políticas da máquina. Não houve teste de instalação.
-- Instalações continuam pendentes de autorização para a preparação do ambiente; este trabalho trata somente de documentação.
-- Corpus real ENEL, fórmulas originais e dados externos da seção 16 da SPEC ainda não foram entregues/validados neste trabalho. Usar fixtures sintéticas identificadas para desenvolver, sem alegar homologação.
-- README descreve passos previstos; ainda não existem pyproject.toml, lockfile, migrações, seed ou comandos de execução do EcoWatt.
-- Em 05/11/2026, o usuário autorizou o envio inicial pela integração GitHub para `virgilio-vpr/EcoWatt`, branch `main`, sem Git local. README inicial publicado no commit `c4c7ab09a71e819787227dd62e66a3507c8a9f7c`; este status acompanha o envio dos demais documentos. Consultar o histórico remoto para identificar o commit desta entrega. Envios futuros continuam manuais, salvo nova autorização explícita.
+- Contratos são proposta para revisão; não há aprovação humana presumida. Questões D01–D08 e evidências necessárias: `docs/corpus/README.md`.
+- PDFs e planilhas recebidos; ENEL SP A4 Azul, CNPJ/layout reais, correspondência das planilhas, tarifas por vigência, tributos, perdas e restrições contratuais ainda não conferidos/validados. Imagens descritas na SPEC não são fixtures homologadas.
+- Sem administrador; instalações locais sujeitas às políticas da máquina. Esta entrega não instala dependências, cria ambiente, banco ou inicia containers/aplicação.
+- Inspeção de ferramentas de 04/11/2026 é histórica; não comprova disponibilidade atual. Revalidar somente o necessário quando houver tarefa de ambiente.
+- README contém passos futuros, sem pyproject, lockfile, migrações, seed ou comandos operacionais implementados.
+- Em 05/11/2026, o usuário autorizou commits diretos em virgilio-vpr/EcoWatt sem confirmação no site, removendo a exigência de commit manual. Preferir integração GitHub e preservar alterações remotas. Não enviar `debug.log`, corpus real, banco, ambiente ou caches.
 
 ## Próximo passo
 
-Quando solicitado, preparar ambiente local mínimo e iniciar a [Fase 1](phases/phase-01-backend.md), verificando antes os contratos da [Fase 0](phases/phase-00-contracts.md). Definir versões, dependências e configuração sem administrador, sem Docker e sem instalar recursos fora do escopo autorizado. A falta de corpus real não bloqueia a base com dados sintéticos.
+Conferir primeiro cabeçalho e linhas de uma fatura, depois a série e a correspondência das fórmulas das planilhas; construir gabarito estruturado sem publicar dados pessoais. Revisar contratos v0.1 e condições de uso do corpus, sem bloquear desenvolvimento independente. Quando autorizado em nova tarefa, iniciar a [Fase 1](phases/phase-01-backend.md), preparando ambiente local sem administrador/Docker e implementando modelos, autenticação, titularidade e cota com fixtures sintéticas. Homologação real permanece pendente.
 
 ## Arquivos da última entrega
 
-- `AGENTS.md`: instruções e regras essenciais.
-- `docs/STATUS.md`: este resumo.
-- `docs/phases/README.md` e `phase-00-*.md` a `phase-08-*.md`: planos e referências.
-- `README.md`: mapa atualizado da documentação de apoio.
+Novos: `docs/contracts/invoice-data.md`, `docs/contracts/pipeline.md`, `docs/contracts/access.md`, `docs/corpus/README.md`, `docs/corpus/synthetic-cases.md`.
 
-Mensagem sugerida para commit manual: `docs: adiciona orientacoes do agente e planos por fase`.
+Alterados: `AGENTS.md`, `README.md`, `EcoWatt_PROJECT_SPEC.md`, `docs/STATUS.md`, `docs/phases/README.md`. Removidos: nenhum.
+
+Entrega inclui contratos da Fase 0, inventário recebido e autorização de commits diretos. PDFs, XLSX e logs permanecem locais. Referência do commit deve ser consultada no histórico do GitHub; este arquivo integra o próprio commit.

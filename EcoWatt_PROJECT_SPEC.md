@@ -661,7 +661,7 @@ Medir tempos de extração/OCR/cálculo/PDF separadamente, pico de memória, fil
 
 ## 15. Fases e critérios de aceite
 
-Todos os itens estão pendentes; o checklist não representa funcionalidades implementadas. Marcar cada fase somente após concluir seus subitens e critérios de aceite. As fases abaixo incluem as entregas técnicas originais e os requisitos desta revisão.
+Todos os itens de aceite continuam pendentes; os contratos v0.1 e casos sintéticos da Fase 0 estão documentados em [docs/contracts/invoice-data.md](docs/contracts/invoice-data.md) e [docs/corpus/README.md](docs/corpus/README.md), sem corpus real autorizado ou aprovação do conjunto esperado. O checklist não representa funcionalidades implementadas. Marcar cada fase somente após concluir seus subitens e critérios de aceite. As fases abaixo incluem as entregas técnicas originais e os requisitos desta revisão.
 
 ### Sequência de construção
 

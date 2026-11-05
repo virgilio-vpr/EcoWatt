@@ -20,6 +20,6 @@ Use um chat por entrega verificável; uma fase pode ocupar vários chats. Contin
 
 Modelo de solicitação:
 
-> Implemente [entrega específica] da Fase [número]. Consulte AGENTS.md, docs/STATUS.md e docs/phases/[arquivo]. Leia as seções indicadas da SPEC e os arquivos necessários, ampliando a consulta quando houver dependências. Faça as verificações aplicáveis, atualize o status e informe os arquivos para commit manual no GitHub.
+> Implemente [entrega específica] da Fase [número]. Consulte AGENTS.md, docs/STATUS.md e docs/phases/[arquivo]. Leia as seções indicadas da SPEC e os arquivos necessários, ampliando a consulta quando houver dependências. Faça as verificações aplicáveis, atualize o status e informe os arquivos alterados e realize o commit direto no GitHub conforme a autorização em AGENTS.md.
 
 Uma referência não carrega automaticamente seu conteúdo: o agente deve abrir os trechos necessários antes de implementar. Em caso de ambiguidade, ler mais contexto é preferível a inventar uma regra.
