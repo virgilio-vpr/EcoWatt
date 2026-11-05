@@ -18,6 +18,7 @@ Fase 0: proposta documental de contratos e casos sintéticos preparada. Aplicaç
 
 - Leitura dirigida da SPEC e ampliação para §§4–6, 8.1–8.2, 8.6–8.7, 10–12 e 17 pelas dependências dos contratos.
 - Inventário atualizado: 12 PDFs em `docs/faturas`, sem hashes SHA-256 repetidos; nomes sugerem agosto/2025 a julho/2026, ainda sem conferência dos cabeçalhos. Duas planilhas em `docs/planilhas`: Azul com 5 abas/769 células com fórmulas e Verde com 3 abas/432 células com fórmulas, sem vínculos externos de workbook identificados. Estrutura XLSX lida em memória com recursos existentes; conteúdo financeiro ainda não validado.
+- Recebido `docs/ANEEL/REN 1000.pdf`: presença, tamanho (3.919.570 bytes) e SHA-256 conferidos; identificação do hash em `docs/corpus/README.md`. Conteúdo, consolidação e aplicabilidade ainda não verificados; PDF permanece local.
 - Conferidos destinos dos links Markdown locais e aritmética dos casos S01–S08 por PowerShell/.NET Decimal, sem instalar recursos ou executar aplicação.
 - Nenhuma consulta regulatória externa, validação de parser/OCR, teste de concorrência, autorização ou persistência foi executado. Esses comportamentos estão especificados para testes futuros.
 
@@ -36,8 +37,4 @@ Conferir primeiro cabeçalho e linhas de uma fatura, depois a série e a corresp
 
 ## Arquivos da última entrega
 
-Novos: `docs/contracts/invoice-data.md`, `docs/contracts/pipeline.md`, `docs/contracts/access.md`, `docs/corpus/README.md`, `docs/corpus/synthetic-cases.md`.
-
-Alterados: `AGENTS.md`, `README.md`, `EcoWatt_PROJECT_SPEC.md`, `docs/STATUS.md`, `docs/phases/README.md`. Removidos: nenhum.
-
-Entrega inclui contratos da Fase 0, inventário recebido e autorização de commits diretos. PDFs, XLSX e logs permanecem locais. Referência do commit deve ser consultada no histórico do GitHub; este arquivo integra o próprio commit.
+Alterados: `docs/corpus/README.md` e `docs/STATUS.md` para registrar o recebimento da referência regulatória. Novos/removidos: nenhum documento. O PDF REN 1000 permanece local e não integra o commit. Nenhum aceite de homologação foi marcado.

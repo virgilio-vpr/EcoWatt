@@ -18,6 +18,9 @@ A inspeção anterior havia encontrado somente documentação; este inventário 
 
 Disponível nesta entrega: [casos sintéticos](synthetic-cases.md), definidos a partir dos contratos e da fórmula interna da SPEC §8.2. Não representam ENEL, tarifas vigentes, leitura de PDF ou evidência regulatória independente.
 
+
+Referência regulatória recebida: `docs/ANEEL/REN 1000.pdf`, 3.919.570 bytes, SHA-256 `482B1BC8E1CD199629BF6F85C52B0CC41536A142FBAB61A22DA29C3371126BA3`. Presença, tamanho e hash conferidos em 05/11/2026. Conteúdo, origem oficial, data de consolidação, alterações incorporadas e aplicabilidade aos ciclos ainda não verificados. O nome do arquivo não comprova versão vigente. Manter como material local nesta entrega; nenhuma regra ou tarifa foi homologada a partir dele.
+
 ## Pacote necessário para homologação
 
 | Material a obter | Evidência esperada | Uso / bloqueio atual |
