@@ -24,11 +24,11 @@ Mercado sugerido por identificação explícita ou indícios TE/TUSD por ciclo. 
 
 - `docs/corpus/series-review.md`: doze competências explícitas distintas, coincidentes com os nomes dos arquivos e histórico; 12/12 contagens de dias compatíveis com as datas candidatas. Medições e demanda utilizada cobrada coincidem nos 24 postos/ciclos; TE/TUSD e energia do histórico também coincidem.
 - Uma UC por fingerprint, doze números fiscais localizados. Dez chaves NF3e derivam o mesmo CNPJ candidato com dígitos válidos; agosto/setembro sem chave nesse padrão localizada. Não equivale à confirmação independente de identidade.
-- Continuidade pendente: maio/2026 termina em 01/05/2026 e junho começa em 31/05/2026 nas datas candidatas. Intervalo de 30 dias exige conferência dos rótulos/ciclos; soma dos dias 365 não prova série contínua. Sem datas corrigidas ou anualização homologada.
+- Continuidade pendente: maio/2026 termina em 01/05/2026 e junho começa em 31/05/2026 nas datas candidatas. Ajuste de calendário confirmado pelo usuário; ainda conferir rótulos/cobertura do intervalo, pois soma dos dias 365 não prova série contínua. Sem datas corrigidas ou anualização homologada.
 - Nos dez meses comuns, 13 cobranças UFER por ciclo/posto coincidem em quantidade/preço nas duas planilhas, com produtos dentro de BRL 0.99 (26 confrontos presentes); sete combinações sem linha textual correspondem a zeros nas duas, sem confirmar ausência automaticamente. Verde repete a ponta em 10/10 entradas, como exemplo estrutural esclarecido pelo usuário; não é cenário real a homologar nem erro de extração. Cenário Verde futuro exige medições e preços próprios. Originais preservados.
 - Novos rascunhos locais `series-review.json` e `series-review.md`, script `review_series.py`, ignorados e não aprovados; candidatos anteriores preservados. Sem texto bruto ou imagens persistidos.
 
-Esclarecimento da continuidade: a linha de maio contém três datas (01/04, 01/05 e 31/05), e a de junho (31/05, 30/06 e 31/07). O intervalo surge ao comparar fim/início candidatos, não por ausência de uma competência na lista. Os históricos de junho e julho mostram dois registros MAI/26 com consumos diferentes; possível ciclo adicional ou particularidade de faturamento, sem comprovação de PDF faltante ou calendário alterado. Usuário apresentou a hipótese de que a Enel ajustou o calendário para fazer o mês de referência coincidir com o período de medição, em preparação à migração ao mercado livre informada para agosto/2026. Hipótese de origem `user`, ainda não confirmada documentalmente; compatível com os dois registros MAI/26 e a mudança nas datas candidatas. Seguir com a pendência, sem concluir que falta PDF, corrigir datas ou interpolar consumo.
+Esclarecimento da continuidade: a linha de maio contém três datas (01/04, 01/05 e 31/05), e a de junho (31/05, 30/06 e 31/07). O intervalo surge ao comparar fim/início candidatos, não por ausência de uma competência na lista. Os históricos de junho e julho mostram dois registros MAI/26 com consumos diferentes; possível ciclo adicional ou particularidade de faturamento, sem comprovação de PDF faltante ou calendário alterado. Usuário confirmou ter acompanhado a transição e que a Enel ajustou o calendário para alinhar mês de referência e período de medição antes da migração de agosto/2026. Registrar como informação confirmada pelo usuário, origem `user`, não como hipótese. A causa da mudança está esclarecida por essa fonte. A cobertura do intervalo de maio continua separada: não concluir que falta PDF, corrigir datas ou interpolar consumo sem localizar os valores/ciclo correspondentes.
 
 ## Evidências e ferramentas
 
@@ -40,7 +40,7 @@ Esclarecimento da continuidade: a linha de maio contém três datas (01/04, 01/0
 
 ## Verificações desta entrega
 
-Registrada a hipótese do usuário sobre alinhamento do calendário à medição antes da migração. Revisão documental de proveniência, preservação das datas e manutenção da pendência; links/codificação e lista explícita de dois documentos públicos conferidos. Nenhuma nova leitura de PDF, verificação financeira, consulta regulatória, instalação ou execução da aplicação; nenhum aceite alterado.
+Registrada a confirmação direta do usuário, que acompanhou a transição, sobre alinhamento do calendário à medição antes da migração. Revisão documental de proveniência, preservação das datas e manutenção da pendência; links/codificação e lista explícita de dois documentos públicos conferidos. Nenhuma nova leitura de PDF, verificação financeira, consulta regulatória, instalação ou execução da aplicação; nenhum aceite alterado.
 
 ## Pendências e próximo passo
 
@@ -50,4 +50,4 @@ Conferir primeiro os rótulos e ciclos de maio/junho no original; revisar visual
 
 Alterados: `docs/STATUS.md`, `docs/corpus/series-review.md`. Novos/removidos: nenhum. Materiais reais e ferramentas locais fora do envio.
 
-Commit desta entrega: `docs: registra hipotese de ajuste do calendario antes da migracao`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
+Commit desta entrega: `docs: registra confirmacao do usuario sobre ajuste do calendario`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
