@@ -4,7 +4,7 @@ Atualizado em 06/11/2026. Referência: SPEC versão 3.8.
 
 ## Entrega atual
 
-Fase 0 em andamento; contratos documentais v0.1 e 25 casos sintéticos, sem aplicação implementada. Gabarito textual local de dezembro/2025 preparado para revisão; reconciliação preliminar dos 12 PDFs com 135 itens financeiros e residual zero nos 12 totais. Aceite e gabarito real continuam pendentes, sem aprovação presumida.
+Fase 0 em andamento; contratos documentais v0.1 e 25 casos sintéticos, sem aplicação implementada. Gabarito textual local de dezembro/2025 preparado para revisão e rascunho ampliado das doze competências, cabeçalhos e medições; reconciliação preliminar dos 12 PDFs com 135 itens financeiros e residual zero nos 12 totais. Aceite e gabarito real continuam pendentes, sem aprovação presumida.
 
 ## Decisões preservadas
 
@@ -18,7 +18,15 @@ Fase 0 em andamento; contratos documentais v0.1 e 25 casos sintéticos, sem apli
 
 Cadastro da empresa antes da simulação; unidade salva antes do upload, como já previsto. Nome/titular e endereço podem ser extraídos e apresentados para conferência: manter os coincidentes, confirmar/corrigir divergentes. Endereço da empresa, endereço impresso na fatura e endereço confirmado da cabine/subestação no ponto de conexão são distintos. Rua adjacente pode explicar diferença para a mesma UC/distribuidora, com confirmação registrada. Não sobrescrever cadastro, valor extraído ou snapshot automaticamente.
 
-Mercado sugerido por identificação explícita ou indícios TE/TUSD por ciclo. Ausência de cobrança corrente de energia ativa TE com leitura completa e rede/TUSD identificada sugere livre; presença sugere cativo. Inferência documentada com fontes Enel/CPFL em `docs/corpus/regulatory-review.md`. Leitura parcial, agrupamento ambíguo ou conflito mantém desconhecido. Confirmação tem origem/ator/data; UFER TE e histórico não classificam o fornecimento. Corpus local não reclassificado automaticamente; mercado livre continua fora do cálculo cativo completo.
+Mercado sugerido por identificação explícita ou indícios TE/TUSD por ciclo. Ausência de cobrança corrente de energia ativa TE com leitura completa e rede/TUSD identificada sugere livre; presença sugere cativo. Inferência documentada com fontes Enel/CPFL em `docs/corpus/regulatory-review.md`. Leitura parcial, agrupamento ambíguo ou conflito mantém desconhecido. Confirmação tem origem/ator/data; UFER TE e histórico não classificam o fornecimento. Série local agora tem sugestão cativa nos doze ciclos por duas cobranças correntes de energia ativa TE e duas TUSD em cada conta, com campo confirmado ainda desconhecido; mercado livre continua fora do cálculo cativo completo.
+
+## Avanço desta continuação
+
+- `docs/corpus/series-review.md`: doze competências explícitas distintas, coincidentes com os nomes dos arquivos e histórico; 12/12 contagens de dias compatíveis com as datas candidatas. Medições e demanda utilizada cobrada coincidem nos 24 postos/ciclos; TE/TUSD e energia do histórico também coincidem.
+- Uma UC por fingerprint, doze números fiscais localizados. Dez chaves NF3e derivam o mesmo CNPJ candidato com dígitos válidos; agosto/setembro sem chave nesse padrão localizada. Não equivale à confirmação independente de identidade.
+- Continuidade pendente: maio/2026 termina em 01/05/2026 e junho começa em 31/05/2026 nas datas candidatas. Intervalo de 30 dias exige conferência dos rótulos/ciclos; soma dos dias 365 não prova série contínua. Sem datas corrigidas ou anualização homologada.
+- Nos dez meses comuns, 13 cobranças UFER por ciclo/posto coincidem em quantidade/preço nas duas planilhas, com produtos dentro de BRL 0.99 (26 confrontos presentes); sete combinações sem linha textual correspondem a zeros nas duas, sem confirmar ausência automaticamente. Verde repete a ponta em 10/10 entradas e difere do máximo dos postos em 10/10. Originais preservados.
+- Novos rascunhos locais `series-review.json` e `series-review.md`, script `review_series.py`, ignorados e não aprovados; candidatos anteriores preservados. Sem texto bruto ou imagens persistidos.
 
 ## Evidências e ferramentas
 
@@ -30,14 +38,14 @@ Mercado sugerido por identificação explícita ou indícios TE/TUSD por ciclo. 
 
 ## Verificações desta entrega
 
-Revisão documental de fluxo, campos, proveniência e indícios de mercado; fontes primárias Enel/CPFL consultadas. Links locais, codificação, consistência das regras e lista explícita de seis arquivos públicos conferidos. Nenhum novo teste financeiro, leitura de PDF, teste da aplicação, instalação ou container. Nenhum checkbox da SPEC marcado.
+Releitura em memória dos 12 PDFs com pypdf existente, hashes confrontados, competências/histórico, datas/dias, UC, números fiscais, chaves/CNPJ candidato, 24 medições de demanda e energia por posto conferidos por asserções. openpyxl existente para o cruzamento dos dez meses comuns. Sem auditoria separada de impostos, renderização, OCR ou novo teste da aplicação. Links, codificação e lista explícita de cinco documentos públicos conferidos antes do commit. Nenhum checkbox marcado.
 
 ## Pendências e próximo passo
 
-Conferir visualmente as duas páginas da representativa e seus cabeçalhos; confirmar identidade, mercado por ciclo e endereço do ponto de conexão com o responsável. Completar gabaritos, inclusive agosto/setembro com parcelas somente monetárias; obter preços/fontes para conferir a Verde nos dez meses comuns e vigências aplicáveis. Aprovação exige responsável/data; achados de impostos separados não são bloqueios. Autorização e procedimento de anonimização para fixtures públicas continuam pendentes. Fase 1 com fixtures sintéticas permanece possível quando solicitada.
+Conferir primeiro os rótulos e ciclos de maio/junho no original; revisar visualmente os cabeçalhos da série e confirmar identidade, mercado por ciclo e ponto de conexão com o responsável. Completar gabaritos, inclusive agosto/setembro com parcelas somente monetárias; obter preços/fontes para conferir a Verde nos dez meses comuns e vigências aplicáveis. Aprovação exige responsável/data; achados de impostos separados não são bloqueios. Autorização e procedimento de anonimização para fixtures públicas continuam pendentes. Fase 1 com fixtures sintéticas permanece possível quando solicitada.
 
 ## Arquivos e commit
 
-Alterados: `EcoWatt_PROJECT_SPEC.md`, `README.md`, `docs/contracts/invoice-data.md`, `docs/contracts/pipeline.md`, `docs/corpus/regulatory-review.md`, `docs/STATUS.md`. Novos/removidos: nenhum. Materiais reais e ferramentas locais fora do envio.
+Novo: `docs/corpus/series-review.md`. Alterados: `docs/STATUS.md`, `docs/corpus/README.md`, `docs/corpus/invoice-review.md`, `docs/corpus/workbook-review.md`. Removidos: nenhum. Materiais reais e ferramentas locais fora do envio.
 
-Commit desta entrega: `docs: distingue empresa ponto de conexao e indicios de mercado`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
+Commit desta entrega: `docs: amplia conferencia da serie e registra continuidade dos ciclos`. Consultar histórico remoto para o SHA; este status integra o próprio commit.

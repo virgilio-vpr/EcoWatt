@@ -4,6 +4,8 @@ Estado: extração textual e candidato estruturado **local, não aprovado**. Nã
 
 Conferência posterior nesta mesma data: [fatura representativa e ampliação da reconciliação](representative-review.md). O recorte inicial abaixo foi preservado como histórico; o novo rascunho local reconhece 135 linhas e fecha os 12 totais, sem aprovação visual/humana ou tributária.
 
+Continuação ampliada: [conferência textual da série](series-review.md). As doze competências explícitas e 24 demandas de medição foram confrontadas com histórico/cobrança; há indício cativo por energia ativa TE nos doze ciclos. Surgiu uma pendência de continuidade entre maio/junho pelos ciclos candidatos. Resultados iniciais abaixo são históricos, sem aprovação visual presumida.
+
 ## Método e limites
 
 O usuário autorizou exclusivamente `pypdf` para análise. Foi instalado `pypdf 7.0.0`, sem dependências adicionais, sem criar ambiente da aplicação, em `.local-tools/pypdf/`. A instalação restrita não encontrou o pacote; a execução aprovada fora da sandbox concluiu a instalação. O acesso à biblioteca também exigiu execução aprovada fora da sandbox. `openpyxl` já estava disponível. Não foi feito OCR, renderização, execução da aplicação ou instalação da stack do produto.

@@ -34,7 +34,7 @@ Para homologar o escopo cativo do MVP, usar os 12 PDFs como série principal e c
 | P07 | Cabeçalhos UFER usam kW e R$/kW nas duas planilhas | Não usar esses rótulos para definir unidade de energia. Conferir a unidade impressa na fatura; separar energia reativa excedente faturada de medição reativa física. |
 | P08 | Totais de demanda somam valores sem fechamento explícito por item; somas do quadro de reativos também preservam casas internas | Fechar por componente ou apenas no total pode produzir diferença de BRL 0.01. Documentar política antes de comparar com a conta; não ampliar tolerância silenciosamente. |
 
-P02, P03 e P06 são divergências em relação ao contrato proposto, não uma declaração de irregularidade da distribuidora. Os arquivos originais não foram corrigidos.
+P02 e P06 continuam divergências em relação ao contrato proposto, sem declaração de irregularidade da distribuidora. P03 foi esclarecida pelo usuário: a redução de 18% no preço ocioso é a regra solicitada; com tolerância autorizada de BRL 0.99, as vinte parcelas comparáveis passam no confronto monetário. Os arquivos originais não foram corrigidos.
 
 ## Resultados aritméticos delimitados
 
@@ -61,3 +61,8 @@ A simulação utiliza preço cheio com impostos incorporados, sem auditoria ou r
 ## Tolerância monetária atual — decisão do usuário em 06/11/2026
 
 Diferença absoluta de até BRL 0.99 por item, inclusive, aceita na reconciliação entre cálculo e valor faturado. Reavaliação em Decimal: 105 de 105 produtos quantificados e 20 de 20 parcelas ociosas pela relação de 82% passam. As quatro parcelas ociosas somente monetárias não tiveram quantidade/preço inventados. Resultados e pendências acima relativos a BRL 0.02 são históricos e ficam superados quanto ao aceite monetário. Não há pendência de impostos separados na simulação com preços cheios. Permanecem cobertura visual, identidade/mercado, campos necessários ausentes, fontes dos cenários alternativos e aprovação do gabarito. Diferenças e valores observados são preservados; os 12 residuais do total continuam zero, sem ajuste. A tolerância não altera kW, gatilho de ultrapassagem ou validação dos campos. Fronteiras ±0.99 aceitas e ±1.00 recusadas verificadas em Decimal.
+
+
+## Confronto ampliado com PDFs em 06/11/2026
+
+Ver [série conferida textualmente](series-review.md). Nos dez meses comuns, treze cobranças UFER presentes por ciclo/posto coincidem em quantidade/preço nas duas planilhas e ficam dentro de BRL 0.99; são 26 confrontos presentes. Sete combinações sem linha textual correspondem a zeros nas duas planilhas, sem confirmação automática de ausência. As demandas das tabelas de medição coincidem com as utilizadas cobradas nos 24 postos/ciclos do corpus. Na Verde, as dez entradas comuns repetem a ponta e não o máximo dos postos; P04 fica corroborada para o período cativo comum. Não corrigimos os originais nem homologamos tarifas Verde ou economia de migração. A questão de continuidade entre os ciclos candidatos de maio/junho deve ser resolvida antes de apresentar a série como ano contínuo.
