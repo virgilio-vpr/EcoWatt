@@ -4,7 +4,7 @@ Atualizado em 06/11/2026. Referência: SPEC versão 3.8.
 
 ## Entrega atual
 
-Fase 0 em andamento; contratos documentais v0.1 e 25 casos sintéticos, sem aplicação implementada. Gabarito textual local de dezembro/2025 preparado para revisão e rascunho ampliado das doze competências, cabeçalhos e medições; reconciliação preliminar dos 12 PDFs com 135 itens financeiros e residual zero nos 12 totais. Aceite e gabarito real continuam pendentes, sem aprovação presumida.
+Fase 0 em andamento; contratos documentais v0.1 e 25 casos sintéticos, sem aplicação implementada. Gabarito textual local de dezembro/2025 preparado para revisão e rascunho ampliado das doze competências, cabeçalhos e medições; reconciliação preliminar dos 12 PDFs com 135 itens financeiros e residual zero nos 12 totais. Doze fichas locais por fatura consolidadas para revisão. Aceite e gabarito real continuam pendentes, sem aprovação presumida.
 
 ## Decisões preservadas
 
@@ -23,7 +23,7 @@ Mercado sugerido por identificação explícita ou indícios TE/TUSD por ciclo. 
 ## Avanço desta continuação
 
 - `docs/corpus/series-review.md`: doze competências explícitas distintas, coincidentes com os nomes dos arquivos e histórico; 12/12 contagens de dias compatíveis com as datas candidatas. Medições e demanda utilizada cobrada coincidem nos 24 postos/ciclos; TE/TUSD e energia do histórico também coincidem.
-- Uma UC por fingerprint, doze números fiscais localizados. Dez chaves NF3e derivam o mesmo CNPJ candidato com dígitos válidos; agosto/setembro sem chave nesse padrão localizada. Não equivale à confirmação independente de identidade.
+- Uma UC por fingerprint, doze números fiscais localizados. Dez chaves NF3e derivam o mesmo CNPJ candidato com dígitos válidos; agosto/setembro sem chave nesse padrão localizada. Correspondência nome/CNPJ da distribuidora agora conferida em página oficial Enel; não equivale à autenticação dos PDFs ou aprovação humana. Agosto/setembro sem CNPJ extraído.
 - Continuidade pendente: maio/2026 termina em 01/05/2026 e junho começa em 31/05/2026 nas datas candidatas. Ajuste de calendário confirmado pelo usuário; ainda conferir rótulos/cobertura do intervalo, pois soma dos dias 365 não prova série contínua. Sem datas corrigidas ou anualização homologada.
 - Nos dez meses comuns, 13 cobranças UFER por ciclo/posto coincidem em quantidade/preço nas duas planilhas, com produtos dentro de BRL 0.99 (26 confrontos presentes); sete combinações sem linha textual correspondem a zeros nas duas, sem confirmar ausência automaticamente. Verde repete a ponta em 10/10 entradas, como exemplo estrutural esclarecido pelo usuário; não é cenário real a homologar nem erro de extração. Cenário Verde futuro exige medições e preços próprios. Originais preservados.
 - Novos rascunhos locais `series-review.json` e `series-review.md`, script `review_series.py`, ignorados e não aprovados; candidatos anteriores preservados. Sem texto bruto ou imagens persistidos.
@@ -35,21 +35,27 @@ Premissa orientada pelo usuário em 06/11/2026: considerar junho/2026 como conta
 ## Evidências e ferramentas
 
 - `docs/corpus/workbook-review.md`: oito abas, 1.201 fórmulas com cache e divergências P01–P08. Caches e reprodução aritmética não homologam hipóteses.
-- `docs/corpus/invoice-review.md` e `representative-review.md`: 12 PDFs textuais, 24 páginas; representativa com 13 itens, transcrição separada e conferência Decimal. Nome ENEL SP identificado, CNPJ derivado da chave NF3e ainda candidato. Cobertura visual, rótulos do ciclo e mercado documental por conferir.
+- `docs/corpus/invoice-review.md` e `representative-review.md`: 12 PDFs textuais, 24 páginas; representativa com 13 itens, transcrição separada e conferência Decimal. Nome ENEL SP identificado; CNPJ derivado de dez chaves corresponde à identificação cadastral oficial, com proveniência registrada e sem aprovação humana das faturas. Cobertura visual, rótulos do ciclo e mercado documental por conferir.
 - `docs/corpus/regulatory-review.md`: REN local de 183 páginas, reprodução Leis.org; arts. 301–304 consultados, sem consolidação/vigências homologadas. Nenhum CSV tarifário importado/aprovado.
 - Python e openpyxl existentes; pypdf 7.0.0 instalado anteriormente exclusivamente para análise em `.local-tools/pypdf/`, com autorização do usuário. Leitura exigiu execução aprovada fora da sandbox. Nada instalado nesta entrega.
 - Originais preservados. Sem PDF, imagem ou texto bruto gravado pela análise; rascunhos estruturados e scripts locais em `.local-analysis/`, ignorados e fora do envio. Gabarito local v0.2 com preços/tolerância atualizados, sem revisor aprovado.
 
+## Consolidação para revisão
+
+Pacote local `.local-analysis/review-package/`: doze fichas Markdown, índice e manifesto. Cabeçalhos, datas candidatas, medições, itens, produtos, total/residual e decisões por conta, todos pendentes de revisão identificada. Script pontual `build_review_package.py`; sem instalação ou aplicação. Quatro parcelas ociosas só monetárias preservadas; junho mantém 30 dias impressos versus premissa de ~60 dias e possível média. Nenhum campo ausente preenchido por cópia do catálogo.
+
+Correspondência cadastral de dez CNPJs derivados conferida na página oficial Enel sobre Pix, consultada em 06/11/2026 e citada em `docs/corpus/regulatory-review.md`. Só confirma vínculo público nome/CNPJ, sem validar autenticidade, mercado ou tarifa.
+
 ## Verificações desta entrega
 
-Registrada a orientação do usuário sobre junho abranger aproximadamente 60 dias, sem consumo acumulado e com possível média de dois meses. Verificada separação entre premissa de cobertura e dados impressos, sem alteração dos consumos, produtos ou residuais; links/codificação e lista explícita de dois documentos públicos conferidos. Nenhuma nova leitura de PDF, verificação financeira, consulta regulatória, instalação ou execução da aplicação; nenhum aceite alterado.
+Consulta primária Enel, confronto das dez chaves normalizadas com identificação pública e construção de doze fichas por script de análise. Asserções de 12 fichas, 10 correspondências, 4 parcelas monetárias preservadas, 105 produtos dentro de BRL 0.99, 12 residuais zero, sem revisor/aprovação automática e com premissa de junho separada dos dados impressos. Links/codificação e lista explícita de quatro documentos públicos conferidos. Sem nova leitura de PDF, instalação, OCR, execução da aplicação ou mudança de aceite.
 
 ## Pendências e próximo passo
 
-Seguir com junho como transição de aproximadamente 60 dias e consumo possivelmente médio, conforme premissa do usuário, preservando os dados impressos. Rever sua comparabilidade antes de anualizar; revisar visualmente os cabeçalhos da série e confirmar identidade, mercado por ciclo e ponto de conexão com o responsável. Completar gabaritos, inclusive agosto/setembro com parcelas somente monetárias; usar a Verde apenas como referência estrutural; eventual cenário Verde será calculado independentemente, com medições e preços/fontes aplicáveis. Aprovação exige responsável/data; achados de impostos separados não são bloqueios. Autorização e procedimento de anonimização para fixtures públicas continuam pendentes. Fase 1 com fixtures sintéticas permanece possível quando solicitada.
+Seguir com junho como transição de aproximadamente 60 dias e consumo possivelmente médio, conforme premissa do usuário, preservando os dados impressos. Rever sua comparabilidade antes de anualizar; revisar visualmente os cabeçalhos da série e concluir os campos fiscais ainda ausentes, confirmar mercado por ciclo e ponto de conexão com o responsável. Revisar as fichas locais, começando por agosto/setembro (CNPJ e parcelas monetárias) e junho (transição), registrando responsável/data; usar a Verde apenas como referência estrutural; eventual cenário Verde será calculado independentemente, com medições e preços/fontes aplicáveis. Aprovação exige responsável/data; achados de impostos separados não são bloqueios. Autorização e procedimento de anonimização para fixtures públicas continuam pendentes. Fase 1 com fixtures sintéticas permanece possível quando solicitada.
 
 ## Arquivos e commit
 
-Alterados: `docs/STATUS.md`, `docs/corpus/series-review.md`. Novos/removidos: nenhum. Materiais reais e ferramentas locais fora do envio.
+Alterados: `docs/STATUS.md`, `docs/corpus/series-review.md`, `docs/corpus/README.md`, `docs/corpus/regulatory-review.md`. Novos/removidos: nenhum. Materiais reais e ferramentas locais fora do envio.
 
-Commit desta entrega: `docs: registra premissa do ciclo de transicao de junho`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
+Commit desta entrega: `docs: consolida pacote de revisao e verifica identidade da distribuidora`. Consultar histórico remoto para o SHA; este status integra o próprio commit.

@@ -27,3 +27,9 @@ Inferência operacional para o EcoWatt, proposta a partir dessas referências e 
 Analisar cobranças reativas excedentes observadas. Se a ausência de cobrança estiver confirmada, não criar cenário independente de aparecimento de reativos só porque existe tarifa no catálogo. Leitura incompleta permanece desconhecida. Mudanças de demanda/modalidade com efeito reativo não calculável devem declarar a limitação, sem afirmar que uma ausência histórica comprova ausência futura.
 
 Esses critérios foram explicitados na SPEC §8.4. Não alteram a necessidade de referências auxiliares quando um cálculo efetivamente suportado precisar delas.
+
+## Identidade cadastral da distribuidora — 06/11/2026
+
+A [página oficial da Enel São Paulo sobre Pix](https://www.enel.com.br/pt-saopaulo/golpes-e-fraudes/enel-pix.html) informa o nome Enel Distribuição São Paulo e o CNPJ público 61.695.227/0001-93. Acesso ao conteúdo da página efetuado nesta data. Correspondência conferida com o CNPJ derivado das dez chaves NF3e no corpus local; consulta cadastral separada da validação das faturas.
+
+A evidência permite vincular o CNPJ ao nome da distribuidora para essas dez correspondências. Não comprova autenticidade dos documentos, fornecimento, mercado, tarifa ou vigência aplicável. Nas duas contas sem chave/CNPJ localizado, não preencher identificação fiscal como se tivesse sido extraída. Nenhum cadastro ou pagamento foi realizado.
