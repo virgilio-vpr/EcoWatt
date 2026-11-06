@@ -8,7 +8,7 @@ Atualizado em 06/11/2026. Referência: SPEC versão 3.10; contratos mínimos v0.
 
 Escopo aceito: concentrar somente em **faturamento, informações do cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas**, conforme os quatro blocos mostrados pelo usuário. Não cadastrar exaustivamente a conta ou exigir auditoria de informações fiscais, boleto, pagamento, códigos de medidor e outros dados administrativos. A investigação ampliada anterior foi além do escopo e permanece apenas como histórico.
 
-Nenhuma aplicação implementada ou dependência instalada nesta entrega. Fase 1 ainda não iniciada; próxima entrega é a base técnica local.
+**Fase 1 concluída para desenvolvimento local**, conforme pedido do usuário de encerrar a fase. O último critério foi implementado com controle de tarefas, cancelamento transacional e rejeição de persistência tardia. Integração pelo [PR #2](https://github.com/virgilio-vpr/EcoWatt/pull/2). Dependências somente em `.venv`, com uv.lock; sem OCR/cálculos ou produção habilitada. SMTP desabilitado por padrão e provedor externo não homologado; não usar dados reais.
 
 ## Regras que permanecem
 
@@ -40,14 +40,32 @@ Hipótese de setembro conferida a pedido do usuário: forte compatibilidade num�
 
 Por orientação do usuário, o encerramento é registrado na `fase-0` e integrado à `main` por merge. A branch `fase-1` deve partir da `main` após esse merge; as próximas entregas serão commitadas nela e integradas por pull request. Operações realizadas diretamente pela integração GitHub, sem Git local.
 
+## Entrega atual — encerramento da Fase 1
+
+Ambiente Python 3.13.14/SQLite 3.50.4/uv 0.13.7, sem novas dependências, instalações globais, containers ou alteração de políticas. Migração aditiva `0003_simulation_tasks` aplicada ao SQLite local; readiness atualizada. Configuração local do usuário não foi alterada nem incluída nesta entrega. Nenhum e-mail externo enviado ou documento real processado.
+
+Novo [controle de tarefas](TASKS.md): reserva vinculada à simulação/revisão/ator, claim exclusivo com executor e lease aleatória protegida por hash, heartbeat, validade e expiração explícita. Tabela armazena só metadados, sem payloads/documentos/texto/resultados. Uma simulação ativa por dono no protocolo e uma tarefa em execução por simulação; nenhuma fila automática iniciada no startup.
+
+Exclusão pela API cancela tarefas queued/running, revoga leases, incrementa revisão e libera slot na mesma transação. Nova revisão da unidade também cancela operações antigas. Finish abre transação de escrita nova/curta, revalida ator/revisão/tombstone/lease e somente então chama persistência estruturada; resultado e conclusão são atômicos. Trabalho pesado não ocorre dentro dessa transação. Expiração afeta apenas leases vencidas, nunca tarefas vivas no startup.
+
+Garantia verificada com executor sintético concorrente: termina depois da exclusão e recebe recusa antes do callback gravar; tarefa em fila não pode ser assumida após cancelar, heartbeat antigo é recusado e a vaga já está disponível. Rollback da exclusão restaura slot/estado/lease em conjunto. Resultado que confirma antes da exclusão fica sujeito à revogação normal de acesso quando ela ocorre. Não há executor real de OCR/cálculo nem endpoint público de tarefas nesta fase.
+
+Seção 15 da SPEC: último critério e Fase 1 marcados após implementação e testes, sem reclassificar pendência como atendida por documentação. Regras anteriores — HTTP/CSRF, tokens revogáveis, cota, Decimal, titularidade e seed — preservadas. Ressalvas da Fase 0 permanecem intactas. Catálogo é sintético; SMTP externo, produção/MFA, retenção/expurgo e homologação comercial continuam nas fases correspondentes.
+
+Verificações reais: **68 testes aprovados** com os dois testes de navegador habilitados; incluem seis casos novos de ciclo/cancelamento, executor tardio em thread, rollback, disputa de claim, revisão, autorização e expiração. Regressões completas de HTTP/Edge, SMTP sintético, migrações/seed/Decimal/cota/permissões passaram. Migração local aplicada, Alembic check sem divergência, lock/pip check, compileall e wheel conferidos. A integração do PR exige CI do commit de fechamento aprovada; resultado remoto disponível no PR/histórico. Não houve validação PostgreSQL, SMTP externo ou interface completa.
+
 ## Próximo passo
 
-Iniciar a primeira entrega da Fase 1 conforme [plano](phases/phase-01-backend.md) e [texto para o novo chat](phases/phase-01-start.md): verificar ambiente, preparar configuração e estrutura mínima FastAPI com dependências locais fixadas. Seguir backend → modelos/migrações → autenticação/permissões → seed. Usar dados sintéticos; não reabrir auditoria ampliada como pré-requisito.
+Primeira entrega da Fase 2: modelos/migrações de faturas/itens/medições/proveniência/estado conforme [plano](phases/phase-02-invoices.md), antes de parser/OCR. Ao criar o coordenador real, usar o protocolo TASKS existente, observar cancelamento para encerrar processos e integrar os novos filhos à exclusão. SMTP externo/remetente/entregabilidade exigem homologação própria; não inventar credenciais/provedor. Interface completa/visual ficam na Fase 4; produção segue em fase própria.
+
+Reexecutar os testes de cancelamento/resultado tardio com os adaptadores e tabelas reais de cada fase; isso é regressão da garantia implementada, não pendência de conclusão da Fase 1. Limites de admissão, isolamento/encerramento de processos e política de temporários pertencem ao processamento da Fase 2. Continuar com fixtures sintéticas e sem reabrir auditoria ampliada como pré-requisito.
 
 Homologação comercial, tarifas/entradas próprias para cenários alternativos e autorização/procedimento de anonimização para fixtures públicas permanecem separados. Setembro é compatível numericamente com bandeira, sem confirmação de item. Junho não equivale a dois consumos medidos. Verde exemplificativa não é gabarito financeiro.
 
 ## Arquivos e commit
 
-Alterados: `EcoWatt_PROJECT_SPEC.md`, `README.md`, `docs/STATUS.md`, `docs/phases/phase-00-contracts.md` e `docs/corpus/README.md`. Novo: `docs/phases/phase-01-start.md`. Removidos: nenhum. Aceite nos artefatos locais ignorados, fora do envio.
+Novos: `migrations/versions/0003_simulation_tasks.py`, `src/ecowatt/services/tasks.py`, `tests/test_task_lifecycle.py`, `docs/TASKS.md`.
 
-Commit desta entrega: `docs: encerra fase 0 com aceite e prepara inicio da fase 1`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
+Alterados: `src/ecowatt/db/models.py`, `src/ecowatt/services/simulations.py`, `src/ecowatt/api/health.py`, `README.md`, `docs/SETUP.md`, `docs/DATABASE.md`, `docs/API.md`, `docs/STATUS.md`, `docs/phases/phase-01-backend.md`, `EcoWatt_PROJECT_SPEC.md`. Removidos: nenhum. `.env` local, dados reais, banco, ambientes, caches e wheel fora do envio.
+
+Commit de encerramento na fase-1: `feat: conclui fase 1 com cancelamento transacional de tarefas`. Integração pelo PR #2 após CI aprovada; SHA do commit/merge no histórico remoto e na resposta da entrega. Este status integra o próprio commit.

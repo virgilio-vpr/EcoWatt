@@ -1,0 +1,3 @@
+{% from 'components/simulation.html' import simulation_card %}
+<p>{{ listing.total }} de {{ listing.limit }} simulações</p>
+{% for item in listing['items'] %}{{ simulation_card(item) }}{% endfor %}
