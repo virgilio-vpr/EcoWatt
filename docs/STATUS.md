@@ -28,7 +28,7 @@ Mercado sugerido por identificação explícita ou indícios TE/TUSD por ciclo. 
 - Nos dez meses comuns, 13 cobranças UFER por ciclo/posto coincidem em quantidade/preço nas duas planilhas, com produtos dentro de BRL 0.99 (26 confrontos presentes); sete combinações sem linha textual correspondem a zeros nas duas, sem confirmar ausência automaticamente. Verde repete a ponta em 10/10 entradas, como exemplo estrutural esclarecido pelo usuário; não é cenário real a homologar nem erro de extração. Cenário Verde futuro exige medições e preços próprios. Originais preservados.
 - Novos rascunhos locais `series-review.json` e `series-review.md`, script `review_series.py`, ignorados e não aprovados; candidatos anteriores preservados. Sem texto bruto ou imagens persistidos.
 
-Esclarecimento da continuidade: a linha de maio contém três datas (01/04, 01/05 e 31/05), e a de junho (31/05, 30/06 e 31/07). O intervalo surge ao comparar fim/início candidatos, não por ausência de uma competência na lista. Os históricos de junho e julho mostram dois registros MAI/26 com consumos diferentes; possível ciclo adicional ou particularidade de faturamento, sem comprovação de PDF faltante ou calendário alterado. Usuário informou não saber se houve segunda fatura ou mudança de leitura e autorizou seguir com a pendência registrada.
+Esclarecimento da continuidade: a linha de maio contém três datas (01/04, 01/05 e 31/05), e a de junho (31/05, 30/06 e 31/07). O intervalo surge ao comparar fim/início candidatos, não por ausência de uma competência na lista. Os históricos de junho e julho mostram dois registros MAI/26 com consumos diferentes; possível ciclo adicional ou particularidade de faturamento, sem comprovação de PDF faltante ou calendário alterado. Usuário apresentou a hipótese de que a Enel ajustou o calendário para fazer o mês de referência coincidir com o período de medição, em preparação à migração ao mercado livre informada para agosto/2026. Hipótese de origem `user`, ainda não confirmada documentalmente; compatível com os dois registros MAI/26 e a mudança nas datas candidatas. Seguir com a pendência, sem concluir que falta PDF, corrigir datas ou interpolar consumo.
 
 ## Evidências e ferramentas
 
@@ -40,7 +40,7 @@ Esclarecimento da continuidade: a linha de maio contém três datas (01/04, 01/0
 
 ## Verificações desta entrega
 
-Nesta correção, releitura em memória somente das linhas de classificação/competência/histórico de maio a julho, com pypdf existente. Dois registros MAI/26 com consumos diferentes localizados nos históricos de junho e julho. Clarificada a finalidade estrutural da Verde, sem novo cálculo financeiro. Links, codificação e lista explícita de cinco documentos públicos conferidos. Sem instalação, OCR, renderização ou teste da aplicação; nenhum checkbox marcado.
+Registrada a hipótese do usuário sobre alinhamento do calendário à medição antes da migração. Revisão documental de proveniência, preservação das datas e manutenção da pendência; links/codificação e lista explícita de dois documentos públicos conferidos. Nenhuma nova leitura de PDF, verificação financeira, consulta regulatória, instalação ou execução da aplicação; nenhum aceite alterado.
 
 ## Pendências e próximo passo
 
@@ -48,6 +48,6 @@ Conferir primeiro os rótulos e ciclos de maio/junho no original; revisar visual
 
 ## Arquivos e commit
 
-Alterados: `docs/STATUS.md`, `docs/corpus/README.md`, `docs/corpus/workbook-review.md`, `docs/corpus/representative-review.md`, `docs/corpus/series-review.md`. Novos/removidos: nenhum. Materiais reais e ferramentas locais fora do envio.
+Alterados: `docs/STATUS.md`, `docs/corpus/series-review.md`. Novos/removidos: nenhum. Materiais reais e ferramentas locais fora do envio.
 
-Commit desta entrega: `docs: esclarece referencia Verde e evidencia dos ciclos de maio`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
+Commit desta entrega: `docs: registra hipotese de ajuste do calendario antes da migracao`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
