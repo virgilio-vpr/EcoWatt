@@ -1,5 +1,7 @@
 # Conferência inicial dos PDFs — 06/11/2026
 
+Atualização atual: [revisão visual das 24 páginas](visual-review.md). CNPJ e rótulos de datas foram lidos nas doze contas; onze totais coincidem com cabeçalho/documento. Setembro tem conflito entre cabeçalho/boleto e quadro de itens; os antigos “12 resíduos zero” fechavam apenas os quadros. Outubro declara substituição de nota, e abril consumo estimado por média de 12 faturamentos. Achados antigos abaixo ficam como histórico, sem prevalecer sobre essa correção.
+
 Estado: extração textual e candidato estruturado **local, não aprovado**. Não é homologação do parser da aplicação nem revisão humana do gabarito. Nenhum PDF ou texto bruto foi salvo por esta análise; os originais fornecidos pelo usuário foram preservados.
 
 Conferência posterior nesta mesma data: [fatura representativa e ampliação da reconciliação](representative-review.md). O recorte inicial abaixo foi preservado como histórico; o novo rascunho local reconhece 135 linhas e fecha os 12 totais, sem aprovação visual/humana ou tributária.

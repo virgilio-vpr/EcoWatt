@@ -1,5 +1,7 @@
 # Série de faturas — conferência textual ampliada
 
+Atualização atual: [revisão visual das 24 páginas](visual-review.md). CNPJ e rótulos de datas foram lidos nas doze contas; onze totais coincidem com cabeçalho/documento. Setembro tem conflito entre cabeçalho/boleto e quadro de itens; os antigos “12 resíduos zero” fechavam apenas os quadros. Outubro declara substituição de nota, e abril consumo estimado por média de 12 faturamentos. Achados antigos abaixo ficam como histórico, sem prevalecer sobre essa correção.
+
 Análise local de 06/11/2026. **Rascunho não aprovado**; autor da análise documental: Codex. Revisor humano/data: pendentes. Esta entrega amplia cabeçalhos, medições e cruzamentos com as planilhas; não implementa a aplicação ou homologa o corpus.
 
 ## Fonte e método

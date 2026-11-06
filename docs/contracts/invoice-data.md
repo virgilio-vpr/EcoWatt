@@ -1,6 +1,6 @@
 # Dicionário de dados faturáveis — contrato v0.1
 
-Proposta para implementação e revisão, ainda sem aprovação do corpus real. Fonte normativa: SPEC 3.8, §§3.1, 6, 7 e 10. Este documento define nomes e tipos de intercâmbio; não substitui as regras da SPEC nem constitui esquema SQL implementado. Fronteiras: [pipeline](pipeline.md). Evidências e dúvidas: [corpus](../corpus/README.md).
+Proposta para implementação e revisão, ainda sem aprovação do corpus real. Fonte normativa: SPEC 3.9, §§3.1, 6, 7 e 10. Este documento define nomes e tipos de intercâmbio; não substitui as regras da SPEC nem constitui esquema SQL implementado. Fronteiras: [pipeline](pipeline.md). Evidências e dúvidas: [corpus](../corpus/README.md).
 
 ## Convenções
 
@@ -99,6 +99,10 @@ Cada `items[]` possui `id`, `type`, `post` (null quando não se aplica), `field_
 Normalizar separadores brasileiros e unidades; verificar sinal, posto, período, limites de escopo e duplicidade (§6.3). Por linha comparável, verificar quantidade × preço: diferença absoluta de até BRL 0.99, inclusive, aceita para reconciliação monetária por autorização do usuário em 06/11/2026. Preservar precisão, produto, valor observado, diferença e versão da política; acima do limite gera pendência. Não usar a tolerância para preencher ausentes, validar identidade ou alterar limites em kW. Quantidade/preço ausentes não são inventados para fechar a linha; residual do total continua registrado separadamente.
 
 Registrar `known_components_total`, `invoice_total` e `residual` (total menos componentes conhecidos). Residual precisa de explicação ou pendência; não declarar conciliação integral por tolerância sem classificação. Conflitos de identidade, duplicatas não resolvidas e campos críticos pendentes impedem `ready`. Falta de dados exclusivos de um módulo permite fatura conferida com módulo indisponível, por exemplo demanda ausente e reativos monetários observados válidos.
+
+`header.invoice_total` representa o total a pagar do cabeçalho, não uma escolha automática da linha TOTAL do quadro. Registrar separadamente `reconciliation.header_total`, `payment_document_total`, `financial_table_total`, `known_components_total` e `residual`, com estado/proveniência. Confrontar essas fontes: soma de itens igual ao total do quadro não resolve divergência para cabeçalho/documento. Conflito não explicado mantém `needs_review`, sem parcela por diferença ou uso da tolerância por item para apagar residual. Ausência de uma fonte é registrada, não inventada. Nenhum desses valores comprova pagamento.
+
+Aviso de consumo calculado por média exige `estimated` e regra/proveniência da estimativa, preservando quantidade/preço/valor observados. Igualdade numérica entre medição impressa e cobrança não prova medição efetiva. Premissa do usuário de cobertura de um ciclo de transição fica separada das datas/dias impressos; não reconstruir consumo, médias ou série horária automaticamente.
 
 Unidades extras, livre, GD, rural/sazonal, reserva, faturamento excepcional e descontos especiais recebem marcadores de escopo e motivo de análise parcial. Não aplicar a fórmula geral automaticamente.
 

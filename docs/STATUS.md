@@ -1,61 +1,44 @@
 # Estado do EcoWatt
 
-Atualizado em 06/11/2026. Referência: SPEC versão 3.8.
+Atualizado em 06/11/2026. Referência: SPEC versão 3.9.
 
 ## Entrega atual
 
-Fase 0 em andamento; contratos documentais v0.1 e 25 casos sintéticos, sem aplicação implementada. Gabarito textual local de dezembro/2025 preparado para revisão e rascunho ampliado das doze competências, cabeçalhos e medições; reconciliação preliminar dos 12 PDFs com 135 itens financeiros e residual zero nos 12 totais. Doze fichas locais por fatura consolidadas para revisão. Aceite e gabarito real continuam pendentes, sem aprovação presumida.
+Fase 0 em revisão, com contratos documentais v0.1 e 26 casos sintéticos. Usuário pediu seguir a revisão recomendada antes da Fase 1; nenhuma instalação ou aplicação iniciada. As 24 páginas do corpus foram conferidas visualmente por Codex; aprovação do responsável e aceite continuam pendentes.
+
+**Correção de reconciliação:** onze faturas fecham contra cabeçalho/documento; setembro/2025 tem diferença relevante entre total a pagar e quadro de itens. A conclusão anterior de doze resíduos zero fechava apenas os quadros e fica superada quanto à conciliação integral. Valores exatos e diferenças ficam no pacote local, sem parcela inventada ou tolerância global aplicada.
 
 ## Decisões preservadas
 
-- Referência principal: PDFs agosto/2025–julho/2026. Planilhas comparadas somente nos dez meses comuns, outubro/2025–julho/2026. Verde é somente referência de estrutura/apresentação para a modalidade, com demanda copiada da Azul e reconhecida pelo usuário como inadequada para um cenário Verde real. Não usar seus resultados como gabarito econômico. Migração ao mercado livre em agosto/2026 informada pelo usuário, ainda sem conferência documental de data/condições.
-- Preço cheio com impostos incorporados; impostos separados fora da análise. Demanda ociosa LEI ESTADUAL: preço da demanda contratada × 0,82, na ponta, fora de ponta e demanda única.
-- Tolerância monetária por item até BRL 0.99 inclusive, autorizada pelo usuário. Em Decimal, 105/105 produtos quantificados e 20/20 parcelas ociosas comparáveis passam; quatro parcelas somente monetárias não tiveram quantidade/preço inventados. Diferenças e residuais preservados. Fronteiras ±0.99/±1.00 verificadas anteriormente.
-- Fator 3 de ultrapassagem na simulação de ponta da planilha continua divergente da regra proposta; não acionado nas entradas existentes. Não transportar esse fator para o motor.
-- Ausência confirmada de cobrança reativa não cria cenário independente de surgimento; medição não equivale a cobrança. Efeitos futuros sem dados permanecem condicionados.
+- Referência principal: PDFs agosto/2025–julho/2026. Planilhas comparadas somente nos dez meses comuns, outubro/2025–julho/2026. Verde é referência de estrutura, com demanda copiada da Azul, sem gabarito financeiro.
+- Preço cheio com impostos incorporados; sem auditoria separada de impostos. Ociosidade LEI ESTADUAL = preço da demanda contratada × 0,82, para ponta/fora de ponta/única. Até BRL 0.99 inclusive por item: 105 produtos e 20 parcelas ociosas quantificadas passam. Quatro parcelas ociosas de agosto/setembro continuam somente monetárias.
+- Não transportar fator 3 de ultrapassagem da planilha. Ausência observada de cobrança reativa não cria cenário independente de surgimento ou garante ausência futura.
+- Cadastro da empresa, endereço impresso e ponto de conexão/cabine são distintos; dados coincidentes podem ser mantidos, divergentes confirmados/corrigidos com proveniência. Não sobrescrever cadastro automaticamente.
+- Mercado é sugerido cativo pelos itens correntes TE/TUSD da série e pelo contexto informado; não confirmado automaticamente. Livre permanece fora do cálculo cativo completo.
 
-## Dados da empresa, conexão e mercado
+## Revisão visual e achados
 
-Cadastro da empresa antes da simulação; unidade salva antes do upload, como já previsto. Nome/titular e endereço podem ser extraídos e apresentados para conferência: manter os coincidentes, confirmar/corrigir divergentes. Endereço da empresa, endereço impresso na fatura e endereço confirmado da cabine/subestação no ponto de conexão são distintos. Rua adjacente pode explicar diferença para a mesma UC/distribuidora, com confirmação registrada. Não sobrescrever cadastro, valor extraído ou snapshot automaticamente.
+- `docs/corpus/visual-review.md`: CNPJ da distribuidora lido em cada um dos doze cabeçalhos, inclusive agosto/setembro. Correspondência oficial Enel conferida anteriormente; não comprova autenticidade dos PDFs. Nome/endereço impressos e UC conferidos, mantidos somente no rascunho local; ponto de conexão depende do cliente.
+- Rótulos de leitura anterior/atual, dias e próxima leitura conferidos: deixam de ser associação meramente candidata, sem alteração das datas. Cobertura do quadro de cobrança e página 2 revista; sem novos itens financeiros na página 2. Ausências observadas registradas com cobertura, separadas de medição DMCR.
+- Setembro: cabeçalho e documento coincidem entre si, mas diferem do quadro e dos componentes. Pergunta ao usuário enviada, sem resposta presumida; `needs_review` mantido.
+- Outubro declara substituição de nota anterior; marcar `replacement`, evitar dupla contagem se original for fornecido. SEGUNDA VIA isoladamente não determina refaturamento.
+- Abril declara consumo pela média aritmética dos últimos 12 faturamentos. Preservar observado como estimado; igualdade entre tabela/cobrança não prova medição real.
+- Mudança de calendário antes da migração ao ML em agosto/2026 confirmada pelo usuário que acompanhou a transição. Junho mantém 30 dias impressos, separadamente da premissa de ~60 dias e possível média de dois meses informada pelo usuário. Dois registros MAI/26 no histórico preservados. Sem consumo dobrado, interpolado ou anualização medida contínua homologada.
 
-Mercado sugerido por identificação explícita ou indícios TE/TUSD por ciclo. Ausência de cobrança corrente de energia ativa TE com leitura completa e rede/TUSD identificada sugere livre; presença sugere cativo. Inferência documentada com fontes Enel/CPFL em `docs/corpus/regulatory-review.md`. Leitura parcial, agrupamento ambíguo ou conflito mantém desconhecido. Confirmação tem origem/ator/data; UFER TE e histórico não classificam o fornecimento. Série local agora tem sugestão cativa nos doze ciclos por duas cobranças correntes de energia ativa TE e duas TUSD em cada conta, com campo confirmado ainda desconhecido; mercado livre continua fora do cálculo cativo completo.
+## Evidências locais e verificações
 
-## Avanço desta continuação
+`.local-analysis/visual-review.json` é o rascunho atual para total/residual, leitura de CNPJ/datas e exceções. Candidatos anteriores preservados como histórico. Doze fichas atualizadas em `.local-analysis/review-package/`, com `REVIEW-RESULT.md`, manifesto e aprovação do usuário pendente. Arquivos reais, ferramentas e dados pessoais fora do envio.
 
-- `docs/corpus/series-review.md`: doze competências explícitas distintas, coincidentes com os nomes dos arquivos e histórico; 12/12 contagens de dias compatíveis com as datas candidatas. Medições e demanda utilizada cobrada coincidem nos 24 postos/ciclos; TE/TUSD e energia do histórico também coincidem.
-- Uma UC por fingerprint, doze números fiscais localizados. Dez chaves NF3e derivam o mesmo CNPJ candidato com dígitos válidos; agosto/setembro sem chave nesse padrão localizada. Correspondência nome/CNPJ da distribuidora agora conferida em página oficial Enel; não equivale à autenticação dos PDFs ou aprovação humana. Agosto/setembro sem CNPJ extraído.
-- Continuidade pendente: maio/2026 termina em 01/05/2026 e junho começa em 31/05/2026 nas datas candidatas. Ajuste de calendário confirmado pelo usuário; ainda conferir rótulos/cobertura do intervalo, pois soma dos dias 365 não prova série contínua. Sem datas corrigidas ou anualização homologada.
-- Nos dez meses comuns, 13 cobranças UFER por ciclo/posto coincidem em quantidade/preço nas duas planilhas, com produtos dentro de BRL 0.99 (26 confrontos presentes); sete combinações sem linha textual correspondem a zeros nas duas, sem confirmar ausência automaticamente. Verde repete a ponta em 10/10 entradas, como exemplo estrutural esclarecido pelo usuário; não é cenário real a homologar nem erro de extração. Cenário Verde futuro exige medições e preços próprios. Originais preservados.
-- Novos rascunhos locais `series-review.json` e `series-review.md`, script `review_series.py`, ignorados e não aprovados; candidatos anteriores preservados. Sem texto bruto ou imagens persistidos.
+Renderização nativa Windows.Data.Pdf por PowerShell 5.1, em streams de memória; sem nova dependência, imagem em disco ou texto bruto persistido. Transporte em blocos e comprimento conferido antes de inspecionar; tentativas incompletas descartadas. Releitura em memória com pypdf existente dos totais nos doze PDFs; asserções de onze reconciliações e um conflito, CNPJ por documento, preservação dos quatro itens monetários e 30 dias impressos de junho. Nenhum teste de aplicação ou OCR.
 
-Esclarecimento da continuidade: a linha de maio contém três datas (01/04, 01/05 e 31/05), e a de junho (31/05, 30/06 e 31/07). O intervalo surge ao comparar fim/início candidatos, não por ausência de uma competência na lista. Os históricos de junho e julho mostram dois registros MAI/26 com consumos diferentes; possível ciclo adicional ou particularidade de faturamento, sem comprovação de PDF faltante ou calendário alterado. Usuário confirmou ter acompanhado a transição e que a Enel ajustou o calendário para alinhar mês de referência e período de medição antes da migração de agosto/2026. Registrar como informação confirmada pelo usuário, origem `user`, não como hipótese. A causa da mudança está esclarecida por essa fonte. A cobertura do intervalo de maio continua separada: não concluir que falta PDF, corrigir datas ou interpolar consumo sem localizar os valores/ciclo correspondentes.
+SPEC §7 e dicionário reforçados para distinguir totais de cabeçalho/documento/quadro/soma, e consumo estimado versus medição; caso sintético S26. Links, codificação e lista explícita de dez documentos públicos conferidos antes do commit. Nenhum aceite marcado. Tarifas oficiais, vigências e regra regulatória consolidada continuam sem homologação comercial.
 
-Premissa orientada pelo usuário em 06/11/2026: considerar junho/2026 como conta de transição abrangendo aproximadamente 60 dias; o consumo faturado não é acumulado e pode representar média dos dois meses. Registrar cobertura aproximada e possível média como estimativas de origem `user`, separadas dos 30 dias impressos e das datas extraídas. Usar o consumo efetivamente faturado no diagnóstico observado; não multiplicar por dois, dividir por 60, distribuir entre meses ou criar consumo para o intervalo sem regra/dados adicionais. Essa premissa permite seguir a análise com ressalva de comparabilidade temporal, sem presumir PDF faltante. Totais observados continuam sendo somas das cobranças disponíveis; não representam consumo anual contínuo homologado por essa premissa.
+## Próximo passo antes da Fase 1
 
-## Evidências e ferramentas
-
-- `docs/corpus/workbook-review.md`: oito abas, 1.201 fórmulas com cache e divergências P01–P08. Caches e reprodução aritmética não homologam hipóteses.
-- `docs/corpus/invoice-review.md` e `representative-review.md`: 12 PDFs textuais, 24 páginas; representativa com 13 itens, transcrição separada e conferência Decimal. Nome ENEL SP identificado; CNPJ derivado de dez chaves corresponde à identificação cadastral oficial, com proveniência registrada e sem aprovação humana das faturas. Cobertura visual, rótulos do ciclo e mercado documental por conferir.
-- `docs/corpus/regulatory-review.md`: REN local de 183 páginas, reprodução Leis.org; arts. 301–304 consultados, sem consolidação/vigências homologadas. Nenhum CSV tarifário importado/aprovado.
-- Python e openpyxl existentes; pypdf 7.0.0 instalado anteriormente exclusivamente para análise em `.local-tools/pypdf/`, com autorização do usuário. Leitura exigiu execução aprovada fora da sandbox. Nada instalado nesta entrega.
-- Originais preservados. Sem PDF, imagem ou texto bruto gravado pela análise; rascunhos estruturados e scripts locais em `.local-analysis/`, ignorados e fora do envio. Gabarito local v0.2 com preços/tolerância atualizados, sem revisor aprovado.
-
-## Consolidação para revisão
-
-Pacote local `.local-analysis/review-package/`: doze fichas Markdown, índice e manifesto. Cabeçalhos, datas candidatas, medições, itens, produtos, total/residual e decisões por conta, todos pendentes de revisão identificada. Script pontual `build_review_package.py`; sem instalação ou aplicação. Quatro parcelas ociosas só monetárias preservadas; junho mantém 30 dias impressos versus premissa de ~60 dias e possível média. Nenhum campo ausente preenchido por cópia do catálogo.
-
-Correspondência cadastral de dez CNPJs derivados conferida na página oficial Enel sobre Pix, consultada em 06/11/2026 e citada em `docs/corpus/regulatory-review.md`. Só confirma vínculo público nome/CNPJ, sem validar autenticidade, mercado ou tarifa.
-
-## Verificações desta entrega
-
-Consulta primária Enel, confronto das dez chaves normalizadas com identificação pública e construção de doze fichas por script de análise. Asserções de 12 fichas, 10 correspondências, 4 parcelas monetárias preservadas, 105 produtos dentro de BRL 0.99, 12 residuais zero, sem revisor/aprovação automática e com premissa de junho separada dos dados impressos. Links/codificação e lista explícita de quatro documentos públicos conferidos. Sem nova leitura de PDF, instalação, OCR, execução da aplicação ou mudança de aceite.
-
-## Pendências e próximo passo
-
-Seguir com junho como transição de aproximadamente 60 dias e consumo possivelmente médio, conforme premissa do usuário, preservando os dados impressos. Rever sua comparabilidade antes de anualizar; revisar visualmente os cabeçalhos da série e concluir os campos fiscais ainda ausentes, confirmar mercado por ciclo e ponto de conexão com o responsável. Revisar as fichas locais, começando por agosto/setembro (CNPJ e parcelas monetárias) e junho (transição), registrando responsável/data; usar a Verde apenas como referência estrutural; eventual cenário Verde será calculado independentemente, com medições e preços/fontes aplicáveis. Aprovação exige responsável/data; achados de impostos separados não são bloqueios. Autorização e procedimento de anonimização para fixtures públicas continuam pendentes. Fase 1 com fixtures sintéticas permanece possível quando solicitada.
+Esclarecer o conflito de setembro; revisar/aceitar desconhecidos e limitações de abril/junho, confirmar ponto de conexão e mercado, registrar responsável/data de aprovação. Autorização/procedimento de anonimização de fixtures reais e fontes/preços necessários aos cenários continuam pendentes. Não iniciar Fase 1 nesta entrega.
 
 ## Arquivos e commit
 
-Alterados: `docs/STATUS.md`, `docs/corpus/series-review.md`, `docs/corpus/README.md`, `docs/corpus/regulatory-review.md`. Novos/removidos: nenhum. Materiais reais e ferramentas locais fora do envio.
+Novo: `docs/corpus/visual-review.md`. Alterados: `EcoWatt_PROJECT_SPEC.md`, `docs/STATUS.md`, `docs/contracts/invoice-data.md`, `docs/corpus/README.md`, `docs/corpus/series-review.md`, `docs/corpus/invoice-review.md`, `docs/corpus/representative-review.md`, `docs/corpus/regulatory-review.md`, `docs/corpus/synthetic-cases.md`. Removidos: nenhum. Materiais reais e scripts locais excluídos.
 
-Commit desta entrega: `docs: consolida pacote de revisao e verifica identidade da distribuidora`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
+Commit: `docs: revisa visualmente corpus e corrige conciliacao dos totais`. Consultar histórico remoto para o SHA; este status integra o próprio commit.

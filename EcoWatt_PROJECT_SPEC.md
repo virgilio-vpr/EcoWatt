@@ -1,6 +1,6 @@
 # EcoWatt — Especificação de produto e implementação
 
-Versão 3.8 • 06/11/2026 • Documento autossuficiente para orientar a implementação.
+Versão 3.9 • 06/11/2026 • Documento autossuficiente para orientar a implementação.
 
 ## 1. Objetivo e critérios do produto
 
@@ -274,7 +274,7 @@ O total da fatura não é necessariamente o valor pago. Só usar “pago” quan
 
 ### 7.2 Medições e contratação
 
-Por posto `peak`, `off_peak` ou `single`: demanda contratada, demanda ativa medida, demanda ativa faturada, energia ativa, grandezas de reativos e fator de potência quando presentes. Registrar se o valor já inclui ajuste de perdas para não aplicá-lo duas vezes.
+Por posto `peak`, `off_peak` ou `single`: demanda contratada, demanda ativa medida, demanda ativa faturada, energia ativa, grandezas de reativos e fator de potência quando presentes. Registrar se o valor já inclui ajuste de perdas para não aplicá-lo duas vezes. Aviso de faturamento pela média ou outra estimativa exige estado `estimated` e método/proveniência; coincidência de números entre tabela de medição e itens não comprova medição real. Preservar dados impressos e separar hipóteses do usuário sobre ciclos de transição, sem reconstruir consumo ou anualizar como série medida contínua.
 
 Na Verde, registrar demandas medidas por posto quando a fatura ou informação complementar as trouxer, mesmo que a contratação seja única.
 
@@ -292,7 +292,7 @@ TE e TUSD agrupadas em uma linha exigem identificação explícita de agrupament
 - Tarifa e quantidade compatíveis com unidade e posto.
 - `quantidade × preço ≈ valor`, considerando precisão impressa e arredondamento.
 - Tolerância monetária de reconciliação: diferença absoluta de até R$ 0,99 por item, inclusive, autorizada pelo usuário em 06/11/2026. Preservar produto, valor observado e diferença; valores acima do limite geram pendência. Não aplicar esse limite aos kW, ao gatilho de ultrapassagem, a campos ausentes ou à identidade. O residual do total continua explícito e exige classificação; não o apagar por essa tolerância.
-- Total faturado é conciliado com componentes conhecidos e residual identificado; não exigir que apenas itens analisados somem a conta inteira.
+- Total faturado é conciliado com componentes conhecidos e residual identificado; não exigir que apenas itens analisados somem a conta inteira. Conferir separadamente total a pagar do cabeçalho, valor do documento de cobrança, total do quadro de itens e soma dos componentes. Fechamento do quadro não prova conciliação da fatura. Divergência não explicada mantém `needs_review`; preservar valores/proveniência sem escolher silenciosamente um total ou criar parcela por diferença. A tolerância por item não elimina residual global ou conflito entre totais.
 - Demanda contratada ou medida ausente bloqueia a otimização daquele posto; não bloqueia diagnóstico válido de reativos.
 - Sem demanda por posto suficiente, migração pode ficar parcial/inconclusiva.
 - Quantidades reativas não são reconstruídas com fator de potência médio mensal quando a regra exige intervalos.

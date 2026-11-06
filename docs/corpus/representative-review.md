@@ -1,5 +1,7 @@
 # Fatura representativa — roteiro e resultado da conferência
 
+Atualização atual: [revisão visual das 24 páginas](visual-review.md). CNPJ e rótulos de datas foram lidos nas doze contas; onze totais coincidem com cabeçalho/documento. Setembro tem conflito entre cabeçalho/boleto e quadro de itens; os antigos “12 resíduos zero” fechavam apenas os quadros. Outubro declara substituição de nota, e abril consumo estimado por média de 12 faturamentos. Achados antigos abaixo ficam como histórico, sem prevalecer sobre essa correção.
+
 Análise de 06/11/2026, versão 0.1. **Rascunho para revisão, não aprovado.** Autor da análise documental: Codex. Revisor humano e data de aprovação: pendentes. Os dados financeiros completos permanecem locais; este documento não é fixture real anonimizada autorizada.
 
 ## Escolha e método

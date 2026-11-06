@@ -1,5 +1,7 @@
 # Referências regulatórias e tarifárias — conferência de 06/11/2026
 
+Atualização atual: [revisão visual das 24 páginas](visual-review.md). CNPJ e rótulos de datas foram lidos nas doze contas; onze totais coincidem com cabeçalho/documento. Setembro tem conflito entre cabeçalho/boleto e quadro de itens; os antigos “12 resíduos zero” fechavam apenas os quadros. Outubro declara substituição de nota, e abril consumo estimado por média de 12 faturamentos. Achados antigos abaixo ficam como histórico, sem prevalecer sobre essa correção.
+
 Este registro delimita as evidências disponíveis; não é parecer regulatório nem validação integral de vigência.
 
 ## PDF local da REN 1000

@@ -69,3 +69,8 @@ S21–S25 também são inteiramente sintéticos. Não contêm dados da unidade r
 ## Fronteira da tolerância autorizada em 06/11/2026
 
 Mesma quantidade 100 e preço 0.50: valor 50.99 tem diferença 0.99 e passa; valor 51.00 tem diferença 1.00 e gera pendência. Valor 49.01 também passa por diferença absoluta 0.99; valor 49.00 gera pendência de 1.00. Não usar tolerância por item para ocultar residual do total, criar valores ausentes ou alterar gatilho de ultrapassagem.
+
+
+## S26 — Cabeçalho e quadro com totais conflitantes
+
+Caso inteiramente sintético: cabeçalho e documento de cobrança indicam BRL 120.00; quadro TOTAL e soma dos itens indicam BRL 100.00. Esperado: preservar os quatro valores, residual global BRL 20.00 e conflito de totais, `needs_review`. O quadro tem residual interno zero, sem conciliação integral. A tolerância BRL 0.99 por item não permite criar cobrança de BRL 20.00 ou trocar o total a pagar pelo do quadro.
