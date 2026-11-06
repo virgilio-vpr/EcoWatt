@@ -4,7 +4,7 @@ Análise de 06/11/2026, versão 0.1. **Rascunho para revisão, não aprovado.** 
 
 ## Escolha e método
 
-REAL-LOCAL-05, dezembro/2025, pertence aos dez meses comuns e reúne demanda dos dois postos, ociosidade quantificada, energia TE/TUSD, duas cobranças UFER, bandeiras e COSIP. Referência principal mantida: PDFs agosto/2025–julho/2026. A Verde continua sendo uma simulação real a conferir, sem transportar seus resultados ou tarifas para o esperado.
+REAL-LOCAL-05, dezembro/2025, pertence aos dez meses comuns e reúne demanda dos dois postos, ociosidade quantificada, energia TE/TUSD, duas cobranças UFER, bandeiras e COSIP. Referência principal mantida: PDFs agosto/2025–julho/2026. A Verde é somente referência estrutural para a modalidade, conforme esclarecimento atual do usuário; demanda copiada da Azul não representa cenário real válido. Seus resultados e preços não formam o esperado.
 
 Leitura em memória das duas páginas com pypdf 7.0.0 já instalado, extrações normal e layout para investigar rótulos, sem OCR, renderização ou novas dependências. A página 2 tem oito linhas extraídas, de continuação de identificação/pagamento. Isso não comprova cobertura visual de imagens ou de rótulos não extraídos. A conferência integral **visual/manual continua pendente**; foi concluída a conferência documental textual do quadro financeiro reconhecido.
 

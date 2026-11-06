@@ -8,7 +8,7 @@ Fase 0 em andamento; contratos documentais v0.1 e 25 casos sintéticos, sem apli
 
 ## Decisões preservadas
 
-- Referência principal: PDFs agosto/2025–julho/2026. Planilhas comparadas somente nos dez meses comuns, outubro/2025–julho/2026. Verde é simulação real a conferir. Migração ao mercado livre em agosto/2026 informada pelo usuário, ainda sem conferência documental de data/condições.
+- Referência principal: PDFs agosto/2025–julho/2026. Planilhas comparadas somente nos dez meses comuns, outubro/2025–julho/2026. Verde é somente referência de estrutura/apresentação para a modalidade, com demanda copiada da Azul e reconhecida pelo usuário como inadequada para um cenário Verde real. Não usar seus resultados como gabarito econômico. Migração ao mercado livre em agosto/2026 informada pelo usuário, ainda sem conferência documental de data/condições.
 - Preço cheio com impostos incorporados; impostos separados fora da análise. Demanda ociosa LEI ESTADUAL: preço da demanda contratada × 0,82, na ponta, fora de ponta e demanda única.
 - Tolerância monetária por item até BRL 0.99 inclusive, autorizada pelo usuário. Em Decimal, 105/105 produtos quantificados e 20/20 parcelas ociosas comparáveis passam; quatro parcelas somente monetárias não tiveram quantidade/preço inventados. Diferenças e residuais preservados. Fronteiras ±0.99/±1.00 verificadas anteriormente.
 - Fator 3 de ultrapassagem na simulação de ponta da planilha continua divergente da regra proposta; não acionado nas entradas existentes. Não transportar esse fator para o motor.
@@ -25,8 +25,10 @@ Mercado sugerido por identificação explícita ou indícios TE/TUSD por ciclo. 
 - `docs/corpus/series-review.md`: doze competências explícitas distintas, coincidentes com os nomes dos arquivos e histórico; 12/12 contagens de dias compatíveis com as datas candidatas. Medições e demanda utilizada cobrada coincidem nos 24 postos/ciclos; TE/TUSD e energia do histórico também coincidem.
 - Uma UC por fingerprint, doze números fiscais localizados. Dez chaves NF3e derivam o mesmo CNPJ candidato com dígitos válidos; agosto/setembro sem chave nesse padrão localizada. Não equivale à confirmação independente de identidade.
 - Continuidade pendente: maio/2026 termina em 01/05/2026 e junho começa em 31/05/2026 nas datas candidatas. Intervalo de 30 dias exige conferência dos rótulos/ciclos; soma dos dias 365 não prova série contínua. Sem datas corrigidas ou anualização homologada.
-- Nos dez meses comuns, 13 cobranças UFER por ciclo/posto coincidem em quantidade/preço nas duas planilhas, com produtos dentro de BRL 0.99 (26 confrontos presentes); sete combinações sem linha textual correspondem a zeros nas duas, sem confirmar ausência automaticamente. Verde repete a ponta em 10/10 entradas e difere do máximo dos postos em 10/10. Originais preservados.
+- Nos dez meses comuns, 13 cobranças UFER por ciclo/posto coincidem em quantidade/preço nas duas planilhas, com produtos dentro de BRL 0.99 (26 confrontos presentes); sete combinações sem linha textual correspondem a zeros nas duas, sem confirmar ausência automaticamente. Verde repete a ponta em 10/10 entradas, como exemplo estrutural esclarecido pelo usuário; não é cenário real a homologar nem erro de extração. Cenário Verde futuro exige medições e preços próprios. Originais preservados.
 - Novos rascunhos locais `series-review.json` e `series-review.md`, script `review_series.py`, ignorados e não aprovados; candidatos anteriores preservados. Sem texto bruto ou imagens persistidos.
+
+Esclarecimento da continuidade: a linha de maio contém três datas (01/04, 01/05 e 31/05), e a de junho (31/05, 30/06 e 31/07). O intervalo surge ao comparar fim/início candidatos, não por ausência de uma competência na lista. Os históricos de junho e julho mostram dois registros MAI/26 com consumos diferentes; possível ciclo adicional ou particularidade de faturamento, sem comprovação de PDF faltante ou calendário alterado. Usuário informou não saber se houve segunda fatura ou mudança de leitura e autorizou seguir com a pendência registrada.
 
 ## Evidências e ferramentas
 
@@ -38,14 +40,14 @@ Mercado sugerido por identificação explícita ou indícios TE/TUSD por ciclo. 
 
 ## Verificações desta entrega
 
-Releitura em memória dos 12 PDFs com pypdf existente, hashes confrontados, competências/histórico, datas/dias, UC, números fiscais, chaves/CNPJ candidato, 24 medições de demanda e energia por posto conferidos por asserções. openpyxl existente para o cruzamento dos dez meses comuns. Sem auditoria separada de impostos, renderização, OCR ou novo teste da aplicação. Links, codificação e lista explícita de cinco documentos públicos conferidos antes do commit. Nenhum checkbox marcado.
+Nesta correção, releitura em memória somente das linhas de classificação/competência/histórico de maio a julho, com pypdf existente. Dois registros MAI/26 com consumos diferentes localizados nos históricos de junho e julho. Clarificada a finalidade estrutural da Verde, sem novo cálculo financeiro. Links, codificação e lista explícita de cinco documentos públicos conferidos. Sem instalação, OCR, renderização ou teste da aplicação; nenhum checkbox marcado.
 
 ## Pendências e próximo passo
 
-Conferir primeiro os rótulos e ciclos de maio/junho no original; revisar visualmente os cabeçalhos da série e confirmar identidade, mercado por ciclo e ponto de conexão com o responsável. Completar gabaritos, inclusive agosto/setembro com parcelas somente monetárias; obter preços/fontes para conferir a Verde nos dez meses comuns e vigências aplicáveis. Aprovação exige responsável/data; achados de impostos separados não são bloqueios. Autorização e procedimento de anonimização para fixtures públicas continuam pendentes. Fase 1 com fixtures sintéticas permanece possível quando solicitada.
+Conferir primeiro os rótulos e ciclos de maio/junho no original; revisar visualmente os cabeçalhos da série e confirmar identidade, mercado por ciclo e ponto de conexão com o responsável. Completar gabaritos, inclusive agosto/setembro com parcelas somente monetárias; usar a Verde apenas como referência estrutural; eventual cenário Verde será calculado independentemente, com medições e preços/fontes aplicáveis. Aprovação exige responsável/data; achados de impostos separados não são bloqueios. Autorização e procedimento de anonimização para fixtures públicas continuam pendentes. Fase 1 com fixtures sintéticas permanece possível quando solicitada.
 
 ## Arquivos e commit
 
-Novo: `docs/corpus/series-review.md`. Alterados: `docs/STATUS.md`, `docs/corpus/README.md`, `docs/corpus/invoice-review.md`, `docs/corpus/workbook-review.md`. Removidos: nenhum. Materiais reais e ferramentas locais fora do envio.
+Alterados: `docs/STATUS.md`, `docs/corpus/README.md`, `docs/corpus/workbook-review.md`, `docs/corpus/representative-review.md`, `docs/corpus/series-review.md`. Novos/removidos: nenhum. Materiais reais e ferramentas locais fora do envio.
 
-Commit desta entrega: `docs: amplia conferencia da serie e registra continuidade dos ciclos`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
+Commit desta entrega: `docs: esclarece referencia Verde e evidencia dos ciclos de maio`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
