@@ -15,7 +15,7 @@ from ecowatt.db.session import make_engine
 from ecowatt.errors import DomainError
 from ecowatt.security.passwords import hasher
 from ecowatt.security.tokens import new_token
-from ecowatt.services.mail import DisabledMailer
+from ecowatt.services.mail import make_mailer
 from ecowatt.api.auth import router as auth_router
 from ecowatt.api.resources import router as resources_router
 from ecowatt.web.routes import router as web_router
@@ -43,7 +43,7 @@ def create_app(settings: Settings | None = None, *, mailer=None) -> FastAPI:
     )
     app.state.settings = settings
     app.state.engine = engine
-    app.state.mailer = mailer if mailer is not None else DisabledMailer()
+    app.state.mailer = mailer if mailer is not None else make_mailer(settings)
     app.state.dummy_hash = hasher.hash(new_token())
 
     @app.middleware("http")

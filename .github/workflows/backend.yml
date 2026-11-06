@@ -29,3 +29,9 @@ jobs:
           .\.venv\Scripts\python.exe -m pytest -q
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           .\.venv\Scripts\python.exe -m compileall -q src migrations
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Ciclo de acesso no Edge instalado
+        shell: pwsh
+        env:
+          ECOWATT_BROWSER_TESTS: '1'
+        run: .\.venv\Scripts\python.exe -m pytest tests/test_auth_browser.py -q

@@ -44,9 +44,10 @@ PUBLIC_ORIGIN define a origem exata dos comandos e dos futuros links de ativaç�
 - `/api/v1/ready`: arquivo local existente e revisão Alembic atual; não cria banco ausente e não afirma disponibilidade de e-mail.
 - `/api/v1/openapi.json`: contrato de operações e erros.
 - `/api/v1/docs`: índice HTML local, sem Swagger/CDN ou scripts inline.
-- `/account`, `/account/simulations` e `/simulations/{id}`: inspeção autenticada, também em fragmentos HTMX. Há layout, macro e parcial; acabamento, formulários completos, Tailwind e seletor de temas ficam para a Fase 4.
+- `/account`, `/account/simulations` e `/simulations/{id}`: inspeção autenticada, também em fragmentos HTMX. Há layout, macro e parcial; acabamento, interface completa, Tailwind e seletor de temas ficam para a Fase 4.
+- `/auth/login`, `/auth/register`, `/auth/forgot-password` e `/auth/resend-activation`: formulários mínimos que chamam a API JSON. Links abrem `/auth/activation` ou `/auth/reset` com token em fragmento, consumido somente ao confirmar.
 
-Login é pela API nesta entrega. Exemplo Python/HTTPX verificado com servidor em execução (preserva cookie jar):
+Login já pode ser feito pelo navegador em `/auth/login`. Exemplo alternativo Python/HTTPX verificado com servidor em execução (preserva cookie jar):
 
 ```python
 import httpx
@@ -69,9 +70,9 @@ Listagens usam page/page_size (até 100). Criar simulação exige `Idempotency-K
 
 ## Ativação e recuperação
 
-Regras implementadas e testadas com MemoryMailer injetado: registro pendente e atômico, confirmação de e-mail/senha, hash Argon2id, ativação em 24h, recuperação em 30min, finalidade/uso único, reenvio invalidando token anterior e mensagens neutras. Links usam fragmento para não colocar tokens no access log. Não há inbox HTTP, token em logs ou disparo externo.
+Regras implementadas: registro pendente e atômico, confirmação de e-mail/senha, hash Argon2id, ativação em 24h, recuperação em 30min, finalidade/uso único, reenvio invalidando token anterior e mensagens neutras. SMTP da biblioteca padrão, TLS obrigatório fora do loopback, timeout limitado e falhas sanitizadas. Links usam fragmento retirado da URL pelo JavaScript local. GET não consome o token; confirmação envia POST JSON com CSRF. Não há inbox HTTP ou token em logs.
 
-O runtime usa DisabledMailer. Cadastro, reenvio e recuperação retornam `503 email_unavailable` uniformemente enquanto faltar adaptador/provedor; não criam conta presa ou fingem envio. As telas para consumir links também não foram construídas. Definir o meio de entrega local e o provedor real continua pendente; esta limitação impede declarar a Fase 1 encerrada. Somente o seed sintético permite login imediato agora.
+O padrão continua DisabledMailer: `503 email_unavailable`, sem criar cadastro. SMTP pode ser configurado explicitamente conforme [EMAIL](EMAIL.md); o servidor de testes só captura em memória/loopback e não envia externamente. Com SMTP habilitado, 202 significa pedido recebido, não entrega comprovada; falha invalida somente o token enviado e permite reenvio da conta pendente, com resposta neutra. SMTP ocorre após commit, sem lock de escrita durante rede. Homologação do provedor real permanece pendente.
 
 Limites persistidos SQLite: janela de uma hora, 10 tentativas por e-mail/finalidade e 50 por IP/finalidade; não há bloqueio permanente de conta por tentativa externa. Não confiar em X-Forwarded-For nesta configuração. Argon2id: 64 MiB, t=3, p=4; mediana local de hash+verificação 85,3ms em três amostras. Recalibrar no host e implementar rate limit de borda/MFA antes da produção. Rehash é aplicado no login quando necessário, conforme [argon2-cffi](https://argon2-cffi.readthedocs.io/en/stable/api.html).
 
@@ -85,8 +86,17 @@ Limites persistidos SQLite: janela de uma hora, 10 tentativas por e-mail/finalid
 .\.venv\Scripts\uv.exe build --wheel
 ```
 
-Resultado local: 40 testes aprovados, dependências compatíveis, lock atualizado e compilação sem erros. Migrações limpas/upgrade preservando dados, downgrade seguro em descartável, seed repetido, FKs, rollback, decimais, sessões/tokens, CSRF, acesso JSON/HTML/HTMX e concorrência foram conferidos. Uvicorn real em loopback: readiness, login admin/cliente, perfil, account, docs e logout; processo encerrado após o teste. Wheel construído, templates conferidos no artefato local ignorado. Workflow Windows/SQLite adicionado; seu resultado remoto deve ser consultado no GitHub, não inferido do teste local.
+Resultado local: 54 testes aprovados com ECOWATT_BROWSER_TESTS=1, dependências compatíveis, lock atualizado e compilação sem erros. Incluem migrações, FKs, seed, decimais, sessões/CSRF, acesso cruzado, concorrência, SMTP sintético e ciclo de acesso no Edge. Sem a flag, o teste de navegador fica skipped. CI da entrega anterior passou; o workflow agora inclui uma etapa explícita de navegador. Conferir o resultado do novo commit no GitHub.
 
-HTMX 2.0.11 é servido localmente, com licença e SRI em static/vendor. Não há eval, scripts processados em fragmentos ou CSS inline automático. Os testes conferem autorização do fragmento e disponibilidade do asset; interação visual no navegador ainda não foi testada.
+HTMX 2.0.11 e o cliente auth.js são servidos localmente, sem eval/scripts inline. Playwright 1.64.1 é somente dependência de desenvolvimento; usa o Edge já instalado e não baixa navegador. O ciclo no navegador passou, sem recursos externos da página ou erros JavaScript; não representa homologação visual da interface completa. Procedimento detalhado em [EMAIL](EMAIL.md).
+
+```powershell
+$env:ECOWATT_BROWSER_TESTS='1'
+try {
+  .\.venv\Scripts\python.exe -m pytest -q
+} finally {
+  Remove-Item Env:ECOWATT_BROWSER_TESTS
+}
+```
 
 Não instalar OCR, PDF ou Node agora. Nenhum container. Próximos passos e limites de retenção/worker estão em STATUS e DATABASE. Não usar clientes/faturas reais nesta base.

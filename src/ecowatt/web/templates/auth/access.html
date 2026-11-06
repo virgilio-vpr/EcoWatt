@@ -1,0 +1,35 @@
+{% extends 'layouts/base.html' %}
+{% block scripts %}<script src="/static/auth.js" defer></script>{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<noscript>Ative JavaScript para enviar os dados com segurança. Nenhum dado foi enviado.</noscript>
+<form id="auth-form" data-page="{{ page }}" data-endpoint="{{ endpoint }}" action="{{ endpoint }}" method="post">
+{% if page in ['login', 'register', 'forgot-password', 'resend-activation'] %}
+<label>E-mail <input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+{% endif %}
+{% if page == 'register' %}
+<label>Confirmar e-mail <input name="email_confirmation" type="email" autocomplete="email" maxlength="254" required></label>
+<label>Nome do responsável <input name="responsible_name" autocomplete="name" maxlength="200" required></label>
+<fieldset><legend>Empresa</legend>
+<label>Nome da empresa <input name="company.name" autocomplete="organization" maxlength="200" required></label>
+<label>Telefone <input name="company.phone" type="tel" autocomplete="tel" minlength="8" maxlength="30" required></label>
+<label>Endereço da empresa <input name="company.address_line" autocomplete="street-address" maxlength="300" required></label>
+<label>Cidade <input name="company.city" autocomplete="address-level2" maxlength="100" required></label>
+<label>UF <input name="company.state" autocomplete="address-level1" pattern="[A-Z]{2}" maxlength="2" required></label>
+<label>CEP <input name="company.postal_code" autocomplete="postal-code" minlength="5" maxlength="12" required></label>
+</fieldset>
+{% endif %}
+{% if page in ['login', 'register', 'reset'] %}
+<label>Senha <input name="password" type="password" autocomplete="{{ 'current-password' if page == 'login' else 'new-password' }}" maxlength="128" {% if page != 'login' %}minlength="8" aria-describedby="password-policy"{% endif %} required></label>
+{% if page != 'login' %}
+<p id="password-policy">Use de 8 a 128 caracteres, uma letra maiúscula, uma minúscula, um caractere especial e dois algarismos.</p>
+<label>Confirmar senha <input name="password_confirmation" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+{% endif %}
+<button type="button" id="show-password" aria-pressed="false">Mostrar senha</button>
+{% endif %}
+{% if page in ['activation', 'reset'] %}<p>O link só será utilizado ao confirmar este formulário.</p>{% endif %}
+<button id="auth-submit" type="submit" disabled>{{ title }}</button>
+</form>
+<p id="auth-status" role="status" aria-live="polite"></p>
+<nav aria-label="Acesso"><a href="/auth/login">Entrar</a> · <a href="/auth/register">Criar conta</a> · <a href="/auth/forgot-password">Recuperar acesso</a> · <a href="/auth/resend-activation">Reenviar confirmação</a></nav>
+{% endblock %}

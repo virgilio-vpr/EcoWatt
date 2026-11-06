@@ -2,7 +2,7 @@
 
 Objetivo: criar base local FastAPI/SQLite e acesso seguro antes do frontend completo.
 
-Estado em 06/11/2026: base e serviços das entregas 2–5 implementados com testes sintéticos. Envio de e-mail continua desabilitado; integração dos futuros jobs à exclusão e demais critérios abertos permanecem explícitos no STATUS/SPEC. Comandos verificados em [SETUP](../SETUP.md), esquema em [DATABASE](../DATABASE.md). Não interpretar este resumo como aceite integral da fase.
+Estado em 06/11/2026: base, serviços e SMTP configurável implementados; ciclo de acesso testado no Edge com captura SMTP local. Padrão de envio disabled e provedor externo não homologado. Revisão final do contrato/cliente HTTP e integração dos futuros jobs à exclusão permanecem no STATUS/SPEC. Comandos em [SETUP](../SETUP.md), esquema em [DATABASE](../DATABASE.md) e SMTP em [EMAIL](../EMAIL.md). Não interpretar este resumo como aceite integral da fase.
 
 ## Leitura dirigida
 

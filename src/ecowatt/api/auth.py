@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, Response
 from sqlalchemy import update
 
 from ecowatt.api.dependencies import (CSRF_COOKIE, SESSION_COOKIE, authenticated,
@@ -13,7 +13,7 @@ from ecowatt.services.mail import DisabledMailer
 from ecowatt.services.simulations import require_admin
 
 router = APIRouter(tags=["auth"])
-NEUTRAL = {"message": "Se aplicável, você receberá instruções de acesso."}
+NEUTRAL = {"message": "Solicitação recebida. Se não receber instruções, aguarde e tente reenviar."}
 
 
 def throttle(request, purpose, email=""):
@@ -44,20 +44,23 @@ def csrf(request: Request, response: Response):
 
 
 @router.post("/auth/register", status_code=202, dependencies=[Depends(check_public_csrf)])
-def register(payload: Registration, request: Request):
+def register(payload: Registration, request: Request, background_tasks: BackgroundTasks):
     require_mailer(request)
     throttle(request, "register", payload.email)
-    auth.register(request.app.state.engine, payload, request.app.state.settings,
-                  request.app.state.mailer)
+    message = auth.register(request.app.state.engine, payload, request.app.state.settings)
+    if message is not None:
+        background_tasks.add_task(auth.deliver, request.app.state.engine, request.app.state.mailer, message)
     return NEUTRAL
 
 
 @router.post("/auth/resend-activation", status_code=202, dependencies=[Depends(check_public_csrf)])
-def resend(payload: EmailInput, request: Request):
+def resend(payload: EmailInput, request: Request, background_tasks: BackgroundTasks):
     require_mailer(request)
     throttle(request, "activation_request", payload.email)
-    auth.request_email(request.app.state.engine, payload.email, "activation", request.app.state.settings,
-                       request.app.state.mailer, request.app.state.dummy_hash)
+    message = auth.request_email(request.app.state.engine, payload.email, "activation", request.app.state.settings,
+                       request.app.state.dummy_hash)
+    if message is not None:
+        background_tasks.add_task(auth.deliver, request.app.state.engine, request.app.state.mailer, message)
     return NEUTRAL
 
 
@@ -69,11 +72,13 @@ def activate(payload: TokenInput, request: Request):
 
 
 @router.post("/auth/forgot-password", status_code=202, dependencies=[Depends(check_public_csrf)])
-def forgot(payload: EmailInput, request: Request):
+def forgot(payload: EmailInput, request: Request, background_tasks: BackgroundTasks):
     require_mailer(request)
     throttle(request, "reset_request", payload.email)
-    auth.request_email(request.app.state.engine, payload.email, "reset", request.app.state.settings,
-                       request.app.state.mailer, request.app.state.dummy_hash)
+    message = auth.request_email(request.app.state.engine, payload.email, "reset", request.app.state.settings,
+                       request.app.state.dummy_hash)
+    if message is not None:
+        background_tasks.add_task(auth.deliver, request.app.state.engine, request.app.state.mailer, message)
     return NEUTRAL
 
 

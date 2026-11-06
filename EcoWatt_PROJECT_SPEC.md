@@ -705,7 +705,7 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
   - [ ] Definir OpenAPI, cliente HTTP, erros, paginação e idempotência.
   - [x] Definir estrutura futura de layouts/macros; adiar acabamento visual para depois dos serviços centrais.
   - [x] Implementar cadastro com empresa, responsável, endereço, telefone e dupla confirmação de e-mail/senha; validar composição e mínimo de oito caracteres no backend.
-  - [ ] Implementar ativação por e-mail, login com e-mail/senha, recuperação, logout e vínculo cliente/empresa.
+  - [x] Implementar ativação por e-mail, login com e-mail/senha, recuperação, logout e vínculo cliente/empresa.
   - [x] Implementar controle de usuários no backend, hash de senha, token de sessão, expiração, rotação e revogação.
   - [x] Criar tabelas/migrações em ordem de dependências conforme 10.4, com FKs e transações validadas.
   - [x] Criar seed explícito e idempotente com admin padrão e cliente teste, empresas sintéticas e credenciais locais; impedir execução em produção.
@@ -719,7 +719,7 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
 
   - [ ] Aceite: subida local sem Docker, migrações SQLite do zero e upgrade, seed repetível sem duplicatas, decimal sem perda e acesso isolado por usuário.
 
-  Evidência parcial em 06/11/2026: 40 testes SQLite e HTTP local com seed admin/cliente; cadastro validado via API com adaptador de e-mail em memória, não envio real. Fluxo de simulação limitado a rascunho/unidade, sem antecipar faturas/cálculo. Pendentes para fechar a fase: entrega/consumo de links de e-mail, revisão final de contrato/cliente HTTP, resultado da CI e integração de exclusão aos futuros jobs. Interface completa, Tailwind e temas permanecem na Fase 4. Ver STATUS/SETUP/DATABASE para limites; não homologado comercialmente.
+  Evidência parcial em 06/11/2026: 54 testes, incluindo ciclo de acesso no Edge com SMTP sintético de loopback, sem envio externo; adaptador SMTP com TLS, consumo de links por ação explícita e respostas neutras. CI da entrega anterior aprovada; novo workflow inclui navegador. Fluxo de simulação limitado a rascunho/unidade, sem antecipar faturas/cálculo. Pendentes: revisão final de contrato/cliente HTTP e integração de exclusão aos futuros jobs. Provedor externo não homologado; envio disabled por padrão. Interface completa, Tailwind e temas permanecem na Fase 4. Ver STATUS/SETUP/DATABASE/EMAIL; não homologado comercialmente.
 
 - [ ] **Fase 2 — Coração 1/3: leitura e armazenamento de faturas**
 

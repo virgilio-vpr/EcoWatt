@@ -9,7 +9,7 @@ from ecowatt.errors import DomainError
 from ecowatt.schemas import Registration
 from ecowatt.security.passwords import hasher, verify
 from ecowatt.security.tokens import digest, new_token
-from ecowatt.services.mail import Message
+from ecowatt.services.mail import Message, MailDeliveryError
 
 
 def rate_limit(engine, purpose: str, ip: str, email: str = ""):
@@ -39,11 +39,11 @@ def issue_token(db, user: User, purpose: str, settings: Settings):
     token = new_token()
     db.add(EmailToken(user_id=user.id, token_hash=digest(token), purpose=purpose,
                       expires_at=stamp + (86400 if purpose == "activation" else 1800)))
-    # Fragmento evita token em access logs; futura tela lê e envia POST JSON.
+    # Fragmento evita token em access logs; tela lê e envia POST JSON.
     return Message(user.email, purpose, f"{settings.public_origin}/auth/{purpose}#token={token}")
 
 
-def register(engine, payload: Registration, settings, mailer):
+def register(engine, payload: Registration, settings):
     encoded = hasher.hash(payload.password.get_secret_value())
     with transaction(engine, write=True) as db:
         existing = db.scalar(select(User).where(User.email == payload.email))
@@ -57,19 +57,34 @@ def register(engine, payload: Registration, settings, mailer):
         db.add(user)
         db.flush()
         message = issue_token(db, user, "activation", settings)
-        # Sem envio externo nesta etapa; adaptador injetado de testes é em memória.
-        mailer.send(message)
+    return message
 
 
-def request_email(engine, email, purpose, settings, mailer, dummy_hash):
+def request_email(engine, email, purpose, settings, dummy_hash):
     # Custo de hash também no caminho sem usuário para reduzir enumeração temporal.
     verify(dummy_hash, "unmatched-password")
+    message = None
     with transaction(engine, write=True) as db:
         user = db.scalar(select(User).where(User.email == email))
         eligible = user and ((purpose == "activation" and user.status == "pending")
                             or (purpose == "reset" and user.status == "active"))
         if eligible:
-            mailer.send(issue_token(db, user, purpose, settings))
+            message = issue_token(db, user, purpose, settings)
+    return message
+
+
+def deliver(engine, mailer, message):
+    """Rede fora da transação. Falha não revela existência de conta."""
+    try:
+        mailer.send(message)
+    except MailDeliveryError:
+        # Revogar apenas o token cujo envio falhou, sem invalidar reenvio mais novo.
+        token = message.link.rsplit("#token=", 1)[1]
+        with transaction(engine, write=True) as db:
+            record = db.scalar(select(EmailToken).where(EmailToken.token_hash == digest(token)))
+            if record:
+                record.consumed_at = now()
+                db.add(AuditEvent(actor_id=None, action="email_delivery_failed", resource_id=record.id))
 
 
 def consume_email(engine, token: str, purpose: str, password: str | None = None):

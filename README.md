@@ -4,7 +4,7 @@ Plataforma web para leitura de faturas de energia, simulação de potenciais de 
 
 ## Estado atual
 
-A Fase 0 foi concluída com aceite explícito do usuário em 06/11/2026 para os contratos e o gabarito mínimo local. A Fase 1 já tem persistência SQLAlchemy 2/Alembic, autenticação, permissões, seed local e simulações/unidades com cota transacional. Há 40 testes sintéticos aprovados. O envio real de e-mail permanece desabilitado; ativação/recuperação são verificadas por adaptador em memória nos testes. A fase ainda não está encerrada.
+A Fase 0 foi concluída com aceite explícito do usuário em 06/11/2026 para os contratos e o gabarito mínimo local. A Fase 1 tem persistência SQLAlchemy 2/Alembic, autenticação, permissões, seed local, simulações/unidades e adaptador SMTP configurável. Cadastro, ativação, login e recuperação foram verificados no Edge com SMTP sintético de loopback. SMTP permanece desabilitado por padrão; provedor externo não homologado. A fase ainda não está encerrada.
 
 A fonte dos requisitos é [EcoWatt_PROJECT_SPEC.md](EcoWatt_PROJECT_SPEC.md). O checklist de implementação fica na seção 15 e a ordem de criação das tabelas na seção 10.4.
 
@@ -62,7 +62,7 @@ try {
 
 As senhas acima são exclusivamente sintéticas, usadas na conferência local. Contas: `admin@ecowatt.test` e `cliente@ecowatt.test`; seed repetido preserva senhas/dados existentes. O `.env` versionado mantém os campos de senha vazios. Banco em `data/ecowatt.sqlite3`, ignorado pelo versionamento.
 
-Health `/api/v1/health` verifica o processo; readiness `/api/v1/ready` exige banco migrado. OpenAPI `/api/v1/openapi.json`; índice HTML local `/api/v1/docs`, sem Swagger/CDN. Páginas de inspeção `/account` e `/simulations/{id}` exigem a mesma sessão da API; fragmentos HTMX também passam pela autorização. Login ainda é pela API: obtenha `/api/v1/auth/csrf`, preserve cookies e envie `Origin` e `X-CSRF-Token` nos comandos. Exemplo executável em [SETUP](docs/SETUP.md).
+Health `/api/v1/health` verifica o processo; readiness `/api/v1/ready` exige banco migrado. OpenAPI `/api/v1/openapi.json`; índice HTML local `/api/v1/docs`, sem Swagger/CDN. Login mínimo no navegador em `/auth/login`; cadastro em `/auth/register`. Páginas `/account` e `/simulations/{id}` exigem a mesma sessão da API; fragmentos HTMX também passam pela autorização. Para cliente HTTP, obtenha `/api/v1/auth/csrf`, preserve cookies e envie `Origin` e `X-CSRF-Token` nos comandos. Exemplo em [SETUP](docs/SETUP.md), SMTP e consumo dos links em [EMAIL](docs/EMAIL.md).
 
 O seed nunca roda no startup e recusa ambientes fora de desenvolvimento/teste. Cadastro normal não recebe bypass de ativação. Com e-mail desabilitado, cadastro/reenvio/recuperação respondem 503 sem criar contas inacessíveis. Nenhum OCR, motor, worker, relatório, CRM ou interface completa foi antecipado.
 

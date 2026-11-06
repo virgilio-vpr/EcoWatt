@@ -12,6 +12,24 @@ router = APIRouter(include_in_schema=False)
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
 
+@router.get("/auth/{page}")
+def access_page(page: str, request: Request):
+    pages = {
+        "activation": ("Confirmar e-mail", "/api/v1/auth/activate"),
+        "reset": ("Redefinir senha", "/api/v1/auth/reset-password"),
+        "login": ("Entrar", "/api/v1/auth/login"),
+        "register": ("Criar conta", "/api/v1/auth/register"),
+        "forgot-password": ("Recuperar acesso", "/api/v1/auth/forgot-password"),
+        "resend-activation": ("Reenviar confirmação", "/api/v1/auth/resend-activation"),
+    }
+    if page not in pages:
+        from ecowatt.errors import DomainError
+        raise DomainError("not_found", "Página não encontrada.", 404)
+    title, endpoint = pages[page]
+    return templates.TemplateResponse(request=request, name="auth/access.html", context={
+        "page": page, "title": title, "endpoint": endpoint})
+
+
 @router.get("/api/v1/docs")
 def documentation(request: Request):
     operations = [{"path": route.path, "methods": sorted(route.methods)}
