@@ -16,7 +16,13 @@ Leitura dirigida: página física 80 contém o art. 301 e páginas 81–82 trata
 
 Para uma homologação histórica, vincular cada regra e tarifa à distribuidora/CNPJ e vigência do ciclo. Para comparação a uma data de referência, usar essa mesma data para os dois cenários. Tarifas de aplicação, preço efetivo com tributos e Base Econômica são conceitos distintos; o catálogo não preenche medições ausentes.
 
-## Decisão de escopo confirmada com o usuário
+## Referências para indício de mercado — 06/11/2026
+
+A [Enel explica TE e TUSD](https://www.enel.com.br/pt/Para_Voce/pagina-te-e-tusd.html) como componentes de energia e uso da rede. A [FAQ de mercado livre da CPFL](https://www.cpfl.com.br/empresas/FAQ-mercado-livre) informa que, após a migração, a fatura da distribuidora passa a cobrar o serviço da rede e a energia é cobrada pelo fornecedor contratado separadamente. Fontes primárias consultadas nesta data; não homologam o layout ENEL SP ou a classificação do corpus.
+
+Inferência operacional para o EcoWatt, proposta a partir dessas referências e da sugestão do usuário: ausência de cobrança corrente de energia ativa TE, em leitura completa com rede/TUSD identificada, é indício de mercado livre. Presença sugere cativo. Exigir confirmação ou identificação explícita validada; leitura incompleta, agrupamentos ou conflitos mantêm desconhecido. Não procurar apenas a sigla TE, que também ocorre em UFER, histórico e ajustes. Regras e campos no dicionário e na SPEC §7.1. A série local não foi reclassificada automaticamente.
+
+## Reativos observados
 
 Analisar cobranças reativas excedentes observadas. Se a ausência de cobrança estiver confirmada, não criar cenário independente de aparecimento de reativos só porque existe tarifa no catálogo. Leitura incompleta permanece desconhecida. Mudanças de demanda/modalidade com efeito reativo não calculável devem declarar a limitação, sem afirmar que uma ausência histórica comprova ausência futura.
 

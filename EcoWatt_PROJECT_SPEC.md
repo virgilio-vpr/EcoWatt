@@ -1,6 +1,6 @@
 # EcoWatt — Especificação de produto e implementação
 
-Versão 3.7 • 06/11/2026 • Documento autossuficiente para orientar a implementação.
+Versão 3.8 • 06/11/2026 • Documento autossuficiente para orientar a implementação.
 
 ## 1. Objetivo e critérios do produto
 
@@ -144,7 +144,9 @@ O frontend Jinja2 + HTMX deve ser elegante e fluido: hierarquia tipográfica, co
 
 O cliente pode excluir a simulação e solicitar exclusão da conta. Uma nova tentativa não deve duplicar simulações ou pedidos de contato por repetição de requisição.
 
-Antes de habilitar o campo de faturas, solicitar e salvar: distribuidora, identificador do consumidor/unidade (MTE, quando essa for a nomenclatura da fatura), nome da empresa titular e endereço da ligação. Oferecer “Usar o mesmo endereço da empresa”, copiando os campos do perfil com confirmação. Manter o endereço da ligação como snapshot próprio da simulação; alteração futura do cadastro não deve modificar o histórico silenciosamente. Após salvar, liberar anexação/leitura; a API também exige essa etapa concluída. Confrontar os dados informados com o cabeçalho extraído e pedir correção ou confirmação em caso de divergência, sem misturar unidades diferentes.
+Antes de habilitar o campo de faturas, solicitar e salvar: distribuidora, identificador do consumidor/unidade (MTE, quando essa for a nomenclatura da fatura), nome da empresa titular e endereço do ponto de conexão. O cliente informa os dados da empresa no cadastro antes de iniciar a simulação. Oferecer “Usar o mesmo endereço da empresa”, copiando os campos com confirmação. Se a cabine/subestação ou ponto de conexão estiver em outra rua, inclusive adjacente, o cliente informa/corrige esse endereço próprio da unidade. Após salvar, liberar anexação/leitura; a API também exige essa etapa concluída.
+
+A extração pode sugerir nome/titular e endereço impressos na fatura para conferência: se coincidirem com os dados informados, mantê-los; se diferirem, o cliente confirma ou corrige o campo pertinente. Distinguir endereço da empresa, endereço impresso na fatura e endereço confirmado do ponto de conexão; não presumir que todo endereço impresso seja o da cabine ou que divergência de rua signifique outra unidade. Preservar o valor extraído e a justificativa estruturada da diferença. Não sobrescrever o cadastro da empresa nem o endereço confirmado automaticamente. Manter snapshots e autoria da confirmação/correção; mudança futura do perfil não modifica o histórico. Divergência de distribuidora/UC continua exigindo resolução, sem misturar unidades.
 
 ### 4.3 Perfil do cliente e limite de simulações
 
@@ -264,7 +266,9 @@ A confiança do OCR é um indicador técnico, não probabilidade de o cálculo e
 
 ### 7.1 Cabeçalho
 
-Distribuidora e CNPJ do emissor; UC; competência; início/fim do ciclo; número de dias; identificador da fatura; subgrupo; modalidade; mercado cativo/livre/desconhecido; classe; tensão quando disponível; valor total da fatura; situação de refaturamento; versão do layout.
+Distribuidora e CNPJ do emissor; UC; nome/titular e endereço impressos quando disponíveis, com proveniência; competência; início/fim do ciclo; número de dias; identificador da fatura; subgrupo; modalidade; mercado cativo/livre/desconhecido; classe; tensão quando disponível; valor total da fatura; situação de refaturamento; versão do layout. O endereço extraído permanece separado do cadastro da empresa e do ponto de conexão confirmado (§4.2).
+
+Classificação de mercado por ciclo: priorizar identificação explícita da fatura e confirmação do cliente com proveniência. Em leitura completa do quadro financeiro, presença de cobrança de energia ativa TE sugere cativo; ausência dessa cobrança com identificação de cobrança de uso da rede/TUSD sugere livre. São indícios para sugestão, não prova automática. Procurar itens de energia e agrupamentos equivalentes do layout, não apenas a sequência de letras “TE”; UFER TE, referências históricas e ajustes isolados não bastam para classificar o fornecimento corrente. Leitura incompleta, agrupamento ambíguo, ausência de TE sem cobertura suficiente ou evidências conflitantes mantém mercado desconhecido e exige conferência. Registrar indício, cobertura, confirmação e origem sem guardar texto bruto. Mercado livre continua fora do cálculo cativo completo do MVP; não ampliar escopo pela classificação.
 
 O total da fatura não é necessariamente o valor pago. Só usar “pago” quando houver confirmação de pagamento.
 

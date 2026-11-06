@@ -61,8 +61,8 @@ O seed não roda automaticamente ao iniciar o servidor e deve recusar execução
 1. Acessar a landing page, cadastrar empresa/responsável e confirmar o e-mail.
 2. Entrar com e-mail e senha.
 3. Criar uma simulação, respeitando o máximo de duas por perfil.
-4. Informar distribuidora, identificador da unidade/MTE, titular e endereço da ligação. Confirmar a cópia do endereço da empresa, se aplicável, e salvar.
-5. Anexar um PDF e clicar em **Ler fatura**. Aguardar extração e persistência dos campos faturáveis, conferir os dados e corrigir pendências.
+4. Informar distribuidora, identificador da unidade/MTE, titular e endereço do ponto de conexão. Confirmar a cópia do endereço da empresa ou informar o endereço da cabine/subestação quando diferente, inclusive em rua adjacente, e salvar.
+5. Anexar um PDF e clicar em **Ler fatura**. Aguardar extração e persistência dos campos faturáveis. Conferir nome e endereço extraídos: manter os coincidentes e confirmar/corrigir divergências sem substituir automaticamente o cadastro da empresa ou o ponto de conexão. Conferir também o mercado sugerido por identificação explícita ou pelos itens TE/TUSD; ausência em leitura incompleta permanece desconhecida.
 6. Repetir até 12 faturas. A lista fica em ordem de ciclo/competência e permite remoção. PDFs originais não são arquivados; somente dados estruturados são persistidos.
 7. Clicar em **Simular** após ao menos uma fatura válida e conferida, sem arquivos pendentes. Para histórico mais sólido, recomenda-se uma sequência de 12 competências.
 8. Consultar economia, gráficos, premissas e memória de cálculo; baixar relatório PDF.

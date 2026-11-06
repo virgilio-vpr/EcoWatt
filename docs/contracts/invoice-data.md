@@ -1,6 +1,6 @@
 # Dicionário de dados faturáveis — contrato v0.1
 
-Proposta para implementação e revisão, ainda sem aprovação do corpus real. Fonte normativa: SPEC 3.7, §§3.1, 6, 7 e 10. Este documento define nomes e tipos de intercâmbio; não substitui as regras da SPEC nem constitui esquema SQL implementado. Fronteiras: [pipeline](pipeline.md). Evidências e dúvidas: [corpus](../corpus/README.md).
+Proposta para implementação e revisão, ainda sem aprovação do corpus real. Fonte normativa: SPEC 3.8, §§3.1, 6, 7 e 10. Este documento define nomes e tipos de intercâmbio; não substitui as regras da SPEC nem constitui esquema SQL implementado. Fronteiras: [pipeline](pipeline.md). Evidências e dúvidas: [corpus](../corpus/README.md).
 
 ## Convenções
 
@@ -33,8 +33,8 @@ Histórico de correção: caminho do campo, valor/estado anterior e novo, ator, 
 | --- | --- | --- | --- |
 | `unit.distributor_id` | ID | E | Catálogo; confrontar com emissor, não escolher tarifa apenas pelo nome ENEL |
 | `unit.consumer_unit_id` | string | E | Normalizar preservando zeros; chave com distribuidora |
-| `unit.holder_name` | string | E | Titular da ligação, distinto do dono da simulação |
-| `unit.connection_address` | objeto de endereço | E | Logradouro, número ou indicação sem número, complemento opcional, bairro, município, UF, CEP; snapshot salvo antes do upload |
+| `unit.holder_name` | string | E | Titular da ligação; nome extraído pode ser confirmado para a unidade sem alterar automaticamente o cadastro da empresa ou o dono da simulação |
+| `unit.connection_address` | objeto de endereço | E | Endereço confirmado do ponto de conexão/cabine/subestação, inclusive em rua adjacente; campos de endereço e snapshot salvo antes do upload. Cópia do endereço da empresa exige confirmação |
 | `header.issuer_name`, `header.issuer_cnpj` | string | E | Identificar concessionária; CNPJ normalizado como string, não inventar identificação |
 | `header.consumer_unit_id` | string | E | Deve coincidir com unidade salva; divergência exige resolução |
 | `header.competence` | competência | E | Não inferir silenciosamente de vencimento/upload |
@@ -51,7 +51,13 @@ Histórico de correção: caminho do campo, valor/estado anterior e novo, ator, 
 | `header.rebilling_status` | enum unknown/original/replacement/complement | E | Conflitos por competência exigem escolha explícita |
 | `header.layout_version` | string | E | Adaptador/layout identificado; desconhecido mantém revisão |
 
-Nome e endereço do titular extraídos, quando presentes, também usam Field e são confrontados com o snapshot informado; não substituir automaticamente. Cabeçalho incompleto pode ser persistido como `needs_review`, mas não apresentado como fatura pronta.
+Nome e endereço impressos na fatura usam `header.holder_name` e `header.printed_address` (`Field<string>` e `Field<Address>`, condicionais à disponibilidade). Preservar origem/página e valor extraído; não confundir endereço impresso, endereço da empresa e `unit.connection_address`. Dados coincidentes são mantidos após conferência; diferenças permitem confirmar/corrigir o campo pertinente com autoria e motivo estruturado, como `adjacent_street_connection_point`. Diferença de endereço explicada e confirmada para a mesma distribuidora/UC não bloqueia por si só a fatura. Divergência de UC/distribuidora permanece crítica. Cabeçalho incompleto pode ser persistido como `needs_review`, mas não apresentado como fatura pronta.
+
+## Indícios de mercado e confirmação
+
+`header.market` mantém `captive`, `free` ou `unknown`. A sugestão é separada em `header.market_assessment = {candidate, state, evidence_codes, coverage, provenance, confirmed_by, confirmed_at}`; `candidate` usa os mesmos valores, `state` usa `suggested`, `confirmed` ou `conflicting`, e cobertura é `complete`, `partial` ou `unknown`. Evidências estruturadas: `explicit_market_label`, `active_te_charge_present`, `active_te_charge_absent_with_complete_coverage`, `network_charge_present`, `user_confirmation`, `conflicting_evidence`. Página/região e origem seguem a proveniência do contrato; não guardar texto bruto.
+
+Cobrança corrente de energia ativa TE sugere cativo. Ausência dessa cobrança com leitura completa e cobrança de rede/TUSD identificada sugere livre. Antes de tratar como ausência, verificar sinônimos e agrupamentos TE/TUSD do layout. UFER TE, ajustes e histórico não equivalem ao item corrente de energia ativa. Ausência em extração parcial não sugere livre: manter `unknown`. Indício isolado não confirma `header.market`; identificação explícita validada ou confirmação do cliente registra ator/data e origem. Conflito exige resolução. Registrar por ciclo, sem estender automaticamente a classificação a toda a série ou liberar cálculo cativo para mercado livre.
 
 ## Medições e contratação
 
