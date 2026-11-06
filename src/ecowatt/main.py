@@ -20,6 +20,7 @@ from ecowatt.api.auth import router as auth_router
 from ecowatt.api.resources import router as resources_router
 from ecowatt.web.routes import router as web_router
 from ecowatt.schemas import ErrorResponse
+from ecowatt.api.openapi import install_openapi
 
 
 def create_app(settings: Settings | None = None, *, mailer=None) -> FastAPI:
@@ -79,11 +80,15 @@ def create_app(settings: Settings | None = None, *, mailer=None) -> FastAPI:
 
     @app.exception_handler(HTTPException)
     async def http_error(request, exc):
-        return error(request, "http_error", "Operação indisponível.", exc.status_code)
+        response = error(request, "http_error", "Operação indisponível.", exc.status_code)
+        if exc.headers:
+            response.headers.update(exc.headers)
+        return response
 
     app.include_router(router, prefix="/api/v1")
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(resources_router, prefix="/api/v1")
     app.include_router(web_router)
     app.mount("/static", StaticFiles(directory=Path(__file__).parent / "web" / "static"), name="static")
+    install_openapi(app)
     return app

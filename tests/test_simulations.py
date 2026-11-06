@@ -1,6 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
 
 from sqlalchemy import select
+from sqlalchemy.orm import Session
+import pytest
 
 from ecowatt.db.models import Simulation, User
 from ecowatt.db.session import transaction
@@ -45,6 +47,26 @@ def test_parallel_creations_and_same_key_retry(environment):
     assert sorted(r.status_code for r in results) == [201, 409]
     with transaction(environment.app.state.engine) as db:
         assert len(list(db.scalars(select(Simulation).where(Simulation.status != "deleted")))) == 2
+
+
+def test_guard_reloads_deleted_resource_from_stale_identity_map(environment):
+    client = environment.client().login()
+    created = create(client).json()
+    engine = environment.app.state.engine
+    with Session(engine, expire_on_commit=False) as stale:
+        actor = stale.get(User, created["owner_id"])
+        cached = stale.get(Simulation, created["id"])
+        stale.commit()
+        assert client.request("DELETE", "/api/v1/simulations/" + created["id"],
+            json={"confirm": True, "expected_revision": created["revision"]}).status_code == 204
+        assert cached.status == "draft"  # Referência em cache anterior à exclusão.
+        with pytest.raises(DomainError) as error, stale.begin():
+            simulation = require_simulation(stale, actor, created["id"], created["revision"])
+            simulation.status = "processing"
+        assert error.value.code == "not_found"
+    with transaction(engine) as db:
+        tombstone = db.get(Simulation, created["id"])
+        assert tombstone.status == "deleted" and tombstone.slot is None
 
 
 def test_parallel_same_idempotency_key_is_one_creation(environment):

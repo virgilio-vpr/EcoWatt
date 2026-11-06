@@ -32,7 +32,7 @@ Criação grava simulação, chave de idempotência por ator e auditoria na mesm
 
 Salvar unidade exige distribuidora do catálogo, UC, titular e endereço próprio do ponto de conexão. Não copia nem altera o endereço da empresa automaticamente. Toda alteração usa expected_revision; UC/distribuidora já salvas não podem virar outra unidade dentro da mesma simulação. Autoria e valores anterior/novo ficam em auditoria estruturada.
 
-Excluir exige confirmação/revisão, marca tombstone, incrementa revisão e libera slot atomicamente. As consultas JSON/HTML e o guard `require_simulation` recusam o ID excluído. Não há worker nesta fase: a integração do guard, cancelamento e remoção dos futuros filhos será testada na Fase 2 e seguintes. Tombstones/auditoria ainda não têm expurgo de retenção; não usar dados reais.
+Excluir exige confirmação/revisão, marca tombstone, incrementa revisão e libera slot atomicamente. As consultas JSON/HTML e o guard `require_simulation` recusam o ID excluído. O guard usa populate_existing para reler tombstone/revisão mesmo com objeto ORM em cache, verificado com uma sessão que carregou o objeto antes da exclusão. Isso não dispensa transação nova/curta antes da persistência. Não há worker nesta fase: integração do guard, cancelamento e remoção dos futuros filhos serão testados na Fase 2 e seguintes. Tombstones/auditoria ainda não têm expurgo de retenção; não usar dados reais.
 
 ## Decimal
 

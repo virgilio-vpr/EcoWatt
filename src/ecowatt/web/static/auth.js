@@ -65,24 +65,14 @@
     }
     if (requiresToken) payload.token = linkToken;
     try {
-      const csrfResponse = await fetch("/api/v1/auth/csrf", {credentials: "same-origin", cache: "no-store"});
-      if (!csrfResponse.ok) throw new Error("request_failed");
-      const csrf = await csrfResponse.json();
-      const response = await fetch(form.dataset.endpoint, {
-        method: "POST", credentials: "same-origin", cache: "no-store",
-        headers: {"Content-Type": "application/json", "X-CSRF-Token": csrf.csrf_token},
-        body: JSON.stringify(payload)
-      });
-      const result = await response.json();
+      const result = await window.EcoWattHTTP.request(form.dataset.endpoint, {method: "POST", data: payload});
       status.textContent = result.message || "Não foi possível concluir. Tente novamente.";
-      if (response.ok) {
-        completed = true;
-        linkToken = "";
-        form.reset();
-        if (page === "login") window.location.assign("/account");
-      }
-    } catch {
-      status.textContent = "Não foi possível concluir. Verifique a conexão e tente novamente.";
+      completed = true;
+      linkToken = "";
+      form.reset();
+      if (page === "login") window.location.assign("/account");
+    } catch (error) {
+      status.textContent = error instanceof window.EcoWattHTTP.APIError ? error.message : "Não foi possível concluir.";
     } finally {
       // Não conservar senhas no objeto do envio ou na interface após a tentativa.
       if (password) password.value = "";

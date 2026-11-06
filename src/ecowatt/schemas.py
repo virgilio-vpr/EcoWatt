@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
@@ -24,7 +24,7 @@ class CompanyInput(Address):
 
 
 class EmailInput(Input):
-    email: Annotated[str, Field(max_length=254)]
+    email: Annotated[str, Field(max_length=254, json_schema_extra={"format": "email"})]
 
     @field_validator("email")
     @classmethod
@@ -45,8 +45,8 @@ def validate_password(value: str) -> str:
 
 
 class PasswordInput(Input):
-    password: SecretStr
-    password_confirmation: SecretStr
+    password: SecretStr = Field(min_length=8, max_length=128)
+    password_confirmation: SecretStr = Field(min_length=8, max_length=128)
 
     @model_validator(mode="after")
     def password_policy(self):
@@ -57,9 +57,14 @@ class PasswordInput(Input):
 
 
 class Registration(EmailInput, PasswordInput):
-    email_confirmation: str
+    email_confirmation: str = Field(max_length=254)
     responsible_name: Text
     company: CompanyInput
+
+    @field_validator("email_confirmation")
+    @classmethod
+    def confirmation_format(cls, value):
+        return cls.email_format(value)
 
     @model_validator(mode="after")
     def email_matches(self):
@@ -73,7 +78,7 @@ class Login(EmailInput):
 
 
 class TokenInput(Input):
-    token: Annotated[str, Field(min_length=32, max_length=128)]
+    token: Annotated[str, Field(min_length=32, max_length=128, json_schema_extra={"writeOnly": True})]
 
 
 class ResetPassword(PasswordInput, TokenInput):
@@ -93,7 +98,7 @@ class UnitInput(Address):
 
 
 class DeleteInput(Input):
-    confirm: bool
+    confirm: bool = Field(strict=True)
     expected_revision: int = Field(ge=1)
 
 
@@ -118,7 +123,7 @@ class SimulationOutput(BaseModel):
     company_id: str
     created_by: str
     updated_by: str
-    status: str
+    status: Literal["draft", "processing", "completed", "partial", "failed"]
     revision: int
     distributor_id: str | None
     unit_identifier: str | None
@@ -147,5 +152,35 @@ class MeOutput(BaseModel):
     id: str
     email: str
     responsible_name: str
-    role: str
+    role: Literal["client", "admin"]
     company_id: str
+
+
+class MessageOutput(BaseModel):
+    message: str
+
+
+class CSRFOutput(BaseModel):
+    csrf_token: str
+
+
+class LoginOutput(MessageOutput, CSRFOutput):
+    pass
+
+
+class ProfileOutput(BaseModel):
+    id: str
+    responsible_name: str
+
+
+class DistributorOutput(BaseModel):
+    id: str
+    code: str
+    name: str
+
+
+class DistributorsPage(BaseModel):
+    items: list[DistributorOutput]
+    total: int
+    page: int
+    page_size: int

@@ -128,3 +128,43 @@ def test_http_response_does_not_wait_for_smtp_delivery(environment):
                 assert future.result(timeout=2).status_code == 202
         finally:
             release.set()
+
+
+@pytest.mark.skipif(os.environ.get("ECOWATT_BROWSER_TESTS") != "1", reason="Ativar explicitamente teste no Edge já instalado")
+def test_browser_http_client_errors_pagination_204_and_no_retry(environment):
+    with running_app(environment.settings) as origin, sync_playwright() as playwright:
+        browser = playwright.chromium.launch(channel="msedge", headless=True, timeout=20000)
+        try:
+            page = browser.new_page()
+            page.goto(origin + "/auth/login")
+            page.wait_for_function("Boolean(window.EcoWattHTTP)")
+            result = page.evaluate("""async () => {
+              const api = window.EcoWattHTTP;
+              await api.request('/api/v1/auth/login', {method:'POST', data:{email:'cliente@ecowatt.test', password:'EcoWatt!123'}});
+              const one = await api.request('/api/v1/simulations', {method:'POST', data:{}, idempotencyKey:'browser-contract'});
+              const repeated = await api.request('/api/v1/simulations', {method:'POST', data:{}, idempotencyKey:'browser-contract'});
+              const list = await api.request('/api/v1/simulations?page_size=1');
+              let invalid;
+              try { await api.request('/api/v1/simulations?page_size=101'); }
+              catch(e) { invalid = {code:e.code, status:e.status, requestId:e.requestId, fields:e.fields}; }
+              const removed = await api.request('/api/v1/simulations/'+one.id, {method:'DELETE', data:{confirm:true, expected_revision:one.revision}});
+              let external;
+              try { await api.request('https://example.com/api/v1/me'); } catch(e) { external = e.code; }
+              return {same:one.id===repeated.id, total:list.total, removed, invalid, external};
+            }""")
+            assert result["same"] and result["total"] == 1 and result["removed"] is None
+            assert result["invalid"]["code"] == "validation_error"
+            assert result["invalid"]["status"] == 422 and result["invalid"]["requestId"]
+            assert result["external"] == "invalid_api_path"
+            requests = []
+            def unavailable(route):
+                requests.append(route.request.method)
+                route.abort()
+            page.route("**/api/v1/simulations", unavailable)
+            result = page.evaluate("""async () => {
+              try { await window.EcoWattHTTP.request('/api/v1/simulations', {method:'POST', data:{}, idempotencyKey:'network-failure'}); }
+              catch(e) { return e.code; }
+            }""")
+            assert result == "network_error" and requests == ["POST"]
+        finally:
+            browser.close()

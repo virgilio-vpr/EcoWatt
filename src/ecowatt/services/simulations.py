@@ -13,7 +13,8 @@ def require_admin(actor):
 
 
 def require_simulation(db, actor, simulation_id, revision=None):
-    simulation = db.get(Simulation, str(simulation_id))
+    # Revalidar tombstone/revisão mesmo se a sessão já carregou o objeto antes.
+    simulation = db.get(Simulation, str(simulation_id), populate_existing=True)
     if (not simulation or simulation.status == "deleted"
             or (actor.role != "admin" and simulation.owner_id != actor.id)):
         raise DomainError("not_found", "Recurso não encontrado.", 404)

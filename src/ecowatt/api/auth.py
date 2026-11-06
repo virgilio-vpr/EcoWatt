@@ -1,5 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, Request, Response
 from sqlalchemy import update
+from uuid import UUID
 
 from ecowatt.api.dependencies import (CSRF_COOKIE, SESSION_COOKIE, authenticated,
     check_public_csrf, set_cookie)
@@ -7,6 +8,7 @@ from ecowatt.db.models import AuditEvent, EmailToken, User, now
 from ecowatt.db.session import transaction
 from ecowatt.errors import DomainError
 from ecowatt.schemas import EmailInput, Login, Registration, ResetPassword, StatusInput, TokenInput
+from ecowatt.schemas import CSRFOutput, LoginOutput, MessageOutput
 from ecowatt.security.tokens import new_token
 from ecowatt.services import auth
 from ecowatt.services.mail import DisabledMailer
@@ -26,7 +28,7 @@ def require_mailer(request):
         raise DomainError("email_unavailable", "Provedor de e-mail ainda não configurado.", 503)
 
 
-@router.get("/auth/csrf")
+@router.get("/auth/csrf", response_model=CSRFOutput)
 def csrf(request: Request, response: Response):
     token = request.cookies.get(CSRF_COOKIE)
     if request.cookies.get(SESSION_COOKIE):
@@ -43,7 +45,7 @@ def csrf(request: Request, response: Response):
     return {"csrf_token": token}
 
 
-@router.post("/auth/register", status_code=202, dependencies=[Depends(check_public_csrf)])
+@router.post("/auth/register", status_code=202, response_model=MessageOutput, dependencies=[Depends(check_public_csrf)])
 def register(payload: Registration, request: Request, background_tasks: BackgroundTasks):
     require_mailer(request)
     throttle(request, "register", payload.email)
@@ -53,7 +55,7 @@ def register(payload: Registration, request: Request, background_tasks: Backgrou
     return NEUTRAL
 
 
-@router.post("/auth/resend-activation", status_code=202, dependencies=[Depends(check_public_csrf)])
+@router.post("/auth/resend-activation", status_code=202, response_model=MessageOutput, dependencies=[Depends(check_public_csrf)])
 def resend(payload: EmailInput, request: Request, background_tasks: BackgroundTasks):
     require_mailer(request)
     throttle(request, "activation_request", payload.email)
@@ -64,14 +66,14 @@ def resend(payload: EmailInput, request: Request, background_tasks: BackgroundTa
     return NEUTRAL
 
 
-@router.post("/auth/activate", dependencies=[Depends(check_public_csrf)])
+@router.post("/auth/activate", response_model=MessageOutput, dependencies=[Depends(check_public_csrf)])
 def activate(payload: TokenInput, request: Request):
     throttle(request, "activation_consume")
     auth.consume_email(request.app.state.engine, payload.token, "activation")
     return {"message": "E-mail confirmado. Entre com sua senha."}
 
 
-@router.post("/auth/forgot-password", status_code=202, dependencies=[Depends(check_public_csrf)])
+@router.post("/auth/forgot-password", status_code=202, response_model=MessageOutput, dependencies=[Depends(check_public_csrf)])
 def forgot(payload: EmailInput, request: Request, background_tasks: BackgroundTasks):
     require_mailer(request)
     throttle(request, "reset_request", payload.email)
@@ -82,14 +84,14 @@ def forgot(payload: EmailInput, request: Request, background_tasks: BackgroundTa
     return NEUTRAL
 
 
-@router.post("/auth/reset-password", dependencies=[Depends(check_public_csrf)])
+@router.post("/auth/reset-password", response_model=MessageOutput, dependencies=[Depends(check_public_csrf)])
 def reset(payload: ResetPassword, request: Request):
     throttle(request, "reset_consume")
     auth.consume_email(request.app.state.engine, payload.token, "reset", payload.password.get_secret_value())
     return {"message": "Senha redefinida. Entre novamente."}
 
 
-@router.post("/auth/login", dependencies=[Depends(check_public_csrf)])
+@router.post("/auth/login", response_model=LoginOutput, dependencies=[Depends(check_public_csrf)])
 def login(payload: Login, request: Request, response: Response):
     throttle(request, "login", payload.email)
     settings = request.app.state.settings
@@ -119,10 +121,10 @@ def revoke(response: Response, principal=Depends(authenticated, scope="function"
 
 
 @router.patch("/admin/users/{user_id}/status", status_code=204)
-def status(user_id: str, payload: StatusInput, principal=Depends(authenticated, scope="function")):
+def status(user_id: UUID, payload: StatusInput, principal=Depends(authenticated, scope="function")):
     db, actor, _ = principal
     require_admin(actor)
-    user = db.get(User, user_id)
+    user = db.get(User, str(user_id))
     if not user:
         raise DomainError("not_found", "Usuário não encontrado.", 404)
     if payload.status == "active" and user.confirmed_at is None:

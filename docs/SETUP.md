@@ -86,9 +86,9 @@ Limites persistidos SQLite: janela de uma hora, 10 tentativas por e-mail/finalid
 .\.venv\Scripts\uv.exe build --wheel
 ```
 
-Resultado local: 54 testes aprovados com ECOWATT_BROWSER_TESTS=1, dependências compatíveis, lock atualizado e compilação sem erros. Incluem migrações, FKs, seed, decimais, sessões/CSRF, acesso cruzado, concorrência, SMTP sintético e ciclo de acesso no Edge. Sem a flag, o teste de navegador fica skipped. CI da entrega anterior passou; o workflow agora inclui uma etapa explícita de navegador. Conferir o resultado do novo commit no GitHub.
+Resultado local: 62 testes aprovados com ECOWATT_BROWSER_TESTS=1, dependências compatíveis, lock atualizado, Alembic check sem divergência e compilação sem erros. Incluem contrato OpenAPI, cliente HTTP no Edge, migrações/FKs/seed/Decimal, sessões/CSRF, acesso cruzado, concorrência e SMTP sintético. Sem a flag, os dois testes de navegador ficam skipped. A CI da entrega SMTP passou, incluindo navegador; conferir também o novo commit. Detalhes do contrato em [API](API.md).
 
-HTMX 2.0.11 e o cliente auth.js são servidos localmente, sem eval/scripts inline. Playwright 1.64.1 é somente dependência de desenvolvimento; usa o Edge já instalado e não baixa navegador. O ciclo no navegador passou, sem recursos externos da página ou erros JavaScript; não representa homologação visual da interface completa. Procedimento detalhado em [EMAIL](EMAIL.md).
+HTMX 2.0.11, api-client.js e auth.js são servidos localmente, sem eval/scripts inline. O cliente HTTP preserva erros/ID técnico, trata 204, limita chamadas à API da mesma origem e não repete escritas automaticamente em falha de rede/timeout. Playwright 1.64.1 é somente dev, usando o Edge instalado sem baixar navegador. Ciclo de acesso e cliente HTTP passaram no navegador; não representam homologação visual da interface completa. Procedimento de acesso em [EMAIL](EMAIL.md).
 
 ```powershell
 $env:ECOWATT_BROWSER_TESTS='1'

@@ -2,7 +2,7 @@
 
 Objetivo: criar base local FastAPI/SQLite e acesso seguro antes do frontend completo.
 
-Estado em 06/11/2026: base, serviços e SMTP configurável implementados; ciclo de acesso testado no Edge com captura SMTP local. Padrão de envio disabled e provedor externo não homologado. Revisão final do contrato/cliente HTTP e integração dos futuros jobs à exclusão permanecem no STATUS/SPEC. Comandos em [SETUP](../SETUP.md), esquema em [DATABASE](../DATABASE.md) e SMTP em [EMAIL](../EMAIL.md). Não interpretar este resumo como aceite integral da fase.
+Estado em 06/11/2026: base local e revisão HTTP verificadas, com serviços, SMTP e cliente no Edge. Contrato em [API](../API.md), comandos em [SETUP](../SETUP.md), esquema em [DATABASE](../DATABASE.md), SMTP em [EMAIL](../EMAIL.md). Envio disabled e provedor externo não homologado. O único critério de implementação ainda aberto é exclusão/cancelamento integrado aos futuros jobs, a validar na Fase 2 antes da extração. Não iniciar OCR/jobs só para fechar o checklist nem declarar aceite integral da fase com essa pendência.
 
 ## Leitura dirigida
 

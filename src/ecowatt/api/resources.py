@@ -8,6 +8,7 @@ from ecowatt.api.dependencies import authenticated
 from ecowatt.db.models import AuditEvent, Company, Distributor
 from ecowatt.schemas import CompanyInput, DeleteInput, ProfileInput, SimulationCreate, UnitInput
 from ecowatt.schemas import CompanyOutput, MeOutput, SimulationOutput, SimulationsPage
+from ecowatt.schemas import ProfileOutput, DistributorsPage
 from ecowatt.services import simulations as service
 
 router = APIRouter(tags=["resources"])
@@ -29,7 +30,7 @@ def company(principal=Depends(authenticated, scope="function")):
     return service.company_data(db.get(Company, actor.company_id))
 
 
-@router.patch("/me")
+@router.patch("/me", response_model=ProfileOutput)
 def profile(payload: ProfileInput, principal=Depends(authenticated, scope="function")):
     db, actor, _ = principal
     before = actor.responsible_name
@@ -51,7 +52,7 @@ def update_company(payload: CompanyInput, principal=Depends(authenticated, scope
     return service.company_data(company)
 
 
-@router.get("/distributors")
+@router.get("/distributors", response_model=DistributorsPage)
 def distributors(page: Page = 1, page_size: PageSize = 20, principal=Depends(authenticated, scope="function")):
     db, _, _ = principal
     return {"items": [{"id": d.id, "code": d.code, "name": d.name}

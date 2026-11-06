@@ -702,7 +702,7 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
 - [ ] **Fase 1 — Base leve e banco**
 
   - [x] Configurar FastAPI com Jinja2, HTMX local e HTML/CSS, separando rotas web e API JSON dos serviços de aplicação.
-  - [ ] Definir OpenAPI, cliente HTTP, erros, paginação e idempotência.
+  - [x] Definir OpenAPI, cliente HTTP, erros, paginação e idempotência.
   - [x] Definir estrutura futura de layouts/macros; adiar acabamento visual para depois dos serviços centrais.
   - [x] Implementar cadastro com empresa, responsável, endereço, telefone e dupla confirmação de e-mail/senha; validar composição e mínimo de oito caracteres no backend.
   - [x] Implementar ativação por e-mail, login com e-mail/senha, recuperação, logout e vínculo cliente/empresa.
@@ -715,11 +715,11 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
   - [x] Garantir cota de duas simulações em transação, incluindo criações simultâneas.
   - [ ] Implementar exclusão que libere a vaga e impeça recriação por jobs tardios.
 
-  - [ ] FastAPI, API REST independente da apresentação, SQLAlchemy, Alembic, DecimalType, autenticação e catálogo. Verificações locais/CI em SQLite; compatibilidade PostgreSQL planejada e validada antes da produção, sem exigir containers agora.
+  - [x] FastAPI, API REST independente da apresentação, SQLAlchemy, Alembic, DecimalType, autenticação e catálogo. Verificações locais/CI em SQLite; compatibilidade PostgreSQL planejada e validada antes da produção, sem exigir containers agora.
 
-  - [ ] Aceite: subida local sem Docker, migrações SQLite do zero e upgrade, seed repetível sem duplicatas, decimal sem perda e acesso isolado por usuário.
+  - [x] Aceite: subida local sem Docker, migrações SQLite do zero e upgrade, seed repetível sem duplicatas, decimal sem perda e acesso isolado por usuário.
 
-  Evidência parcial em 06/11/2026: 54 testes, incluindo ciclo de acesso no Edge com SMTP sintético de loopback, sem envio externo; adaptador SMTP com TLS, consumo de links por ação explícita e respostas neutras. CI da entrega anterior aprovada; novo workflow inclui navegador. Fluxo de simulação limitado a rascunho/unidade, sem antecipar faturas/cálculo. Pendentes: revisão final de contrato/cliente HTTP e integração de exclusão aos futuros jobs. Provedor externo não homologado; envio disabled por padrão. Interface completa, Tailwind e temas permanecem na Fase 4. Ver STATUS/SETUP/DATABASE/EMAIL; não homologado comercialmente.
+  Base local validada em 06/11/2026: 62 testes com contrato OpenAPI, cliente HTTP no Edge, SQLite, migrações/seed/Decimal, concorrência, sessões e SMTP sintético sem envio externo. CI da entrega SMTP aprovada, incluindo navegador; resultado do novo commit registrado no STATUS quando disponível. Respostas tipadas, cookie/CSRF/Origin no OpenAPI, índice HTML conferido e exclusão com guard resistente a cache ORM antigo. O item integrado de jobs permanece aberto para a Fase 2; não declarar toda a fase concluída nem implementar parser/jobs apenas para marcar esse item. Provedor externo não homologado, envio disabled e catálogo sintético. Interface completa/Tailwind/temas ficam na Fase 4. Ver STATUS/API/SETUP/DATABASE/EMAIL; não homologado comercialmente.
 
 - [ ] **Fase 2 — Coração 1/3: leitura e armazenamento de faturas**
 

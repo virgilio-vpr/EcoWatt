@@ -8,7 +8,7 @@ Atualizado em 06/11/2026. Referência: SPEC versão 3.10; contratos mínimos v0.
 
 Escopo aceito: concentrar somente em **faturamento, informações do cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas**, conforme os quatro blocos mostrados pelo usuário. Não cadastrar exaustivamente a conta ou exigir auditoria de informações fiscais, boleto, pagamento, códigos de medidor e outros dados administrativos. A investigação ampliada anterior foi além do escopo e permanece apenas como histórico.
 
-Fase 1 em andamento: persistência, autenticação/permissões, seed, simulações/unidades, adaptador SMTP e páginas mínimas de acesso implementados. Dependências somente em `.venv`, com uv.lock. SMTP desabilitado por padrão; provedor externo não homologado. Revisão final dos critérios ainda pendente; não iniciar uso com dados reais.
+Base local da Fase 1 validada, incluindo revisão do contrato/cliente HTTP. Persistência, autenticação/permissões, seed, simulações/unidades e SMTP sintético disponíveis. Dependências somente em `.venv`, com uv.lock. SMTP desabilitado e provedor externo não homologado. O critério de exclusão/cancelamento integrado aos futuros jobs permanece aberto para a Fase 2; não declarar aceite integral da fase ou usar dados reais.
 
 ## Regras que permanecem
 
@@ -40,23 +40,23 @@ Hipótese de setembro conferida a pedido do usuário: forte compatibilidade num�
 
 Por orientação do usuário, o encerramento é registrado na `fase-0` e integrado à `main` por merge. A branch `fase-1` deve partir da `main` após esse merge; as próximas entregas serão commitadas nela e integradas por pull request. Operações realizadas diretamente pela integração GitHub, sem Git local.
 
-## Entrega atual — SMTP e consumo dos links
+## Entrega atual — revisão HTTP e critérios locais
 
-Ambiente Python 3.13.14/SQLite 3.50.4/uv 0.13.7 confirmado. SMTP usa biblioteca padrão, com STARTTLS/SSL e verificação normal de certificado; sem TLS só em loopback numérico e sem credenciais. Configuração tipada, timeout limitado e diagnósticos sanitizados. `.env` permanece disabled e sem segredos. Nenhuma mensagem externa enviada. Playwright 1.64.1 instalado apenas no `.venv` dev, usando Edge já instalado, sem download de navegador, instalação global ou alteração de políticas.
+Ambiente Python 3.13.14/SQLite 3.50.4/uv 0.13.7; sem novas dependências, migrações, instalações globais, containers ou alterações de política. SMTP continua disabled por padrão, sem segredos ou envio externo. Playwright usa somente o Edge já instalado.
 
-Persistência/constraints anteriores preservadas, sem nova migração: SQLite FKs/WAL, DecimalType, transações/cota/idempotência e seed sintético. Cadastro/reenvio fazem commit antes de agendar entrega como tarefa da resposta HTTP. SMTP não mantém lock SQLite nem retarda a resposta pela latência do provedor. Falha/aceitação incerta invalida apenas o token daquele envio; conta pendente permite reenvio e 202 continua neutro. Não há fila persistente: interrupção pode exigir reenvio. Ver [EMAIL](EMAIL.md) e [DATABASE](DATABASE.md).
+OpenAPI revisado: respostas tipadas para todas as operações JSON, enums/limites de senha/token, confirmação de exclusão boolean estrita, cookie de sessão e CSRF como requisitos conjuntos em comandos privados, Origin e X-Request-ID documentados. Header Allow preservado no 405. Índice HTML agora usa os paths do schema; a lista anterior ficava vazia com os routers incluídos do FastAPI instalado. Uso/mapeamento semântico do pipeline em [API](API.md), sem antecipar endpoints de faturas/cálculos.
 
-Formulários mínimos `/auth/register`, `/auth/login`, `/auth/forgot-password`, `/auth/resend-activation`, `/auth/activation` e `/auth/reset` chamam a API JSON existente. Tokens de link são lidos do fragmento, retirados da URL/histórico corrente e mantidos só em memória; GET não consome. Reabertura na mesma página tratada. Não há inbox pública, tokens em HTML/localStorage/logs ou consumo automático. Senhas com política/dupla confirmação e mostrar/ocultar; sem antecipar interface completa.
+Cliente HTTP local compartilhado pelos formulários: API da mesma origem, cookies/CSRF, timeout, redirects recusados, erro estruturado/correlação e 204 sem corpo. Não há retry automático de escrita; a repetição exige conferir resultado e preservar a chave. Testado no Edge com login, paginação, erro 422, replay idempotente, exclusão e falha de rede sem retry. Links/tokens e fluxo SMTP anteriores preservados, conforme [EMAIL](EMAIL.md).
 
-Autorização JSON/HTML/HTMX, CSRF/origem, expiração/rotação/revogação de sessões e proteção dos tokens anteriores continuam válidos. Admin/cliente sintéticos permanecem provisionados por seed explícito. Cota continua duas vagas por dono; UC/distribuidora não se tornam outra unidade dentro da mesma simulação. Não há OCR, cálculos, jobs ou relatórios implementados.
+Guard de simulação recarrega tombstone/revisão com populate_existing, sem confiar no cache ORM. Caso real de teste: sessão carrega rascunho, outra requisição exclui, sessão antiga tenta persistir processamento e é recusada sem reviver o registro ou ocupar slot. Futuros jobs ainda precisam abrir transação curta/nova e usar esse guard antes de persistir. Não há implementação de jobs/cancelamento nesta entrega.
 
-Limites preservados: banco e artefatos locais não enviados; nenhuma mudança nos dados reais/contratos da Fase 0. Adaptador SMTP implementado não comprova entregabilidade com provedor externo; produção, MFA, rate limit de borda e retenção/expurgo continuam em fase própria.
+Checklist oficial: contrato HTTP e critérios técnicos da base local marcados somente após verificações; o item de exclusão integrada aos jobs e a Fase 1 como um todo permanecem abertos. Catálogo é sintético, não tarifa/parser homologado. Ressalvas da Fase 0 acima permanecem; sem alterações nos materiais reais. Produção, MFA, retenção/expurgo e homologação SMTP continuam separados.
 
-Verificações reais: **54 testes aprovados** com navegador explicitamente habilitado, incluindo servidor SMTP de loopback sem encaminhamento, falha neutra/reenvio, rede fora da transação e HTTP 202 antes de terminar entrega. TLS/SSL/autenticação/recusa de downgrade testados com doubles. Edge headless + Uvicorn: cadastro→SMTP sintético→ativação→uso repetido recusado→login→recuperação→troca→revogação→novo login; sem erros JS ou tokens em URLs de requests. Regressões SQLite/Decimal/cota/permissões passaram. Lock/pip check, Alembic check sem divergência e compileall conferidos. CI anterior [aprovada](https://github.com/virgilio-vpr/EcoWatt/actions/runs/42282129451); workflow atualizado com teste explícito de navegador, resultado do novo commit a conferir.
+Verificações reais: **62 testes aprovados** com os dois testes de navegador habilitados. Contrato/erros/headers/paginação/204, cliente HTTP, guard com cache antigo e regressões completas de migrações/seed/Decimal/concorrência/permissões/SMTP passaram. Alembic check sem divergência, lock/pip check, compileall e wheel conferidos. CI da entrega SMTP [aprovada com navegador](https://github.com/virgilio-vpr/EcoWatt/actions/runs/42285751117); conferir o resultado do novo commit. Nenhuma homologação PostgreSQL, SMTP externo ou interface completa alegada.
 
 ## Próximo passo
 
-Próxima entrega: revisão final do contrato OpenAPI/cliente HTTP, dos critérios da seção 15 e da CI para fechar a Fase 1 local. SMTP externo/remetente/entregabilidade precisam de configuração e homologação próprias antes de uso real; não inventar provedor ou credenciais. Interface completa/visual ficam na Fase 4. Produção exige provisionamento real, MFA, rate limit de borda e retenção/expurgo; runtime continua sem modo de produção.
+Próxima implementação: primeira entrega da Fase 2, modelos/migrações de faturas/itens/medições/proveniência/estado conforme [plano](phases/phase-02-invoices.md), antes de instalar ou implementar parser/OCR. A base local está verificada; preservar o critério integrado de exclusão como pendência explícita até testar jobs reais. SMTP externo/remetente/entregabilidade exigem homologação própria; não inventar credenciais/provedor. Interface completa/visual ficam na Fase 4; produção segue em fase própria.
 
 Na Fase 2, antes de leitura/OCR, criar tabelas de faturas/filhos, integrar guard de exclusão/revisão aos jobs e provar cancelamento/ausência de recriação tardia. Não marcar esse critério integralmente apenas porque o guard está testado. Continuar com fixtures sintéticas e sem reabrir auditoria ampliada como pré-requisito.
 
@@ -64,8 +64,8 @@ Homologação comercial, tarifas/entradas próprias para cenários alternativos 
 
 ## Arquivos e commit
 
-Novos: `docs/EMAIL.md`, `src/ecowatt/web/templates/auth/access.html`, `src/ecowatt/web/static/auth.js`, `tests/test_mail_delivery.py`, `tests/test_auth_browser.py`.
+Novos: `docs/API.md`, `src/ecowatt/api/openapi.py`, `src/ecowatt/web/static/api-client.js`, `tests/test_api_contract.py`.
 
-Alterados: `.env`, `.env.example`, `pyproject.toml`, `uv.lock`, `.github/workflows/backend.yml`, `src/ecowatt/config.py`, `src/ecowatt/main.py`, `src/ecowatt/api/auth.py`, `src/ecowatt/services/auth.py`, `src/ecowatt/services/mail.py`, `src/ecowatt/web/routes.py`, `src/ecowatt/web/templates/layouts/base.html`, `src/ecowatt/web/static/base.css`, `README.md`, `docs/SETUP.md`, `docs/STATUS.md`, `docs/phases/phase-01-backend.md` e `EcoWatt_PROJECT_SPEC.md`. Removidos: nenhum. Dados reais, banco local, ambientes, caches e wheel fora do envio.
+Alterados: `src/ecowatt/schemas.py`, `src/ecowatt/main.py`, `src/ecowatt/api/auth.py`, `src/ecowatt/api/resources.py`, `src/ecowatt/services/simulations.py`, `src/ecowatt/web/routes.py`, `src/ecowatt/web/templates/auth/access.html`, `src/ecowatt/web/static/auth.js`, `tests/test_auth_browser.py`, `tests/test_simulations.py`, `README.md`, `docs/SETUP.md`, `docs/DATABASE.md`, `docs/STATUS.md`, `docs/phases/phase-01-backend.md`, `EcoWatt_PROJECT_SPEC.md`. Removidos: nenhum. Dados reais, banco local, ambientes, caches e wheel fora do envio.
 
-Commit desta entrega na fase-1: `feat: integra SMTP e consumo seguro de links de acesso`. Consultar histórico remoto para o SHA; este status integra o próprio commit. Main preservada; integração por PR após revisão/fechamento da fase.
+Commit desta entrega na fase-1: `fix: revisa contrato HTTP e protecao de simulacoes excluidas`. Consultar histórico remoto para o SHA; este status integra o próprio commit. Main preservada; integração por PR conforme fluxo do projeto.

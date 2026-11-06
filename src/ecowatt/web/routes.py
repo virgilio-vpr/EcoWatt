@@ -32,8 +32,9 @@ def access_page(page: str, request: Request):
 
 @router.get("/api/v1/docs")
 def documentation(request: Request):
-    operations = [{"path": route.path, "methods": sorted(route.methods)}
-                  for route in request.app.routes if getattr(route, "include_in_schema", False)]
+    # O schema resolve routers incluídos mesmo quando não são APIRoute planos.
+    operations = [{"path": path, "methods": sorted(method.upper() for method in methods)}
+                  for path, methods in request.app.openapi()["paths"].items()]
     return templates.TemplateResponse(request=request, name="docs.html", context={"operations": operations})
 
 

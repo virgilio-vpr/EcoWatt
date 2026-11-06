@@ -4,9 +4,11 @@ Plataforma web para leitura de faturas de energia, simulação de potenciais de 
 
 ## Estado atual
 
-A Fase 0 foi concluída com aceite explícito do usuário em 06/11/2026 para os contratos e o gabarito mínimo local. A Fase 1 tem persistência SQLAlchemy 2/Alembic, autenticação, permissões, seed local, simulações/unidades e adaptador SMTP configurável. Cadastro, ativação, login e recuperação foram verificados no Edge com SMTP sintético de loopback. SMTP permanece desabilitado por padrão; provedor externo não homologado. A fase ainda não está encerrada.
+A Fase 0 foi concluída com aceite explícito do usuário em 06/11/2026 para os contratos e o gabarito mínimo local. A base local da Fase 1 e o contrato HTTP foram verificados com 62 testes: persistência, autenticação/permissões, seed, simulações/unidades, SMTP sintético e cliente no Edge. SMTP permanece disabled e provedor externo não homologado. O critério de integração da exclusão aos futuros jobs permanece aberto para a Fase 2; não há aceite integral da fase ou homologação comercial.
 
 A fonte dos requisitos é [EcoWatt_PROJECT_SPEC.md](EcoWatt_PROJECT_SPEC.md). O checklist de implementação fica na seção 15 e a ordem de criação das tabelas na seção 10.4.
+
+Contrato de uso da API, autenticação, códigos, paginação e retries em [docs/API.md](docs/API.md). O OpenAPI executável declara respostas tipadas e os requisitos de cookie, CSRF e Origin. O cliente local de autenticação usa `api-client.js`, sem retry automático de escritas.
 
 Para iniciar uma tarefa, consulte [AGENTS.md](AGENTS.md), [docs/STATUS.md](docs/STATUS.md) e o [plano da fase](docs/phases/README.md). Esses arquivos orientam a leitura seletiva da SPEC e registram o ponto de retomada; não substituem os requisitos completos.
 
