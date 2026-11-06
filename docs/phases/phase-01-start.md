@@ -3,6 +3,8 @@
 Copie o texto abaixo no novo chat aberto na pasta EcoWatt. A autorização de instalação aplica-se ao pedido no novo chat; nenhuma instalação foi feita no encerramento da Fase 0.
 
 ```text
+Trabalhe na branch fase-1, criada a partir da main após o merge de encerramento da fase-0. Faça os próximos commits na fase-1 e integre à main por pull request, preservando alterações remotas.
+
 Inicie a Fase 1 do EcoWatt pela primeira entrega: verificar o ambiente e criar a estrutura mínima FastAPI, configuração tipada, pyproject.toml e lockfile. Consulte AGENTS.md, docs/STATUS.md e docs/phases/phase-01-backend.md, seguindo a leitura dirigida da SPEC e os contratos relevantes em docs/contracts/.
 
 A Fase 0 foi encerrada com meu aceite em 06/11/2026 para os contratos e o gabarito mínimo local. Preserve as regras e ressalvas do STATUS. Não reabra auditoria fiscal/administrativa como pré-requisito. Verde é referência estrutural; homologação comercial e publicação de fixtures reais continuam pendentes.
