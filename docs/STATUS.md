@@ -8,7 +8,7 @@ Atualizado em 06/11/2026. Referência: SPEC versão 3.10; contratos mínimos v0.
 
 Escopo aceito: concentrar somente em **faturamento, informações do cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas**, conforme os quatro blocos mostrados pelo usuário. Não cadastrar exaustivamente a conta ou exigir auditoria de informações fiscais, boleto, pagamento, códigos de medidor e outros dados administrativos. A investigação ampliada anterior foi além do escopo e permanece apenas como histórico.
 
-Nenhuma aplicação implementada ou dependência instalada nesta entrega. Fase 1 ainda não iniciada; próxima entrega é a base técnica local.
+Fase 1 iniciada: primeira entrega da base FastAPI e configuração tipada concluída. Dependências instaladas somente em `.venv`, com pyproject e uv.lock. Modelos, migrações, autenticação e seed ainda pendentes.
 
 ## Regras que permanecem
 
@@ -40,14 +40,22 @@ Hipótese de setembro conferida a pedido do usuário: forte compatibilidade num�
 
 Por orientação do usuário, o encerramento é registrado na `fase-0` e integrado à `main` por merge. A branch `fase-1` deve partir da `main` após esse merge; as próximas entregas serão commitadas nela e integradas por pull request. Operações realizadas diretamente pela integração GitHub, sem Git local.
 
+## Entrega atual — base local da Fase 1
+
+Ambiente: Windows, Python 3.13.14, SQLite 3.50.4 e uv 0.13.7 local. FastAPI 0.162.0, Pydantic Settings 2.16.2 e Uvicorn 0.54.0; árvore fixada com hashes no uv.lock. API JSON em `/api/v1`, factory sem escrita no import/startup e pacotes db/web reservados. Configuração lê `.env`/ambiente, sem caminhos absolutos, segredos reais ou contas. Instruções e limitações em [SETUP](SETUP.md).
+
+Executados: lock --check, pip check, seis testes aprovados, compileall e subida real Uvicorn em loopback, health/OpenAPI HTTP conferidos, processo encerrado. Bootstrap ensurepip falhou; instalação pelo pip existente direcionada ao `.venv` resolveu. Caches/temporários exigiram execução fora do sandbox, sem administrador ou instalações globais. Nenhum container, OCR, motor ou documento real usado.
+
+SQLAlchemy 2/Alembic, WAL/FKs, DecimalType, readiness do banco, erros de domínio, autenticação, seed e web/HTMX ainda não implementados. Não declarar a Fase 1 concluída. Regras e ressalvas da Fase 0 preservadas.
+
 ## Próximo passo
 
-Iniciar a primeira entrega da Fase 1 conforme [plano](phases/phase-01-backend.md) e [texto para o novo chat](phases/phase-01-start.md): verificar ambiente, preparar configuração e estrutura mínima FastAPI com dependências locais fixadas. Seguir backend → modelos/migrações → autenticação/permissões → seed. Usar dados sintéticos; não reabrir auditoria ampliada como pré-requisito.
+Executar a entrega 2 do [plano](phases/phase-01-backend.md): SQLAlchemy 2/Alembic, modelos raiz e migrações ordenadas, SQLite com WAL/FKs e Decimal sem float, criação limpa e upgrade. Depois autenticação/permissões e seed. Usar dados sintéticos; não reabrir auditoria ampliada como pré-requisito.
 
 Homologação comercial, tarifas/entradas próprias para cenários alternativos e autorização/procedimento de anonimização para fixtures públicas permanecem separados. Setembro é compatível numericamente com bandeira, sem confirmação de item. Junho não equivale a dois consumos medidos. Verde exemplificativa não é gabarito financeiro.
 
 ## Arquivos e commit
 
-Alterados: `EcoWatt_PROJECT_SPEC.md`, `README.md`, `docs/STATUS.md`, `docs/phases/phase-00-contracts.md` e `docs/corpus/README.md`. Novo: `docs/phases/phase-01-start.md`. Removidos: nenhum. Aceite nos artefatos locais ignorados, fora do envio.
+Novos: `pyproject.toml`, `uv.lock`, `.python-version`, `.env`, `.env.example`, `src/ecowatt/__init__.py`, `src/ecowatt/config.py`, `src/ecowatt/main.py`, `src/ecowatt/api/__init__.py`, `src/ecowatt/api/health.py`, `src/ecowatt/db/__init__.py`, `src/ecowatt/web/__init__.py`, `tests/test_bootstrap.py` e `docs/SETUP.md`. Alterados: `.gitignore`, `README.md`, `docs/STATUS.md`. Removidos: nenhum. Dados reais e artefatos locais ignorados fora do envio. Nenhum item amplo da SPEC marcado nesta entrega parcial.
 
-Commit desta entrega: `docs: encerra fase 0 com aceite e prepara inicio da fase 1`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
+Commit desta entrega na fase-1: `feat: inicia base FastAPI e ambiente local reproduzivel`. Consultar histórico remoto para o SHA; este status integra o próprio commit. Main permanece no merge da Fase 0; integração futura por PR.

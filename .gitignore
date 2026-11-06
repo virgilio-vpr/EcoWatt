@@ -15,3 +15,10 @@ __pycache__/
 *.sqlite
 *.sqlite3
 *.db
+*.sqlite3-wal
+*.sqlite3-shm
+.pytest_cache/
+.uv-cache/
+dist/
+*.egg-info/
+/data/

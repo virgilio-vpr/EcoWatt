@@ -4,7 +4,7 @@ Plataforma web para leitura de faturas de energia, simulação de potenciais de 
 
 ## Estado atual
 
-A Fase 0 foi concluída com aceite explícito do usuário em 06/11/2026 para os contratos e o gabarito mínimo local. A Fase 1 ainda não começou. Aplicação, migrações, seed e testes ainda não foram implementados. Os passos abaixo descrevem o fluxo esperado; não representam comandos disponíveis hoje.
+A Fase 0 foi concluída com aceite explícito do usuário em 06/11/2026 para os contratos e o gabarito mínimo local. A primeira entrega da Fase 1 disponibiliza FastAPI, configuração tipada, ambiente local e uv.lock, com seis testes aprovados. Migrações, autenticação e seed permanecem nas próximas entregas.
 
 A fonte dos requisitos é [EcoWatt_PROJECT_SPEC.md](EcoWatt_PROJECT_SPEC.md). O checklist de implementação fica na seção 15 e a ordem de criação das tabelas na seção 10.4.
 
@@ -42,7 +42,11 @@ Não é necessário instalar ou executar Docker nesta etapa.
 
 O administrador usa o mesmo fluxo de simulação do cliente, tanto na conta própria de demonstração quanto em nome de cliente selecionado no CRM, mantendo dono e autor registrados. A cota é de duas simulações por dono; recálculos e cenários são versões dentro delas.
 
-## Preparação local — a completar com a implementação
+## Preparação local
+
+Comandos executáveis e verificados em [docs/SETUP.md](docs/SETUP.md): bootstrap local de uv 0.13.7, `uv sync --locked`, verificações e execução `python -m uvicorn ecowatt.main:create_app --factory --host 127.0.0.1 --port 8000` usando os executáveis de `.venv/Scripts`. Python 3.13. Health em `/api/v1/health`, OpenAPI em `/api/v1/openapi.json` e documentação em `/api/v1/docs`. Não há criação automática de banco ou contas. Health verifica somente o processo.
+
+### Etapas futuras — ainda não executar
 
 1. Instalar a versão de Python definida futuramente em `pyproject.toml` e o gerenciador `uv`.
 2. Instalar os recursos nativos necessários ao Tesseract, ao português do OCR e ao WeasyPrint, conforme o sistema operacional. As versões e instruções verificadas deverão ser registradas em `docs/SETUP.md`.
@@ -103,4 +107,4 @@ Mudar `DATABASE_URL` não transfere dados entre bancos. As instruções executá
 | `docs/DATABASE.md` | Modelo relacional, migrações, seed e transporte dos dados |
 | `docs/DEPLOYMENT.md` | Docker/PostgreSQL, configuração de produção, backups e restauração |
 
-AGENTS.md, STATUS.md e os planos por fase já estão disponíveis. SETUP.md, DATABASE.md e DEPLOYMENT.md continuam planejados; seus conteúdos operacionais serão escritos e verificados junto à implementação correspondente. Marcar checkboxes somente após cumprir os critérios de aceite, registrando limitações conhecidas.
+AGENTS.md, STATUS.md, SETUP.md e os planos por fase estão disponíveis. DATABASE.md e DEPLOYMENT.md continuam planejados; seus conteúdos operacionais serão escritos e verificados junto à implementação correspondente. Marcar checkboxes somente após cumprir os critérios de aceite, registrando limitações conhecidas.
