@@ -50,7 +50,7 @@ Fluxo de homologação: receber autorização → anonimizar em processo control
 | D01 | Cliente-piloto: confirmar condições de uso/anonimização da série recebida e indicar quem aprova o gabarito? | Modelos e pipeline com casos sintéticos |
 | D02 | Especialista/piloto: qual CNPJ/layout real e quais exceções contratuais? | Adaptadores com interface definida, sem selo de homologação |
 | D03 | Especialista: quais tributos, perdas, tarifas e política de arredondamento por vigência? | Aritmética sem tributos rotulada, nenhuma tarifa ausente igual a zero |
-| D04 | Piloto: confirmar qual planilha recebida corresponde à série e quais entradas/resultados são referência? | Relatório demonstrativo sem reproduzir resultados como aprovados |
+| D04 | Finalidade/período esclarecidos: Verde é simulação real; referência principal PDF agosto/2025–julho/2026, anterior à migração ao mercado livre informada para agosto/2026. Faltam fontes e validação das entradas/resultados. | Relatório demonstrativo sem reproduzir resultados como aprovados |
 | D05 | Piloto/distribuidora: existem dados por posto na Verde e intervalares de reativos? | Módulos parciais com motivos explícitos |
 | D06 | Responsável do produto: aprovar nomes/tipos deste contrato e conjuntos reais esperados? | Implementar proposta versionada, registrar ajustes antes de migrar dados reais |
 | D07 | Especialista: convenção de dias do ciclo, grandezas reativas ambíguas e agrupamentos TE/TUSD do layout? | Preservar unidade/origem; bloquear uso ambíguo |
@@ -64,4 +64,4 @@ Em 06/11/2026 foram consultados o catálogo oficial e referências indexadas da 
 - [Faturas: cobertura e pendências do candidato local](invoice-review.md).
 - [Regulamentação e limites das fontes](regulatory-review.md).
 
-O candidato com dados reais normalizados fica exclusivamente em `.local-analysis/phase-00-invoices.json`, com revisão pendente; não é fixture pública nem gabarito aprovado. Decisões sobre finalidade da planilha Verde e período de referência foram encaminhadas ao usuário. D01/D02/D03/D04/D06/D07 continuam parcialmente abertas apesar do avanço de leitura. Nenhum item composto da Fase 0 foi marcado.
+O candidato com dados reais normalizados fica exclusivamente em `.local-analysis/phase-00-invoices.json`, com revisão pendente; não é fixture pública nem gabarito aprovado. Usuário confirmou a Verde como simulação real e os PDFs agosto/2025–julho/2026 como referência principal. A diferença é intencional para excluir agosto/setembro de 2026 após a migração ao mercado livre informada pelo usuário; essa migração ainda não foi conferida documentalmente. Comparar com as planilhas apenas outubro/2025–julho/2026; não misturar regimes ou deslocar meses. Detalhes em workbook-review.md. D01/D02/D03/D04/D06/D07 continuam parcialmente abertas apesar do avanço de leitura. Nenhum item composto da Fase 0 foi marcado.

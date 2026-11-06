@@ -10,7 +10,7 @@ Fase 0 em andamento: contratos v0.1, 25 casos sintéticos, conferência das duas
 
 - `docs/corpus/workbook-review.md`: fórmulas/caches das oito abas, 1.201 células de fórmula com cache, aritmética recalculada em Decimal e divergências P01–P08. Sem edição dos originais.
 - `docs/corpus/invoice-review.md`: 12 PDFs textuais, 24 páginas, 8.390.489 bytes; mesma unidade e classificação A4 Azul; nome ENEL Distribuição São Paulo identificado, CNPJ/mercado ainda não confirmados. Candidato local com 109 linhas selecionadas; 105 quantificadas e 4 parcelas ociosas apenas monetárias. Não houve conciliação integral de cada fatura.
-- Nos dez meses sobrepostos, quantidades e preços de demanda dos dois postos coincidem com a planilha Azul. Períodos completos dos arquivos e planilhas divergem; a planilha Verde repete entradas da ponta da Azul. Finalidade/período principal encaminhados ao usuário.
+- Nos dez meses sobrepostos, quantidades e preços de demanda dos dois postos coincidem com a planilha Azul. Períodos completos dos arquivos e planilhas divergem; a planilha Verde repete entradas da ponta da Azul. Usuário confirmou Verde como simulação real e PDFs agosto/2025–julho/2026 como referência principal. Segundo o usuário, a migração ao mercado livre ocorreu em agosto/2026; essa é a razão da exclusão dos dois últimos meses das planilhas. Comparar apenas os dez meses comuns; não misturar meses pós-migração no gabarito cativo. Data/condições da migração ainda não conferidas documentalmente.
 - A simulação de ponta da Azul usa fator 3 de ultrapassagem, diferente da tabela atual e da SPEC; erro inativo nas entradas existentes. Redução fixa de 18% não reproduz os preços das vinte parcelas ociosas comparáveis. Não transportar essas hipóteses para o motor.
 - 38 linhas ultrapassam a tolerância inicial de BRL 0.02; 35 são compatíveis com hipótese explícita de arredondamento do preço impresso, três exigem revisão específica. Não foram aprovadas por tolerância ampliada.
 - `docs/corpus/regulatory-review.md`: PDF local da REN tem 183 páginas e metadados de reprodução Leis.org; leitura dirigida dos arts. 301–304, sem fixar redação consolidada/vigências. Catálogo oficial acessível e referências oficiais indexadas consultadas; HTML compilado retornou 403. Nenhuma tarifa CSV importada/aprovada.
@@ -25,14 +25,14 @@ Fase 0 em andamento: contratos v0.1, 25 casos sintéticos, conferência das duas
 
 ## Pendências e próximo passo
 
-Revisar visualmente/manual os cabeçalhos e itens, confirmar CNPJ/mercado e competência/ciclo/dias, resolver as três exceções de precisão e conferir tributos/parcelas ociosas. Confirmar finalidade da planilha Verde e período principal. Completar o gabarito independente por fatura com todos os componentes e residual; aprovar com responsável identificado. Obter tarifas oficiais por distribuidora e vigência e documentar alterações aplicáveis da norma. Nenhum checkbox composto da Fase 0 foi marcado por mera disponibilidade dos materiais.
+Revisar visualmente/manual os cabeçalhos e itens, confirmar CNPJ/mercado e competência/ciclo/dias, resolver as três exceções de precisão e conferir tributos/parcelas ociosas. Rever a simulação real da Verde com o período principal já definido e fontes tarifárias corretas, separando as linhas posteriores à migração informada pelo usuário. Completar o gabarito independente por fatura com todos os componentes e residual; aprovar com responsável identificado. Obter tarifas oficiais por distribuidora e vigência e documentar alterações aplicáveis da norma. Nenhum checkbox composto da Fase 0 foi marcado por mera disponibilidade dos materiais.
 
 O desenvolvimento independente da Fase 1 continua possível com fixtures sintéticas, quando solicitado, sem depender da homologação comercial. Usuário sem administrador; respeitar políticas da máquina. Commits diretos em `virgilio-vpr/EcoWatt` autorizados, preservando alterações remotas; não enviar materiais reais ou ferramentas locais.
 
 ## Arquivos desta entrega
 
-Novos: `.gitignore`, `docs/corpus/workbook-review.md`, `docs/corpus/invoice-review.md`, `docs/corpus/regulatory-review.md`.
+Alterados: `docs/STATUS.md`, `docs/corpus/README.md`, `docs/corpus/workbook-review.md`, `docs/corpus/invoice-review.md`. Novos/removidos: nenhum.
 
-Alterados: `EcoWatt_PROJECT_SPEC.md`, `README.md`, `docs/STATUS.md`, `docs/contracts/invoice-data.md`, `docs/corpus/README.md`, `docs/corpus/synthetic-cases.md`. Removidos: nenhum.
+Registradas as respostas do usuário sobre finalidade da planilha Verde, período principal e exclusão intencional dos meses posteriores à migração informada ao mercado livre. Originais e candidato local preservados; nenhum novo teste financeiro ou aceite presumido. Conferidos consistência das decisões, links locais e lista explícita de quatro documentos para envio.
 
-Commit: `docs: avanca conferencia do corpus e registra divergencias da fase 0`. Consultar o histórico remoto para o SHA; este status integra o próprio commit.
+Commit: `docs: esclarece periodo do corpus e migracao ao mercado livre`. Consultar o histórico remoto para o SHA; este status integra o próprio commit.

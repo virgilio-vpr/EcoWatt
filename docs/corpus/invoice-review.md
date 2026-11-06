@@ -36,7 +36,7 @@ Os zeros na coluna de linhas UFER significam **nenhuma linha de cobrança UFER l
 ## Confronto com as planilhas e aritmética
 
 - Para os dez arquivos de outubro/2025 a julho/2026, as quantidades e preços efetivos de demanda dos dois postos coincidem com as dez primeiras linhas correspondentes da planilha Azul. Isso vincula parte das entradas, sem aprovar o restante dos campos.
-- As planilhas terminam em agosto/setembro de 2026 segundo o cabeçalho; os PDFs adicionais são de agosto/setembro de 2025. Não são substitutos dos meses finais da planilha.
+- Referência principal confirmada pelo usuário: PDFs agosto/2025–julho/2026. Segundo ele, a unidade migrou ao mercado livre em agosto/2026; por isso os dois últimos meses das planilhas foram deliberadamente excluídos do corpus PDF. A data/condições da migração ainda não foram verificadas em contrato ou faturas. Agosto/setembro de 2025 não são substitutos dos meses finais da planilha; confrontar somente os dez meses comuns.
 - As duas primeiras contas contêm quatro parcelas ociosas somente monetárias. Preservar quantidade e preço como desconhecidos, conforme SPEC §7.3; não derivá-los para fazer o cadastro parecer completo.
 - Em vinte parcelas ociosas com quantidade e posto relacionáveis à demanda regular, o preço impresso não coincide com preço regular × 0.82 na precisão de cinco casas. Isso contradiz usar automaticamente o desconto fixo da planilha, sem caracterizar cobrança indevida.
 - Em 38 das 105 linhas quantificadas, quantidade × preço impresso difere do valor cobrado em mais de BRL 0.02. Manter pendência de reconciliação; não declarar que as contas estão erradas nem aprová-las por tolerância ampliada silenciosamente.
