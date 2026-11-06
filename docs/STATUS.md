@@ -36,6 +36,10 @@ Verificados por projeção e asserções: doze bases do quadro fecham; diferenç
 
 Hipótese de setembro conferida a pedido do usuário: forte compatibilidade numérica da diferença para o total a pagar com bandeira vermelha patamar 2 não discriminada. Fonte Enel para o mês e MME para BRL 78.77/MWh; memória Decimal local em `.local-analysis/september-flag-check.json`, com desvio de poucos centavos na estimativa de preço cheio por proporção da própria conta. Não adicionar item observado ou converter a hipótese em gabarito aprovado. Fontes e método em [referências do corpus](corpus/regulatory-review.md).
 
+## Fluxo de branches
+
+Por orientação do usuário, o encerramento é registrado na `fase-0` e integrado à `main` por merge. A branch `fase-1` deve partir da `main` após esse merge; as próximas entregas serão commitadas nela e integradas por pull request. Operações realizadas diretamente pela integração GitHub, sem Git local.
+
 ## Próximo passo
 
 Iniciar a primeira entrega da Fase 1 conforme [plano](phases/phase-01-backend.md) e [texto para o novo chat](phases/phase-01-start.md): verificar ambiente, preparar configuração e estrutura mínima FastAPI com dependências locais fixadas. Seguir backend → modelos/migrações → autenticação/permissões → seed. Usar dados sintéticos; não reabrir auditoria ampliada como pré-requisito.
