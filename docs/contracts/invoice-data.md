@@ -95,3 +95,7 @@ Normalizar separadores brasileiros e unidades; verificar sinal, posto, período,
 Registrar `known_components_total`, `invoice_total` e `residual` (total menos componentes conhecidos). Residual precisa de explicação ou pendência; não declarar conciliação integral por tolerância sem classificação. Conflitos de identidade, duplicatas não resolvidas e campos críticos pendentes impedem `ready`. Falta de dados exclusivos de um módulo permite fatura conferida com módulo indisponível, por exemplo demanda ausente e reativos monetários observados válidos.
 
 Unidades extras, livre, GD, rural/sazonal, reserva, faturamento excepcional e descontos especiais recebem marcadores de escopo e motivo de análise parcial. Não aplicar a fórmula geral automaticamente.
+
+## Reativos observados — esclarecimento de 06/11/2026
+
+A ausência confirmada de cobrança excedente permite `zero_confirmed`, com evidência de leitura suficiente, e não cria cenário independente de surgimento de reativos. Indicadores do medidor não equivalem a itens faturados. Leitura incompleta permanece `missing`/`unreadable` conforme o caso. Quantidade ou preço ausente em cobrança observada continua desconhecido; o catálogo oficial não os inventa. Efeitos de alteração de contrato/modalidade sem dados suficientes permanecem condicionados, conforme SPEC 3.6 §8.4.

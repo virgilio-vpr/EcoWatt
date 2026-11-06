@@ -14,6 +14,8 @@ O usuário autorizou commits diretos em `virgilio-vpr/EcoWatt`, sem confirmaçã
 
 Os documentos da Fase 0 estão no [dicionário de faturas](docs/contracts/invoice-data.md), [contrato do pipeline](docs/contracts/pipeline.md), [matriz de acesso](docs/contracts/access.md), [inventário e dependências do corpus](docs/corpus/README.md) e [casos sintéticos](docs/corpus/synthetic-cases.md). São propostas e referências de desenvolvimento; não comprovam homologação ou aprovação do corpus.
 
+A continuação da Fase 0 inclui [conferência das planilhas](docs/corpus/workbook-review.md), [conferência inicial das faturas](docs/corpus/invoice-review.md) e [registro regulatório](docs/corpus/regulatory-review.md). São análises com pendências explícitas; o candidato de gabarito com dados reais permanece local e não aprovado.
+
 ## Stack definida
 
 - Backend: Python, FastAPI, SQLAlchemy 2 e Alembic.

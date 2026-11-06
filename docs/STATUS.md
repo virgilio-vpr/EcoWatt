@@ -1,40 +1,38 @@
 # Estado do EcoWatt
 
-Atualizado em 05/11/2026. Referência: SPEC versão 3.5.
+Atualizado em 06/11/2026. Referência: SPEC versão 3.6.
 
 ## Entrega atual
 
-Fase 0: proposta documental de contratos e casos sintéticos preparada. Aplicação e ambiente não iniciados. Fase 0 ainda não aceita: foram recebidos 12 PDFs e duas planilhas para análise local, mas faltam conferência do conteúdo, condições de uso/anonimização do corpus, gabarito aprovado e fixação das fontes regulatórias/tarifárias. Nenhuma fase ou critério composto da seção 15 foi marcado como concluído.
+Fase 0 em andamento: contratos v0.1, 25 casos sintéticos, conferência das duas planilhas e extração textual inicial dos 12 PDFs. **Aceite pendente**: candidato real ainda não revisado/aprovado, diferenças de reconciliação, bases tributárias e vigências por confirmar. Nenhuma aplicação, ambiente da aplicação, banco ou container iniciado.
 
-## Entregue
+## Evidências principais
 
-- Dicionário v0.1: tipos, unidades, obrigatoriedade, estados, proveniência, validações e campos desconhecidos.
-- Contratos v0.1 entre leitura, persistência, motor e relatório, com revisão, idempotência e descarte.
-- Matriz de acesso, separação dono/empresa/autor/titular e cota transacional de duas simulações, inclusive admin.
-- Inventário local, pacote necessário para homologação, dúvidas e dependências com encaminhamento.
-- Vinte casos sintéticos documentais, com entradas e esperados de aritmética, normalização, pendências e bloqueios. Não são testes de aplicação ou evidência comercial.
+- `docs/corpus/workbook-review.md`: fórmulas/caches das oito abas, 1.201 células de fórmula com cache, aritmética recalculada em Decimal e divergências P01–P08. Sem edição dos originais.
+- `docs/corpus/invoice-review.md`: 12 PDFs textuais, 24 páginas, 8.390.489 bytes; mesma unidade e classificação A4 Azul; nome ENEL Distribuição São Paulo identificado, CNPJ/mercado ainda não confirmados. Candidato local com 109 linhas selecionadas; 105 quantificadas e 4 parcelas ociosas apenas monetárias. Não houve conciliação integral de cada fatura.
+- Nos dez meses sobrepostos, quantidades e preços de demanda dos dois postos coincidem com a planilha Azul. Períodos completos dos arquivos e planilhas divergem; a planilha Verde repete entradas da ponta da Azul. Finalidade/período principal encaminhados ao usuário.
+- A simulação de ponta da Azul usa fator 3 de ultrapassagem, diferente da tabela atual e da SPEC; erro inativo nas entradas existentes. Redução fixa de 18% não reproduz os preços das vinte parcelas ociosas comparáveis. Não transportar essas hipóteses para o motor.
+- 38 linhas ultrapassam a tolerância inicial de BRL 0.02; 35 são compatíveis com hipótese explícita de arredondamento do preço impresso, três exigem revisão específica. Não foram aprovadas por tolerância ampliada.
+- `docs/corpus/regulatory-review.md`: PDF local da REN tem 183 páginas e metadados de reprodução Leis.org; leitura dirigida dos arts. 301–304, sem fixar redação consolidada/vigências. Catálogo oficial acessível e referências oficiais indexadas consultadas; HTML compilado retornou 403. Nenhuma tarifa CSV importada/aprovada.
+- SPEC §8.4 esclarecida conforme o usuário: ausência confirmada de cobrança reativa não cria cenário independente de aparecimento; leitura incompleta é desconhecida; efeitos futuros não calculáveis de alterações contratuais continuam limitados.
 
-## Verificações realizadas
+## Ferramentas e verificações
 
-- Leitura dirigida da SPEC e ampliação para §§4–6, 8.1–8.2, 8.6–8.7, 10–12 e 17 pelas dependências dos contratos.
-- Inventário atualizado: 12 PDFs em `docs/faturas`, sem hashes SHA-256 repetidos; nomes sugerem agosto/2025 a julho/2026, ainda sem conferência dos cabeçalhos. Duas planilhas em `docs/planilhas`: Azul com 5 abas/769 células com fórmulas e Verde com 3 abas/432 células com fórmulas, sem vínculos externos de workbook identificados. Estrutura XLSX lida em memória com recursos existentes; conteúdo financeiro ainda não validado.
-- Recebido `docs/ANEEL/REN 1000.pdf`: presença, tamanho (3.919.570 bytes) e SHA-256 conferidos; identificação do hash em `docs/corpus/README.md`. Conteúdo, consolidação e aplicabilidade ainda não verificados; PDF permanece local.
-- Conferidos destinos dos links Markdown locais e aritmética dos casos S01–S08 por PowerShell/.NET Decimal, sem instalar recursos ou executar aplicação.
-- Nenhuma consulta regulatória externa, validação de parser/OCR, teste de concorrência, autorização ou persistência foi executado. Esses comportamentos estão especificados para testes futuros.
+- Python 3.13.14 e `openpyxl` já disponíveis. Bibliotecas PDF verificadas inicialmente indisponíveis. Em 06/11/2026 o usuário autorizou **somente pypdf para análise**; instalada versão 7.0.0 em `.local-tools/pypdf/`, sem dependências adicionais nem ambiente da aplicação. Instalação/leitura exigiram execução aprovada fora da sandbox por falha de acesso na tentativa restrita. Isso não autoriza instalar a stack do produto.
+- Inspeção em memória; nenhum PDF, imagem ou texto bruto extraído foi gravado. Candidato estruturado e script pontual em `.local-analysis/` são locais, sem aprovação e excluídos do versionamento.
+- Aritmética das planilhas, caches, comparação com campos extraídos e novos casos sintéticos conferidos. Links Markdown locais e alterações textuais revisados antes do commit. Não houve teste de aplicação, OCR, concorrência ou migração.
+- `.gitignore` protege documentos reais, ferramentas de análise, candidato local, logs, bancos, caches e ambiente virtual. Exclusão do envio remoto também é feita por lista explícita de arquivos, sem depender apenas do ignore.
 
-## Pendências e decisões preservadas
+## Pendências e próximo passo
 
-- Contratos são proposta para revisão; não há aprovação humana presumida. Questões D01–D08 e evidências necessárias: `docs/corpus/README.md`.
-- PDFs e planilhas recebidos; ENEL SP A4 Azul, CNPJ/layout reais, correspondência das planilhas, tarifas por vigência, tributos, perdas e restrições contratuais ainda não conferidos/validados. Imagens descritas na SPEC não são fixtures homologadas.
-- Sem administrador; instalações locais sujeitas às políticas da máquina. Esta entrega não instala dependências, cria ambiente, banco ou inicia containers/aplicação.
-- Inspeção de ferramentas de 04/11/2026 é histórica; não comprova disponibilidade atual. Revalidar somente o necessário quando houver tarefa de ambiente.
-- README contém passos futuros, sem pyproject, lockfile, migrações, seed ou comandos operacionais implementados.
-- Em 05/11/2026, o usuário autorizou commits diretos em virgilio-vpr/EcoWatt sem confirmação no site, removendo a exigência de commit manual. Preferir integração GitHub e preservar alterações remotas. Não enviar `debug.log`, corpus real, banco, ambiente ou caches.
+Revisar visualmente/manual os cabeçalhos e itens, confirmar CNPJ/mercado e competência/ciclo/dias, resolver as três exceções de precisão e conferir tributos/parcelas ociosas. Confirmar finalidade da planilha Verde e período principal. Completar o gabarito independente por fatura com todos os componentes e residual; aprovar com responsável identificado. Obter tarifas oficiais por distribuidora e vigência e documentar alterações aplicáveis da norma. Nenhum checkbox composto da Fase 0 foi marcado por mera disponibilidade dos materiais.
 
-## Próximo passo
+O desenvolvimento independente da Fase 1 continua possível com fixtures sintéticas, quando solicitado, sem depender da homologação comercial. Usuário sem administrador; respeitar políticas da máquina. Commits diretos em `virgilio-vpr/EcoWatt` autorizados, preservando alterações remotas; não enviar materiais reais ou ferramentas locais.
 
-Conferir primeiro cabeçalho e linhas de uma fatura, depois a série e a correspondência das fórmulas das planilhas; construir gabarito estruturado sem publicar dados pessoais. Revisar contratos v0.1 e condições de uso do corpus, sem bloquear desenvolvimento independente. Quando autorizado em nova tarefa, iniciar a [Fase 1](phases/phase-01-backend.md), preparando ambiente local sem administrador/Docker e implementando modelos, autenticação, titularidade e cota com fixtures sintéticas. Homologação real permanece pendente.
+## Arquivos desta entrega
 
-## Arquivos da última entrega
+Novos: `.gitignore`, `docs/corpus/workbook-review.md`, `docs/corpus/invoice-review.md`, `docs/corpus/regulatory-review.md`.
 
-Alterados: `docs/corpus/README.md` e `docs/STATUS.md` para registrar o recebimento da referência regulatória. Novos/removidos: nenhum documento. O PDF REN 1000 permanece local e não integra o commit. Nenhum aceite de homologação foi marcado.
+Alterados: `EcoWatt_PROJECT_SPEC.md`, `README.md`, `docs/STATUS.md`, `docs/contracts/invoice-data.md`, `docs/corpus/README.md`, `docs/corpus/synthetic-cases.md`. Removidos: nenhum.
+
+Commit: `docs: avanca conferencia do corpus e registra divergencias da fase 0`. Consultar o histórico remoto para o SHA; este status integra o próprio commit.

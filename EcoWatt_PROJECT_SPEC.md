@@ -1,6 +1,6 @@
 # EcoWatt — Especificação de produto e implementação
 
-Versão 3.5 • 04/11/2026 • Documento autossuficiente para orientar a implementação.
+Versão 3.6 • 06/11/2026 • Documento autossuficiente para orientar a implementação.
 
 ## 1. Objetivo e critérios do produto
 
@@ -359,7 +359,7 @@ Com 1–2 contas: diagnóstico observado e candidatos ilustrativos, sem recomend
 
 ### 8.4 Reativos excedentes
 
-O MVP usa cobranças de energia e demanda reativas excedentes efetivamente identificadas e validadas. Não confundir kVArh total medido, indicadores do medidor e valores cobrados. Rótulos UFER, UFDR, DMCR e equivalentes dependem do layout e da unidade; o nome isolado não prova cobrança ou ausência dela.
+O MVP usa cobranças de energia e demanda reativas excedentes efetivamente identificadas e validadas. Ausência de cobrança confirmada não gera cenário independente de aparecimento de reativos nem exige buscar tarifa apenas para simular essa existência. Ausência em leitura incompleta permanece desconhecida. Essa delimitação não autoriza presumir que alterações de demanda ou modalidade preservem a ausência futura; efeitos não calculáveis são declarados como limitação do cenário. Não confundir kVArh total medido, indicadores do medidor e valores cobrados. Rótulos UFER, UFDR, DMCR e equivalentes dependem do layout e da unidade; o nome isolado não prova cobrança ou ausência dela.
 
 A REN 1000 estabelece referência de fator de potência de 0,92. A reconstrução regulatória completa depende de registros por intervalo e de valores de referência próprios: energia pela referência TE B1 em bandeira verde e demanda pela referência de demanda fora de ponta da Azul aplicável. Não usar automaticamente a TE/TUSD comum do consumidor nem a tarifa do posto da cobrança. Importar essas referências auxiliares mesmo que B1 esteja fora do público-alvo comercial.
 
@@ -596,6 +596,8 @@ Correções e recuperação hipotética atualizam uma nova execução; a tabela 
 
 Os valores visíveis de demanda de 338 kW e candidato de 290 kW, custos de R$ 136.632,16 e R$ 120.644,48 e diferença de R$ 15.987,68 são referências de apresentação transcritas da imagem. A subtração é consistente, mas não comprova como os custos foram calculados. O total de reativos exibido é R$ 1.413,43; o fechamento deve ser conferido nas linhas originais, sem usar OCR visual como fixture financeira aprovada.
 
+A conferência de 06/11/2026 das planilhas recebidas reproduziu aritmeticamente os totais citados, sob as hipóteses dos próprios arquivos, mas identificou divergências de período, tributação e fórmulas. Evidências: [conferência das planilhas](docs/corpus/workbook-review.md) e [conferência inicial das faturas](docs/corpus/invoice-review.md). Essa reprodução não homologa as premissas nem os valores das imagens.
+
 Homologar a comparação somente com dados estruturados, fórmulas da planilha, bases tributárias e tarifas por vigência conferidos. Registrar divergências por mês/componente. Uma captura de gráfico não permite recuperar medições precisas pela altura das barras. Nenhum valor das imagens se torna teste homologado automaticamente; novos exemplos devem ser sintéticos identificados ou derivados de corpus autorizado e conferido.
 
 ## 12. Segurança, privacidade e operação
@@ -661,7 +663,7 @@ Medir tempos de extração/OCR/cálculo/PDF separadamente, pico de memória, fil
 
 ## 15. Fases e critérios de aceite
 
-Todos os itens de aceite continuam pendentes; os contratos v0.1 e casos sintéticos da Fase 0 estão documentados em [docs/contracts/invoice-data.md](docs/contracts/invoice-data.md) e [docs/corpus/README.md](docs/corpus/README.md), sem corpus real autorizado ou aprovação do conjunto esperado. O checklist não representa funcionalidades implementadas. Marcar cada fase somente após concluir seus subitens e critérios de aceite. As fases abaixo incluem as entregas técnicas originais e os requisitos desta revisão.
+Todos os itens de aceite continuam pendentes; os contratos v0.1 e casos sintéticos da Fase 0 estão documentados em [docs/contracts/invoice-data.md](docs/contracts/invoice-data.md) e [docs/corpus/README.md](docs/corpus/README.md), com materiais reais disponíveis para análise local, ainda sem gabarito real conferido e aprovado. O checklist não representa funcionalidades implementadas. Marcar cada fase somente após concluir seus subitens e critérios de aceite. As fases abaixo incluem as entregas técnicas originais e os requisitos desta revisão.
 
 ### Sequência de construção
 
@@ -834,5 +836,7 @@ Fontes consultadas em 03/11/2026:
 - Energisa — explicação operacional de ultrapassagem: https://www.energisa.com.br/para-sua-empresa/espaco-grandes-clientes/grandes-clientes/tarifas-de-ultrapassagem
 
 Limite desta revisão: os endereços diretos do texto compilado ANEEL retornaram bloqueio de acesso na consulta automatizada; houve acesso ao catálogo tarifário oficial e resultados indexados da norma. Conferir a redação consolidada e eventuais alterações na homologação é requisito antes de liberar cálculos comerciais. Cartilhas antigas baseadas na REN 414 não devem definir automaticamente prazos atuais.
+
+Atualização de 06/11/2026: lida a reprodução local da REN 1000, identificada por metadados Leis.org; o texto oficial compilado continuou retornando 403. Catálogo tarifário acessível, sem importação de preços. Limites e fontes: [conferência regulatória](docs/corpus/regulatory-review.md).
 
 A especificação contém propostas de engenharia e produto; não equivale à homologação do motor, à auditoria de uma conta real ou à implementação do sistema.

@@ -1,4 +1,4 @@
-# Corpus e homologação — inventário em 05/11/2026
+# Corpus e homologação — inventário e conferência em 06/11/2026
 
 ## Materiais efetivamente disponíveis
 
@@ -10,7 +10,7 @@ Materiais indicados pelo usuário para continuidade da Fase 0 e confirmados loca
 | `docs/planilhas/Analise_Faturas_Energia_Preenchida_Azul.xlsx` | 5 abas, 769 células com fórmulas | Estrutura XLSX inspecionada em memória; nenhum vínculo externo de workbook identificado |
 | `docs/planilhas/Analise_Faturas_Energia_Preenchida_Verde.xlsx` | 3 abas, 432 células com fórmulas | Estrutura XLSX inspecionada em memória; nenhum vínculo externo de workbook identificado |
 
-Períodos acima são inferidos **somente dos nomes**, ainda não conferidos no cabeçalho. Hashes diferentes não excluem duplicatas lógicas. Conteúdo dos PDFs, identidade da distribuidora, mercado, modalidade, unidade, competências e correspondência das planilhas ainda não foram conferidos. A presença de fórmulas não valida sua regra, resultado ou relação com a série. Não houve extração de texto bruto para arquivos nem instalação de recursos.
+Períodos acima são inferidos **somente dos nomes**, ainda não conferidos no cabeçalho. Hashes diferentes não excluem duplicatas lógicas. Conferência textual inicial realizada em 06/11/2026: unidade coincidente, classificação A4 Azul e nome ENEL Distribuição São Paulo identificados. Mercado, CNPJ emissor, competência pelos rótulos completos e gabarito integral ainda pendentes. Demanda e preço efetivo dos dois postos coincidem nos dez meses sobrepostos com a planilha Azul. A presença de fórmulas não valida sua regra, resultado ou relação com a série. Não houve gravação de texto bruto. Em 06/11/2026 o usuário autorizou somente pypdf para análise; versão 7.0.0 instalada em pasta local de ferramentas, sem ambiente da aplicação.
 
 A indicação das pastas permite a análise local solicitada; não equivale à aprovação do gabarito nem à autorização para publicar originais ou incorporar dados pessoais a fixtures versionadas. Anonimização e condições do acervo de homologação permanecem a definir. Os originais ficam locais e fora da lista de envio manual ao GitHub.
 
@@ -19,7 +19,7 @@ A inspeção anterior havia encontrado somente documentação; este inventário 
 Disponível nesta entrega: [casos sintéticos](synthetic-cases.md), definidos a partir dos contratos e da fórmula interna da SPEC §8.2. Não representam ENEL, tarifas vigentes, leitura de PDF ou evidência regulatória independente.
 
 
-Referência regulatória recebida: `docs/ANEEL/REN 1000.pdf`, 3.919.570 bytes, SHA-256 `482B1BC8E1CD199629BF6F85C52B0CC41536A142FBAB61A22DA29C3371126BA3`. Presença, tamanho e hash conferidos em 05/11/2026. Conteúdo, origem oficial, data de consolidação, alterações incorporadas e aplicabilidade aos ciclos ainda não verificados. O nome do arquivo não comprova versão vigente. Manter como material local nesta entrega; nenhuma regra ou tarifa foi homologada a partir dele.
+Referência regulatória recebida: `docs/ANEEL/REN 1000.pdf`, 3.919.570 bytes, SHA-256 `482B1BC8E1CD199629BF6F85C52B0CC41536A142FBAB61A22DA29C3371126BA3`. Presença, tamanho e hash conferidos em 05/11/2026. Em 06/11/2026 foi feita leitura dirigida: 183 páginas, metadados de reprodução Leis.org e redações alteradas. Origem oficial, consolidação e aplicabilidade por ciclo ainda não aprovadas. O nome do arquivo não comprova versão vigente. Manter como material local nesta entrega; nenhuma regra ou tarifa foi homologada a partir dele.
 
 ## Pacote necessário para homologação
 
@@ -56,4 +56,12 @@ Fluxo de homologação: receber autorização → anonimizar em processo control
 | D07 | Especialista: convenção de dias do ciclo, grandezas reativas ambíguas e agrupamentos TE/TUSD do layout? | Preservar unidade/origem; bloquear uso ambíguo |
 | D08 | Responsável comercial/privacidade: confirmar retenção e tratamento de vínculos de orçamento na exclusão? | Definir autorização/cancelamento; não lançar operação comercial |
 
-Fontes regulatórias candidatas permanecem as da SPEC §17, com a limitação de acesso já registrada ali. Não houve consulta externa nem validação de vigência nesta entrega. Fixação de atos, tarifas e redação consolidada pertence à homologação; a fórmula sintética testa somente a regra escrita da SPEC.
+Em 06/11/2026 foram consultados o catálogo oficial e referências indexadas da REN; o texto compilado continuou retornando 403. Nenhum preço tarifário foi importado ou aprovado. Ver [conferência regulatória](regulatory-review.md). A vigência aplicável por ciclo continua pendente.
+
+## Evidências da continuação da Fase 0
+
+- [Planilhas: fórmulas, caches e divergências](workbook-review.md).
+- [Faturas: cobertura e pendências do candidato local](invoice-review.md).
+- [Regulamentação e limites das fontes](regulatory-review.md).
+
+O candidato com dados reais normalizados fica exclusivamente em `.local-analysis/phase-00-invoices.json`, com revisão pendente; não é fixture pública nem gabarito aprovado. Decisões sobre finalidade da planilha Verde e período de referência foram encaminhadas ao usuário. D01/D02/D03/D04/D06/D07 continuam parcialmente abertas apesar do avanço de leitura. Nenhum item composto da Fase 0 foi marcado.

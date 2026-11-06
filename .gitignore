@@ -1,0 +1,17 @@
+# Materiais reais recebidos para análise local
+/docs/faturas/
+/docs/planilhas/
+/docs/ANEEL/
+
+# Ferramentas de inspeção e dados estruturados ainda não anonimizados
+/.local-tools/
+/.local-analysis/
+
+# Ambiente e artefatos locais
+.venv/
+__pycache__/
+*.pyc
+*.log
+*.sqlite
+*.sqlite3
+*.db

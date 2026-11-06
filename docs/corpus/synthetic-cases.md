@@ -54,3 +54,15 @@ S02–S05 usam max(Dm,Dc)×T e adicional somente quando Dm>1.05×Dc. S07–S08 t
 ## Forma de futura execução
 
 Converter estes casos em fixtures tipadas quando o modelo existir, mantendo IDs e source_kind. Separar testes de normalização, validação, cálculo e integração. Acrescentar casos reais apenas com autorização e gabarito aprovado; nunca renomear synthetic como homologated. Comparar resultados por campo, ciclo e componente, não apenas total agregado.
+
+## Casos adicionais após inspeção das planilhas — 06/11/2026
+
+S21–S25 também são inteiramente sintéticos. Não contêm dados da unidade real nem homologam tributos.
+
+| ID | Entrada / situação | Esperado |
+| --- | --- | --- |
+| S21 | Dc=100, Dm=120, T=10; conferir cenário atual e alternativo com o mesmo contrato | Ambos: regular 1200.00, adicional 400.00, total 1600.00. Um multiplicador 3 produziria adicional 600.00 e deve ser detectado mesmo que o exemplo original da planilha não acione ultrapassagem. |
+| S22 | Leitura completa confirma ausência de cobrança reativa excedente | Zero confirmado para cobrança observada, sem cenário independente de surgimento; não buscar tarifa para fabricar oportunidade. Efeitos futuros de mudança contratual sem dados são limitação separada. |
+| S23 | Demandas medidas ponta=80 e fora=120 kW, bases/períodos compatíveis | Para cenário Verde derivado desse perfil, demanda medida única=120 kW; não copiar apenas ponta=80. |
+| S24 | Quantidade=1000, preço impresso=0.12345, valor=123.48 | Produto=123.45000, diferença=0.03; pendência por superar 0.02. Hipótese de arredondamento do preço a cinco casas mais fechamento a centavos daria limite=0.01000 e também não explica a diferença. |
+| S25 | Dois componentes sintéticos de BRL 0.014 cada | Fechar cada componente por ROUND_HALF_UP e somar=0.02; somar antes de fechar=0.03. Exigir política explícita; o experimento não fixa a política da distribuidora. |
