@@ -2,6 +2,8 @@
 
 Estado: extração textual e candidato estruturado **local, não aprovado**. Não é homologação do parser da aplicação nem revisão humana do gabarito. Nenhum PDF ou texto bruto foi salvo por esta análise; os originais fornecidos pelo usuário foram preservados.
 
+Conferência posterior nesta mesma data: [fatura representativa e ampliação da reconciliação](representative-review.md). O recorte inicial abaixo foi preservado como histórico; o novo rascunho local reconhece 135 linhas e fecha os 12 totais, sem aprovação visual/humana ou tributária.
+
 ## Método e limites
 
 O usuário autorizou exclusivamente `pypdf` para análise. Foi instalado `pypdf 7.0.0`, sem dependências adicionais, sem criar ambiente da aplicação, em `.local-tools/pypdf/`. A instalação restrita não encontrou o pacote; a execução aprovada fora da sandbox concluiu a instalação. O acesso à biblioteca também exigiu execução aprovada fora da sandbox. `openpyxl` já estava disponível. Não foi feito OCR, renderização, execução da aplicação ou instalação da stack do produto.
@@ -47,4 +49,4 @@ Os zeros na coluna de linhas UFER significam **nenhuma linha de cobrança UFER l
 
 Confirmar CNPJ emissor, mercado, competência/ciclo/dias pelos rótulos completos, identificador de documento, titularidade informada versus extraída, situação de refaturamento, cobertura integral dos itens e total faturado. O candidato ainda não oferece o conjunto esperado aprovado exigido pela Fase 0.
 
-Próximo passo: revisão visual/manual de uma conta representativa com UFER e de uma com parcela ociosa apenas monetária; resolver as exceções de precisão; conferir os demais ciclos e bases tributárias; então aprovar gabarito independente. Correções não devem ser gravadas nos PDFs/planilhas originais.
+Próximo passo atualizado: revisar visualmente o gabarito local de dezembro/2025 e suas exceções de preço/tributos; conferir setembro/2025 (ociosidade somente monetária e divergência tributária relevante); resolver as três exceções especiais de precisão e completar os demais ciclos. Aprovação exige responsável identificado. Correções não devem ser gravadas nos PDFs/planilhas originais.
