@@ -4,7 +4,7 @@ Plataforma web para leitura de faturas de energia, simulação de potenciais de 
 
 ## Estado atual
 
-A Fase 0 foi concluída com aceite explícito do usuário em 06/11/2026 para os contratos e o gabarito mínimo local. A primeira entrega da Fase 1 disponibiliza FastAPI, configuração tipada, ambiente local e uv.lock, com seis testes aprovados. Migrações, autenticação e seed permanecem nas próximas entregas.
+A Fase 0 foi concluída com aceite explícito do usuário em 06/11/2026 para os contratos e o gabarito mínimo local. A Fase 1 já tem persistência SQLAlchemy 2/Alembic, autenticação, permissões, seed local e simulações/unidades com cota transacional. Há 40 testes sintéticos aprovados. O envio real de e-mail permanece desabilitado; ativação/recuperação são verificadas por adaptador em memória nos testes. A fase ainda não está encerrada.
 
 A fonte dos requisitos é [EcoWatt_PROJECT_SPEC.md](EcoWatt_PROJECT_SPEC.md). O checklist de implementação fica na seção 15 e a ordem de criação das tabelas na seção 10.4.
 
@@ -14,7 +14,7 @@ O usuário autorizou commits diretos em `virgilio-vpr/EcoWatt`, sem confirmaçã
 
 Os documentos da Fase 0 estão no [dicionário de faturas](docs/contracts/invoice-data.md), [contrato do pipeline](docs/contracts/pipeline.md), [matriz de acesso](docs/contracts/access.md), [inventário e dependências do corpus](docs/corpus/README.md) e [casos sintéticos](docs/corpus/synthetic-cases.md). Contratos e gabarito mínimo local foram aceitos; homologação comercial e publicação de fixtures reais continuam pendentes.
 
-A continuação da Fase 0 inclui [conferência das planilhas](docs/corpus/workbook-review.md), [conferência inicial das faturas](docs/corpus/invoice-review.md) e [registro regulatório](docs/corpus/regulatory-review.md). Os relatórios preservam o histórico da análise; o aceite atual é limitado ao gabarito mínimo local. Use o [texto para o novo chat da Fase 1](docs/phases/phase-01-start.md).
+A continuação da Fase 0 inclui [conferência das planilhas](docs/corpus/workbook-review.md), [conferência inicial das faturas](docs/corpus/invoice-review.md) e [registro regulatório](docs/corpus/regulatory-review.md). Os relatórios preservam o histórico da análise; o aceite atual é limitado ao gabarito mínimo local. O [texto original de início da Fase 1](docs/phases/phase-01-start.md) é histórico; retome pelo STATUS atual.
 
 ## Stack definida
 
@@ -44,21 +44,27 @@ O administrador usa o mesmo fluxo de simulação do cliente, tanto na conta pró
 
 ## Preparação local
 
-Comandos executáveis e verificados em [docs/SETUP.md](docs/SETUP.md): bootstrap local de uv 0.13.7, `uv sync --locked`, verificações e execução `python -m uvicorn ecowatt.main:create_app --factory --host 127.0.0.1 --port 8000` usando os executáveis de `.venv/Scripts`. Python 3.13. Health em `/api/v1/health`, OpenAPI em `/api/v1/openapi.json` e documentação em `/api/v1/docs`. Não há criação automática de banco ou contas. Health verifica somente o processo.
+Comandos de instalação em [docs/SETUP.md](docs/SETUP.md). Com `.venv` preparado e dependências sincronizadas pelo uv.lock, na raiz:
 
-### Etapas futuras — ainda não executar
+```powershell
+.\.venv\Scripts\python.exe -m alembic upgrade head
+.\.venv\Scripts\python.exe -m alembic check
+$env:SEED_ADMIN_PASSWORD='LocalAdmin!12'
+$env:SEED_CLIENT_PASSWORD='LocalClient!34'
+try {
+  .\.venv\Scripts\python.exe -m ecowatt.seed
+} finally {
+  Remove-Item Env:SEED_ADMIN_PASSWORD
+  Remove-Item Env:SEED_CLIENT_PASSWORD
+}
+.\.venv\Scripts\python.exe -m uvicorn ecowatt.main:create_app --factory --host 127.0.0.1 --port 8000 --no-access-log
+```
 
-1. Instalar a versão de Python definida futuramente em `pyproject.toml` e o gerenciador `uv`.
-2. Instalar os recursos nativos necessários ao Tesseract, ao português do OCR e ao WeasyPrint, conforme o sistema operacional. As versões e instruções verificadas deverão ser registradas em `docs/SETUP.md`.
-3. Criar o ambiente virtual e instalar as dependências declaradas e fixadas pelo projeto.
-4. Preparar o `.env` de desenvolvimento a partir do `.env.example`, usando somente configuração local e valores sintéticos. O arquivo SQLite deverá ficar em diretório local de dados.
-5. Executar as migrações Alembic até a revisão atual, antes de criar usuários ou iniciar o processamento de faturas.
-6. Executar o seed de desenvolvimento para criar `admin@ecowatt.test` e `cliente@ecowatt.test`, com senhas locais que atendam à política da SPEC. Repetir o seed não deve duplicar nem sobrescrever contas existentes.
-7. Iniciar a API com Uvicorn e o coordenador de processamento pelo procedimento que será definido na implementação. Executar a compilação local de CSS quando necessário.
-8. Conferir health/readiness e o OpenAPI. As URLs, os comandos executáveis e as versões deverão ser preenchidos aqui assim que esses recursos existirem.
-9. Validar login e permissões com ambas as contas antes de testar faturas.
+As senhas acima são exclusivamente sintéticas, usadas na conferência local. Contas: `admin@ecowatt.test` e `cliente@ecowatt.test`; seed repetido preserva senhas/dados existentes. O `.env` versionado mantém os campos de senha vazios. Banco em `data/ecowatt.sqlite3`, ignorado pelo versionamento.
 
-O seed não roda automaticamente ao iniciar o servidor e deve recusar execução em produção. Somente as contas sintéticas locais podem usar confirmação de e-mail prévia para testes; o cadastro normal exige ativação.
+Health `/api/v1/health` verifica o processo; readiness `/api/v1/ready` exige banco migrado. OpenAPI `/api/v1/openapi.json`; índice HTML local `/api/v1/docs`, sem Swagger/CDN. Páginas de inspeção `/account` e `/simulations/{id}` exigem a mesma sessão da API; fragmentos HTMX também passam pela autorização. Login ainda é pela API: obtenha `/api/v1/auth/csrf`, preserve cookies e envie `Origin` e `X-CSRF-Token` nos comandos. Exemplo executável em [SETUP](docs/SETUP.md).
+
+O seed nunca roda no startup e recusa ambientes fora de desenvolvimento/teste. Cadastro normal não recebe bypass de ativação. Com e-mail desabilitado, cadastro/reenvio/recuperação respondem 503 sem criar contas inacessíveis. Nenhum OCR, motor, worker, relatório, CRM ou interface completa foi antecipado.
 
 ## Uso previsto
 
@@ -91,7 +97,7 @@ Antes da migração:
 5. Executar testes de integração e documentar retorno ao ambiente anterior.
 6. Provisionar administrador real, sem fixtures/bypass de desenvolvimento, e habilitar controles de produção.
 
-Mudar `DATABASE_URL` não transfere dados entre bancos. As instruções executáveis de migração serão registradas em `docs/DATABASE.md`; implantação e restauração ficarão em `docs/DEPLOYMENT.md`.
+Mudar `DATABASE_URL` não transfere dados entre bancos. Modelo e comandos locais estão em [docs/DATABASE.md](docs/DATABASE.md); transporte de dados e implantação/restauração continuam pendentes para produção.
 
 ## Documentação a manter
 
@@ -107,4 +113,4 @@ Mudar `DATABASE_URL` não transfere dados entre bancos. As instruções executá
 | `docs/DATABASE.md` | Modelo relacional, migrações, seed e transporte dos dados |
 | `docs/DEPLOYMENT.md` | Docker/PostgreSQL, configuração de produção, backups e restauração |
 
-AGENTS.md, STATUS.md, SETUP.md e os planos por fase estão disponíveis. DATABASE.md e DEPLOYMENT.md continuam planejados; seus conteúdos operacionais serão escritos e verificados junto à implementação correspondente. Marcar checkboxes somente após cumprir os critérios de aceite, registrando limitações conhecidas.
+AGENTS.md, STATUS.md, SETUP.md, DATABASE.md e os planos por fase estão disponíveis. DEPLOYMENT.md e instruções de transporte de dados continuam planejados. Marcar checkboxes somente após cumprir os critérios de aceite, registrando limitações conhecidas.

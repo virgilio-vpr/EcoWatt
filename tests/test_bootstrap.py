@@ -18,6 +18,7 @@ def test_api_without_storage(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
             schema = (await client.get("/api/v1/openapi.json")).json()
             assert "/api/v1/health" in schema["paths"]
             assert (await client.get("/api/v1/docs")).status_code == 200
+            assert (await client.get("/api/v1/ready")).status_code == 503
     asyncio.run(check())
     assert list(tmp_path.iterdir()) == []
 
@@ -35,6 +36,7 @@ def test_settings_env_file_and_environment(tmp_path: Path, monkeypatch: pytest.M
     {"environment": "production"},
     {"database_url": "postgresql://localhost/ecowatt"},
     {"database_url": "sqlite:///"},
+    {"database_url": "sqlite://///server/share.db"},
     {"email_provider": "smtp"},
 ])
 def test_unsupported_settings_rejected(values):

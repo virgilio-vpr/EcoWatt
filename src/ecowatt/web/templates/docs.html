@@ -1,0 +1,6 @@
+{% extends 'layouts/base.html' %}
+{% block content %}<h1>EcoWatt API</h1>
+<p><a href="/api/v1/openapi.json">Contrato OpenAPI JSON</a></p>
+<p>Operações de escrita exigem origem autorizada e X-CSRF-Token. Recursos privados exigem sessão.</p>
+<ul>{% for operation in operations %}<li>{{ operation.methods | join(', ') }} {{ operation.path }}</li>{% endfor %}</ul>
+{% endblock %}

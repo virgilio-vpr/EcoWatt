@@ -701,23 +701,25 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
 
 - [ ] **Fase 1 — Base leve e banco**
 
-  - [ ] Configurar FastAPI com Jinja2, HTMX local e HTML/CSS, separando rotas web e API JSON dos serviços de aplicação.
+  - [x] Configurar FastAPI com Jinja2, HTMX local e HTML/CSS, separando rotas web e API JSON dos serviços de aplicação.
   - [ ] Definir OpenAPI, cliente HTTP, erros, paginação e idempotência.
-  - [ ] Definir estrutura futura de layouts/macros; adiar acabamento visual para depois dos serviços centrais.
-  - [ ] Implementar cadastro com empresa, responsável, endereço, telefone e dupla confirmação de e-mail/senha; validar composição e mínimo de oito caracteres no backend.
+  - [x] Definir estrutura futura de layouts/macros; adiar acabamento visual para depois dos serviços centrais.
+  - [x] Implementar cadastro com empresa, responsável, endereço, telefone e dupla confirmação de e-mail/senha; validar composição e mínimo de oito caracteres no backend.
   - [ ] Implementar ativação por e-mail, login com e-mail/senha, recuperação, logout e vínculo cliente/empresa.
-  - [ ] Implementar controle de usuários no backend, hash de senha, token de sessão, expiração, rotação e revogação.
-  - [ ] Criar tabelas/migrações em ordem de dependências conforme 10.4, com FKs e transações validadas.
-  - [ ] Criar seed explícito e idempotente com admin padrão e cliente teste, empresas sintéticas e credenciais locais; impedir execução em produção.
-  - [ ] Verificar login, isolamento e fluxo de simulação tanto para admin quanto para cliente teste.
-  - [ ] Organizar configuração local e diretórios de dados, sem executar containers; documentar o caminho futuro para PostgreSQL/Docker.
-  - [ ] Provisionar administrador internamente e implementar permissões por perfil e dono.
-  - [ ] Garantir cota de duas simulações em transação, incluindo criações simultâneas.
+  - [x] Implementar controle de usuários no backend, hash de senha, token de sessão, expiração, rotação e revogação.
+  - [x] Criar tabelas/migrações em ordem de dependências conforme 10.4, com FKs e transações validadas.
+  - [x] Criar seed explícito e idempotente com admin padrão e cliente teste, empresas sintéticas e credenciais locais; impedir execução em produção.
+  - [x] Verificar login, isolamento e fluxo de simulação tanto para admin quanto para cliente teste.
+  - [x] Organizar configuração local e diretórios de dados, sem executar containers; documentar o caminho futuro para PostgreSQL/Docker.
+  - [x] Provisionar administrador internamente e implementar permissões por perfil e dono.
+  - [x] Garantir cota de duas simulações em transação, incluindo criações simultâneas.
   - [ ] Implementar exclusão que libere a vaga e impeça recriação por jobs tardios.
 
   - [ ] FastAPI, API REST independente da apresentação, SQLAlchemy, Alembic, DecimalType, autenticação e catálogo. Verificações locais/CI em SQLite; compatibilidade PostgreSQL planejada e validada antes da produção, sem exigir containers agora.
 
   - [ ] Aceite: subida local sem Docker, migrações SQLite do zero e upgrade, seed repetível sem duplicatas, decimal sem perda e acesso isolado por usuário.
+
+  Evidência parcial em 06/11/2026: 40 testes SQLite e HTTP local com seed admin/cliente; cadastro validado via API com adaptador de e-mail em memória, não envio real. Fluxo de simulação limitado a rascunho/unidade, sem antecipar faturas/cálculo. Pendentes para fechar a fase: entrega/consumo de links de e-mail, revisão final de contrato/cliente HTTP, resultado da CI e integração de exclusão aos futuros jobs. Interface completa, Tailwind e temas permanecem na Fase 4. Ver STATUS/SETUP/DATABASE para limites; não homologado comercialmente.
 
 - [ ] **Fase 2 — Coração 1/3: leitura e armazenamento de faturas**
 

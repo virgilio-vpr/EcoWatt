@@ -8,7 +8,7 @@ Atualizado em 06/11/2026. Referência: SPEC versão 3.10; contratos mínimos v0.
 
 Escopo aceito: concentrar somente em **faturamento, informações do cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas**, conforme os quatro blocos mostrados pelo usuário. Não cadastrar exaustivamente a conta ou exigir auditoria de informações fiscais, boleto, pagamento, códigos de medidor e outros dados administrativos. A investigação ampliada anterior foi além do escopo e permanece apenas como histórico.
 
-Fase 1 iniciada: primeira entrega da base FastAPI e configuração tipada concluída. Dependências instaladas somente em `.venv`, com pyproject e uv.lock. Modelos, migrações, autenticação e seed ainda pendentes.
+Fase 1 em andamento: base FastAPI, persistência SQLAlchemy/Alembic, serviços de autenticação/permissões, seed sintético e simulações/unidades implementados. Dependências somente em `.venv`, com uv.lock. Envio de e-mail e fechamento dos critérios restantes ainda pendentes; não iniciar uso com dados reais.
 
 ## Regras que permanecem
 
@@ -40,22 +40,32 @@ Hipótese de setembro conferida a pedido do usuário: forte compatibilidade num�
 
 Por orientação do usuário, o encerramento é registrado na `fase-0` e integrado à `main` por merge. A branch `fase-1` deve partir da `main` após esse merge; as próximas entregas serão commitadas nela e integradas por pull request. Operações realizadas diretamente pela integração GitHub, sem Git local.
 
-## Entrega atual — base local da Fase 1
+## Entrega atual — persistência e serviços da Fase 1
 
-Ambiente: Windows, Python 3.13.14, SQLite 3.50.4 e uv 0.13.7 local. FastAPI 0.162.0, Pydantic Settings 2.16.2 e Uvicorn 0.54.0; árvore fixada com hashes no uv.lock. API JSON em `/api/v1`, factory sem escrita no import/startup e pacotes db/web reservados. Configuração lê `.env`/ambiente, sem caminhos absolutos, segredos reais ou contas. Instruções e limitações em [SETUP](SETUP.md).
+Ambiente confirmado: Python 3.13.14, SQLite 3.50.4, uv 0.13.7 local; adicionados SQLAlchemy 2.0.57, Alembic 1.20.1, Argon2, validação de e-mail e Jinja2, com dependências/hashes no uv.lock. Nenhuma instalação global, container ou mudança de política. Bootstrap/caches continuam conforme [SETUP](SETUP.md).
 
-Executados: lock --check, pip check, seis testes aprovados, compileall e subida real Uvicorn em loopback, health/OpenAPI HTTP conferidos, processo encerrado. Bootstrap ensurepip falhou; instalação pelo pip existente direcionada ao `.venv` resolveu. Caches/temporários exigiram execução fora do sandbox, sem administrador ou instalações globais. Nenhum container, OCR, motor ou documento real usado.
+Duas migrações estáticas encadeadas: raízes empresa/distribuidora/usuário e dependentes de autenticação/simulação/auditoria. SQLite com FKs/WAL/timeout e transações explícitas; import/startup não criam esquema/contas. DecimalType usa texto em SQLite e Numeric(p,s) no dialeto PostgreSQL, rejeitando float/perda de escala. PostgreSQL não foi executado. Modelo, constraints e políticas em [DATABASE](DATABASE.md).
 
-SQLAlchemy 2/Alembic, WAL/FKs, DecimalType, readiness do banco, erros de domínio, autenticação, seed e web/HTMX ainda não implementados. Não declarar a Fase 1 concluída. Regras e ressalvas da Fase 0 preservadas.
+Cadastro/ativação/recuperação testados com adaptador de e-mail em memória; runtime desabilitado responde 503 uniforme sem fingir envio. Senhas Argon2id; sessão opaca protegida no banco, expiração absoluta/inatividade, rotação, CSRF/origem, logout/revogação e bloqueio administrativo. Admin provisionado somente por seed local explícito, sem signup privilegiado. Seed cria duas empresas/contas sintéticas e distribuidora sintética, sem tarifas/parser, preservando dados existentes.
+
+API paginada e erros padronizados, empresa/perfil próprios, admin com dono explicitamente selecionado; simulações com dono/empresa/autores, FK composta, duas vagas únicas por dono e BEGIN IMMEDIATE. Idempotência inclui retries concorrentes. Unidade salva com revisão e endereço separado; UC/distribuidora não mudam para outra unidade. Exclusão confirmada libera vaga e impede retry/consulta/guard tardio; ainda não há jobs/faturas/relatórios para integrar ou cancelar.
+
+Web de inspeção usa os mesmos serviços: layout, macro, parcial HTMX e CSS local mínimo, sem interface completa. HTMX 2.0.11 local com SRI conferido e licença; CSP sem eval/scripts inline. Índice local de operações substitui Swagger/CDN. Autorização também nos fragmentos.
+
+Verificações reais: **40 testes aprovados**, Alembic check sem divergência, criação limpa, upgrade preservando empresa, downgrade/upgrade descartável, rollback/FKs, Decimal de 30 dígitos/dez casas, seed repetido, tokens/expiração/revogação, acesso cruzado JSON/HTML/HTMX, concorrência de vaga e retry. Migrações e seed executados no SQLite local ignorado; Uvicorn HTTP real com readiness, login admin/cliente, account/perfil/docs e logout, processo encerrado. Lock/pip check, compileall e wheel com templates conferidos. Workflow Windows/SQLite adicionado; aguardar resultado remoto. Sem teste visual de navegador ou e-mail real. Argon2id 64 MiB/t3/p4: mediana local hash+verificação 85,3ms (três amostras), recalibrar no host.
 
 ## Próximo passo
 
-Executar a entrega 2 do [plano](phases/phase-01-backend.md): SQLAlchemy 2/Alembic, modelos raiz e migrações ordenadas, SQLite com WAL/FKs e Decimal sem float, criação limpa e upgrade. Depois autenticação/permissões e seed. Usar dados sintéticos; não reabrir auditoria ampliada como pré-requisito.
+Fechar a Fase 1: definir/implementar meio de entrega de e-mail e consumo dos links, revisar o contrato OpenAPI/cliente HTTP e conferir os critérios ainda abertos da seção 15. Login local já funciona pela API com seed; formulários completos/visual permanecem na Fase 4. Produção exige provisionamento real, MFA, rate limit de borda, retenção/expurgo e operação; não há modo de produção nesta base.
+
+Na Fase 2, antes de leitura/OCR, criar tabelas de faturas/filhos, integrar guard de exclusão/revisão aos jobs e provar cancelamento/ausência de recriação tardia. Não marcar esse critério integralmente apenas porque o guard está testado. Continuar com fixtures sintéticas e sem reabrir auditoria ampliada como pré-requisito.
 
 Homologação comercial, tarifas/entradas próprias para cenários alternativos e autorização/procedimento de anonimização para fixtures públicas permanecem separados. Setembro é compatível numericamente com bandeira, sem confirmação de item. Junho não equivale a dois consumos medidos. Verde exemplificativa não é gabarito financeiro.
 
 ## Arquivos e commit
 
-Novos: `pyproject.toml`, `uv.lock`, `.python-version`, `.env`, `.env.example`, `src/ecowatt/__init__.py`, `src/ecowatt/config.py`, `src/ecowatt/main.py`, `src/ecowatt/api/__init__.py`, `src/ecowatt/api/health.py`, `src/ecowatt/db/__init__.py`, `src/ecowatt/web/__init__.py`, `tests/test_bootstrap.py` e `docs/SETUP.md`. Alterados: `.gitignore`, `README.md`, `docs/STATUS.md`. Removidos: nenhum. Dados reais e artefatos locais ignorados fora do envio. Nenhum item amplo da SPEC marcado nesta entrega parcial.
+Novos: `alembic.ini`, `migrations/env.py`, `migrations/script.py.mako`, `migrations/versions/0001_roots.py`, `migrations/versions/0002_access_simulations.py`, `docs/DATABASE.md`, `.github/workflows/backend.yml`; `src/ecowatt/errors.py`, `src/ecowatt/schemas.py`, `src/ecowatt/seed.py`; `src/ecowatt/db/{base,models,session,types}.py`; `src/ecowatt/security/{__init__,passwords,tokens}.py`; `src/ecowatt/services/{__init__,auth,mail,simulations}.py`; `src/ecowatt/api/{auth,dependencies,resources}.py`; `src/ecowatt/web/routes.py`, templates de layouts/components/partials/account/simulation/docs, `static/base.css`, vendor HTMX/licença/README; `tests/{conftest,test_auth,test_database,test_simulations}.py`.
 
-Commit desta entrega na fase-1: `feat: inicia base FastAPI e ambiente local reproduzivel`. Consultar histórico remoto para o SHA; este status integra o próprio commit. Main permanece no merge da Fase 0; integração futura por PR.
+Alterados: `.env`, `.env.example`, `pyproject.toml`, `uv.lock`, `src/ecowatt/config.py`, `src/ecowatt/main.py`, `src/ecowatt/api/health.py`, `src/ecowatt/db/__init__.py`, `src/ecowatt/web/__init__.py`, `tests/test_bootstrap.py`, `README.md`, `docs/SETUP.md`, `docs/STATUS.md`, `docs/phases/phase-01-backend.md` e `EcoWatt_PROJECT_SPEC.md`. Removidos: nenhum. Dados reais, banco local, ambientes, caches e wheel fora do envio.
+
+Commit desta entrega na fase-1: `feat: adiciona persistencia autenticacao e simulacoes locais`. Consultar histórico remoto para o SHA; este status integra o próprio commit. Main preservada; integração por PR após revisão/fechamento da fase.

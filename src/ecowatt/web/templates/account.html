@@ -1,0 +1,6 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<h1>{{ company.name }}</h1>
+<button type="button" hx-get="/account/simulations" hx-target="#simulations">Atualizar simulações</button>
+<section id="simulations" aria-live="polite">{% include 'partials/simulations.html' %}</section>
+{% endblock %}

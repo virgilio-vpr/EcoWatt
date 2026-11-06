@@ -1,0 +1,6 @@
+:root { color-scheme: light dark; font: 1rem/1.6 system-ui, sans-serif; }
+body { max-width: 64rem; margin: auto; padding: 1.5rem; }
+header { border-bottom: 1px solid GrayText; padding-bottom: .75rem; }
+article { border: 1px solid GrayText; border-radius: .5rem; padding: 1rem; margin-block: 1rem; }
+button { font: inherit; padding: .4rem .8rem; cursor: pointer; }
+a { overflow-wrap: anywhere; }

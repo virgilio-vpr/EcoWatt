@@ -1,0 +1,31 @@
+name: Backend SQLite
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Ambiente local e dependências fixadas
+        shell: pwsh
+        run: |
+          python -m venv --without-pip .venv
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python -m pip --python .venv install uv==0.13.7 --index-url https://pypi.org/simple
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          .\.venv\Scripts\uv.exe sync --locked --index-url https://pypi.org/simple
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Verificações
+        shell: pwsh
+        run: |
+          .\.venv\Scripts\uv.exe lock --check
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          .\.venv\Scripts\uv.exe pip check
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          .\.venv\Scripts\python.exe -m pytest -q
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          .\.venv\Scripts\python.exe -m compileall -q src migrations

@@ -1,0 +1,6 @@
+{% extends 'layouts/base.html' %}
+{% block content %}<h1>{{ simulation.holder_name or 'Nova simulação' }}</h1>
+<p>Unidade: {{ simulation.unit_identifier or 'A informar' }}</p>
+<p>{{ simulation.address_line or 'Informe o endereço do ponto de conexão' }}</p>
+<p>{{ simulation.status }} · Revisão {{ simulation.revision }}</p>
+{% endblock %}

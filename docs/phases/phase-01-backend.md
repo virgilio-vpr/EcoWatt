@@ -2,6 +2,8 @@
 
 Objetivo: criar base local FastAPI/SQLite e acesso seguro antes do frontend completo.
 
+Estado em 06/11/2026: base e serviços das entregas 2–5 implementados com testes sintéticos. Envio de e-mail continua desabilitado; integração dos futuros jobs à exclusão e demais critérios abertos permanecem explícitos no STATUS/SPEC. Comandos verificados em [SETUP](../SETUP.md), esquema em [DATABASE](../DATABASE.md). Não interpretar este resumo como aceite integral da fase.
+
 ## Leitura dirigida
 
 Na [SPEC](../../EcoWatt_PROJECT_SPEC.md): 3.2–3.3 (stack/estrutura), 4.1 e 4.3–4.5 (cadastro, perfis, cota e seed), 10 (persistência e ordem de FKs), 12 (segurança), 13 (API), 15/Fase 1 (aceite). Consultar o README para o estado real dos comandos e a seção 16 para dependências externas.

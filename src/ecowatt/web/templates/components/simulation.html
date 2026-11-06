@@ -1,0 +1,4 @@
+{% macro simulation_card(item) %}
+<article><a href="/simulations/{{ item.id }}">{{ item.holder_name or 'Nova simulação' }}</a>
+<p>{{ item.status }} · Revisão {{ item.revision }}</p></article>
+{% endmacro %}

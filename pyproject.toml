@@ -8,6 +8,11 @@ version = "0.1.0"
 description = "Backend EcoWatt"
 requires-python = ">=3.13,<3.14"
 dependencies = [
+  "sqlalchemy>=2.0.36,<2.1",
+  "alembic>=1.14,<2",
+  "argon2-cffi>=25.1,<26",
+  "email-validator>=2.2,<3",
+  "jinja2>=3.1.6,<4",
   "fastapi>=0.115,<1",
   "pydantic-settings>=2.7,<3",
   "uvicorn>=0.34,<1",
