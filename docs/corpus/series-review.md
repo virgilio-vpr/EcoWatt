@@ -41,6 +41,8 @@ Confirmação do usuário em 06/11/2026: ele acompanhou a transição e confirma
 
 A confirmação da causa não fornece por si só os consumos, valores ou documento referentes ao intervalo de 01/05 a 31/05. Essa questão de cobertura permanece separada: conservar datas/itens originais e os dois registros MAI/26, sem afirmar documento faltante, interpolar consumo ou alterar competências. A série pode continuar sendo analisada com essa limitação explícita.
 
+Premissa orientada pelo usuário em 06/11/2026: considerar junho/2026 como conta de transição abrangendo aproximadamente 60 dias; o consumo faturado não é acumulado e pode representar média dos dois meses. Registrar cobertura aproximada e possível média como estimativas de origem `user`, separadas dos 30 dias impressos e das datas extraídas. Usar o consumo efetivamente faturado no diagnóstico observado; não multiplicar por dois, dividir por 60, distribuir entre meses ou criar consumo para o intervalo sem regra/dados adicionais. Essa premissa permite seguir a análise com ressalva de comparabilidade temporal, sem presumir PDF faltante. Totais observados continuam sendo somas das cobranças disponíveis; não representam consumo anual contínuo homologado por essa premissa.
+
 Os dias impressos somam 365, mas essa soma não demonstra continuidade do intervalo coberto. Conferir os rótulos e a natureza desses ciclos nos originais, sem concluir que falta uma fatura ou que existe erro de cobrança apenas por esse diagnóstico. Não corrigir datas pelo nome do arquivo, interpolar consumo ou apresentar anualização como série contínua conferida enquanto a questão estiver aberta.
 
 ## UFER e referência estrutural Verde nos dez meses comuns

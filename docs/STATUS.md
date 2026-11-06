@@ -30,6 +30,8 @@ Mercado sugerido por identificação explícita ou indícios TE/TUSD por ciclo. 
 
 Esclarecimento da continuidade: a linha de maio contém três datas (01/04, 01/05 e 31/05), e a de junho (31/05, 30/06 e 31/07). O intervalo surge ao comparar fim/início candidatos, não por ausência de uma competência na lista. Os históricos de junho e julho mostram dois registros MAI/26 com consumos diferentes; possível ciclo adicional ou particularidade de faturamento, sem comprovação de PDF faltante ou calendário alterado. Usuário confirmou ter acompanhado a transição e que a Enel ajustou o calendário para alinhar mês de referência e período de medição antes da migração de agosto/2026. Registrar como informação confirmada pelo usuário, origem `user`, não como hipótese. A causa da mudança está esclarecida por essa fonte. A cobertura do intervalo de maio continua separada: não concluir que falta PDF, corrigir datas ou interpolar consumo sem localizar os valores/ciclo correspondentes.
 
+Premissa orientada pelo usuário em 06/11/2026: considerar junho/2026 como conta de transição abrangendo aproximadamente 60 dias; o consumo faturado não é acumulado e pode representar média dos dois meses. Registrar cobertura aproximada e possível média como estimativas de origem `user`, separadas dos 30 dias impressos e das datas extraídas. Usar o consumo efetivamente faturado no diagnóstico observado; não multiplicar por dois, dividir por 60, distribuir entre meses ou criar consumo para o intervalo sem regra/dados adicionais. Essa premissa permite seguir a análise com ressalva de comparabilidade temporal, sem presumir PDF faltante. Totais observados continuam sendo somas das cobranças disponíveis; não representam consumo anual contínuo homologado por essa premissa.
+
 ## Evidências e ferramentas
 
 - `docs/corpus/workbook-review.md`: oito abas, 1.201 fórmulas com cache e divergências P01–P08. Caches e reprodução aritmética não homologam hipóteses.
@@ -40,14 +42,14 @@ Esclarecimento da continuidade: a linha de maio contém três datas (01/04, 01/0
 
 ## Verificações desta entrega
 
-Registrada a confirmação direta do usuário, que acompanhou a transição, sobre alinhamento do calendário à medição antes da migração. Revisão documental de proveniência, preservação das datas e manutenção da pendência; links/codificação e lista explícita de dois documentos públicos conferidos. Nenhuma nova leitura de PDF, verificação financeira, consulta regulatória, instalação ou execução da aplicação; nenhum aceite alterado.
+Registrada a orientação do usuário sobre junho abranger aproximadamente 60 dias, sem consumo acumulado e com possível média de dois meses. Verificada separação entre premissa de cobertura e dados impressos, sem alteração dos consumos, produtos ou residuais; links/codificação e lista explícita de dois documentos públicos conferidos. Nenhuma nova leitura de PDF, verificação financeira, consulta regulatória, instalação ou execução da aplicação; nenhum aceite alterado.
 
 ## Pendências e próximo passo
 
-Conferir primeiro os rótulos e ciclos de maio/junho no original; revisar visualmente os cabeçalhos da série e confirmar identidade, mercado por ciclo e ponto de conexão com o responsável. Completar gabaritos, inclusive agosto/setembro com parcelas somente monetárias; usar a Verde apenas como referência estrutural; eventual cenário Verde será calculado independentemente, com medições e preços/fontes aplicáveis. Aprovação exige responsável/data; achados de impostos separados não são bloqueios. Autorização e procedimento de anonimização para fixtures públicas continuam pendentes. Fase 1 com fixtures sintéticas permanece possível quando solicitada.
+Seguir com junho como transição de aproximadamente 60 dias e consumo possivelmente médio, conforme premissa do usuário, preservando os dados impressos. Rever sua comparabilidade antes de anualizar; revisar visualmente os cabeçalhos da série e confirmar identidade, mercado por ciclo e ponto de conexão com o responsável. Completar gabaritos, inclusive agosto/setembro com parcelas somente monetárias; usar a Verde apenas como referência estrutural; eventual cenário Verde será calculado independentemente, com medições e preços/fontes aplicáveis. Aprovação exige responsável/data; achados de impostos separados não são bloqueios. Autorização e procedimento de anonimização para fixtures públicas continuam pendentes. Fase 1 com fixtures sintéticas permanece possível quando solicitada.
 
 ## Arquivos e commit
 
 Alterados: `docs/STATUS.md`, `docs/corpus/series-review.md`. Novos/removidos: nenhum. Materiais reais e ferramentas locais fora do envio.
 
-Commit desta entrega: `docs: registra confirmacao do usuario sobre ajuste do calendario`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
+Commit desta entrega: `docs: registra premissa do ciclo de transicao de junho`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
