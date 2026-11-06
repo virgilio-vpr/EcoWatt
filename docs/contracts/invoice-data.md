@@ -1,6 +1,6 @@
 # Dicionário de dados faturáveis — contrato v0.1
 
-Proposta para implementação e revisão, ainda sem aprovação do corpus real. Fonte normativa: SPEC 3.5, §§3.1, 6, 7 e 10. Este documento define nomes e tipos de intercâmbio; não substitui as regras da SPEC nem constitui esquema SQL implementado. Fronteiras: [pipeline](pipeline.md). Evidências e dúvidas: [corpus](../corpus/README.md).
+Proposta para implementação e revisão, ainda sem aprovação do corpus real. Fonte normativa: SPEC 3.7, §§3.1, 6, 7 e 10. Este documento define nomes e tipos de intercâmbio; não substitui as regras da SPEC nem constitui esquema SQL implementado. Fronteiras: [pipeline](pipeline.md). Evidências e dúvidas: [corpus](../corpus/README.md).
 
 ## Convenções
 
@@ -80,9 +80,9 @@ Cada `items[]` possui `id`, `type`, `post` (null quando não se aplica), `field_
 | `quantity` | decimal / unidade explícita | C | Pode faltar em linha apenas monetária |
 | `quantity_unit` | enum kWh/MWh/kW/kvarh/kvar/other | C | `other` exige definição, sem uso financeiro automático |
 | `regulated_rate` | decimal / BRL por unidade | C | Sem tributos, fonte e vigência; não confundir com preço efetivo |
-| `effective_price` | decimal / BRL por unidade | C | Base tributária explícita: with_tax/without_tax/unknown |
+| `effective_price` | decimal / BRL por unidade | C | Simulação real exige `with_tax`: preço cheio com impostos incorporados, sem recálculo separado. `without_tax`/`unknown` não substituem essa base |
 | `amount` | decimal / BRL | E | Sinal preservado para créditos |
-| `taxes[]` | tributo, base BRL, alíquota adimensional, valor BRL, incidência, estado | C | Cada componente com proveniência; desconhecido não equivale a isento |
+| `taxes[]` | tributo, base BRL, alíquota adimensional, valor BRL, incidência, estado | O | Informação documental com proveniência; fora da análise da simulação. Ausência/divergência não bloqueia preço efetivo cheio disponível e não equivale a isenção |
 | `valid_from`, `valid_to`, `segment_id` | datas / ID | C | Segmentação por mudança de tarifa/contrato |
 | `reactive_nature` | enum | C | Quando identificada |
 | `grouped_components` | lista TE/TUSD | C | Linha agrupada explicitamente identificada; `unclassified` até decomposição validada, sem duplicar valor |
@@ -90,7 +90,7 @@ Cada `items[]` possui `id`, `type`, `post` (null quando não se aplica), `field_
 
 ## Validação e completude
 
-Normalizar separadores brasileiros e unidades; verificar sinal, posto, período, limites de escopo e duplicidade (§6.3). Por linha comparável, verificar quantidade × preço com tolerância inicial de BRL 0.02, preservando precisão impressa; exceção exige motivo auditável. Quantidade/preço ausentes não são inventados para fechar a linha.
+Normalizar separadores brasileiros e unidades; verificar sinal, posto, período, limites de escopo e duplicidade (§6.3). Por linha comparável, verificar quantidade × preço: diferença absoluta de até BRL 0.99, inclusive, aceita para reconciliação monetária por autorização do usuário em 06/11/2026. Preservar precisão, produto, valor observado, diferença e versão da política; acima do limite gera pendência. Não usar a tolerância para preencher ausentes, validar identidade ou alterar limites em kW. Quantidade/preço ausentes não são inventados para fechar a linha; residual do total continua registrado separadamente.
 
 Registrar `known_components_total`, `invoice_total` e `residual` (total menos componentes conhecidos). Residual precisa de explicação ou pendência; não declarar conciliação integral por tolerância sem classificação. Conflitos de identidade, duplicatas não resolvidas e campos críticos pendentes impedem `ready`. Falta de dados exclusivos de um módulo permite fatura conferida com módulo indisponível, por exemplo demanda ausente e reativos monetários observados válidos.
 
@@ -99,3 +99,7 @@ Unidades extras, livre, GD, rural/sazonal, reserva, faturamento excepcional e de
 ## Reativos observados — esclarecimento de 06/11/2026
 
 A ausência confirmada de cobrança excedente permite `zero_confirmed`, com evidência de leitura suficiente, e não cria cenário independente de surgimento de reativos. Indicadores do medidor não equivalem a itens faturados. Leitura incompleta permanece `missing`/`unreadable` conforme o caso. Quantidade ou preço ausente em cobrança observada continua desconhecido; o catálogo oficial não os inventa. Efeitos de alteração de contrato/modalidade sem dados suficientes permanecem condicionados, conforme SPEC 3.6 §8.4.
+
+## Regra esclarecida pelo usuário em 06/11/2026
+
+A simulação utiliza preço cheio com impostos incorporados, sem auditoria ou recálculo separado dos tributos. Para a demanda ociosa LEI ESTADUAL, o usuário esclareceu: `P_ociosa = P_demanda_contratada × 0,82`, na ponta, fora de ponta e demanda única. A redução de 18% é aplicada ao preço unitário, não à quantidade contratada. Preservar o preço e o valor observados no gabarito histórico; a divergência encontrada na extração candidata continua para conferência do preço-base e da precisão, sem declarar a regra informada ou o candidato homologados. Achados das colunas tributárias ficam como histórico documental e deixam de ser bloqueio da simulação com preço cheio disponível. Continuam pendentes identidade/mercado, cobertura visual, preços/componentes necessários e aprovação do gabarito.

@@ -49,4 +49,13 @@ Os zeros na coluna de linhas UFER significam **nenhuma linha de cobrança UFER l
 
 Confirmar CNPJ emissor, mercado, competência/ciclo/dias pelos rótulos completos, identificador de documento, titularidade informada versus extraída, situação de refaturamento, cobertura integral dos itens e total faturado. O candidato ainda não oferece o conjunto esperado aprovado exigido pela Fase 0.
 
-Próximo passo atualizado: revisar visualmente o gabarito local de dezembro/2025 e suas exceções de preço/tributos; conferir setembro/2025 (ociosidade somente monetária e divergência tributária relevante); resolver as três exceções especiais de precisão e completar os demais ciclos. Aprovação exige responsável identificado. Correções não devem ser gravadas nos PDFs/planilhas originais.
+Próximo passo atualizado: revisar visualmente o gabarito local de dezembro/2025 e suas exceções de preço; conferir setembro/2025 (ociosidade somente monetária; divergências tributárias documentais ficam fora da análise); resolver as três exceções especiais de precisão e completar os demais ciclos. Aprovação exige responsável identificado. Correções não devem ser gravadas nos PDFs/planilhas originais.
+
+## Regra esclarecida pelo usuário em 06/11/2026
+
+A simulação utiliza preço cheio com impostos incorporados, sem auditoria ou recálculo separado dos tributos. Para a demanda ociosa LEI ESTADUAL, o usuário esclareceu: `P_ociosa = P_demanda_contratada × 0,82`, na ponta, fora de ponta e demanda única. A redução de 18% é aplicada ao preço unitário, não à quantidade contratada. Preservar o preço e o valor observados no gabarito histórico; a divergência encontrada na extração candidata continua para conferência do preço-base e da precisão, sem declarar a regra informada ou o candidato homologados. Achados das colunas tributárias ficam como histórico documental e deixam de ser bloqueio da simulação com preço cheio disponível. Continuam pendentes identidade/mercado, cobertura visual, preços/componentes necessários e aprovação do gabarito.
+
+
+## Tolerância monetária atual — decisão do usuário em 06/11/2026
+
+Diferença absoluta de até BRL 0.99 por item, inclusive, aceita na reconciliação entre cálculo e valor faturado. Reavaliação em Decimal: 105 de 105 produtos quantificados e 20 de 20 parcelas ociosas pela relação de 82% passam. As quatro parcelas ociosas somente monetárias não tiveram quantidade/preço inventados. Resultados e pendências acima relativos a BRL 0.02 são históricos e ficam superados quanto ao aceite monetário. Não há pendência de impostos separados na simulação com preços cheios. Permanecem cobertura visual, identidade/mercado, campos necessários ausentes, fontes dos cenários alternativos e aprovação do gabarito. Diferenças e valores observados são preservados; os 12 residuais do total continuam zero, sem ajuste. A tolerância não altera kW, gatilho de ultrapassagem ou validação dos campos. Fronteiras ±0.99 aceitas e ±1.00 recusadas verificadas em Decimal.

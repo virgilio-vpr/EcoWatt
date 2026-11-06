@@ -1,6 +1,6 @@
 # EcoWatt — Especificação de produto e implementação
 
-Versão 3.6 • 06/11/2026 • Documento autossuficiente para orientar a implementação.
+Versão 3.7 • 06/11/2026 • Documento autossuficiente para orientar a implementação.
 
 ## 1. Objetivo e critérios do produto
 
@@ -26,8 +26,8 @@ Esta especificação substitui integralmente o rascunho recebido. Referências a
 | --- | --- |
 | Lentidão atribuída à linguagem e ao banco sem medição | Arquitetura mais simples e orçamento de desempenho; a causa anterior permanece não comprovada |
 | Ultrapassagem substitui indevidamente parte do faturamento regular | Separar demanda regular e cobrança adicional de ultrapassagem |
-| ICMS ou desconto de ociosidade presumido em 18% | Política tributária por item e vigência; sem percentual universal |
-| Média única de fator tributário para toda a conta | Conversão por componente e natureza tributária |
+| Desconto de ociosidade presumido em 18% | Regra definida pelo usuário: preço da demanda ociosa = preço da demanda contratada × 0,82, na ponta, fora de ponta e demanda única; conferir contra os valores observados |
+| Recálculo de impostos sobre preço já cheio | Usar preço efetivo com impostos incorporados; tributos separados fora da análise da simulação |
 | Item ausente tratado automaticamente como zero | Distinguir zero confirmado, não aplicável, não encontrado e ilegível |
 | Reativos calculados pela tarifa comum de energia | Valores de referência próprios e dependência de registros horários para reconstrução |
 | Banco de capacitores como solução universal | Potencial de redução sujeito à engenharia, inclusive para excesso capacitivo |
@@ -287,7 +287,7 @@ TE e TUSD agrupadas em uma linha exigem identificação explícita de agrupament
 - Separadores brasileiros, sinais de crédito, decimais e conversões kWh/MWh normalizados.
 - Tarifa e quantidade compatíveis com unidade e posto.
 - `quantidade × preço ≈ valor`, considerando precisão impressa e arredondamento.
-- Tolerância monetária inicial: R$ 0,02 por linha; ampliar somente com motivo auditável para precisão truncada.
+- Tolerância monetária de reconciliação: diferença absoluta de até R$ 0,99 por item, inclusive, autorizada pelo usuário em 06/11/2026. Preservar produto, valor observado e diferença; valores acima do limite geram pendência. Não aplicar esse limite aos kW, ao gatilho de ultrapassagem, a campos ausentes ou à identidade. O residual do total continua explícito e exige classificação; não o apagar por essa tolerância.
 - Total faturado é conciliado com componentes conhecidos e residual identificado; não exigir que apenas itens analisados somem a conta inteira.
 - Demanda contratada ou medida ausente bloqueia a otimização daquele posto; não bloqueia diagnóstico válido de reativos.
 - Sem demanda por posto suficiente, migração pode ficar parcial/inconclusiva.
@@ -299,7 +299,7 @@ TE e TUSD agrupadas em uma linha exigem identificação explícita de agrupament
 
 Todos os cálculos usam Decimal; entrada/saída JSON representa decimais como strings. Precisão interna mínima de 28 dígitos. Não truncar tarifas a cinco casas antes do cálculo: preservar precisão de origem. Arredondar moeda a centavos por item no fechamento, com política versionada e validada contra a distribuidora.
 
-Parâmetros possuem vigência, escopo, fonte e versão. Política tributária é separada da regra elétrica. Não transformar qualquer regra regulatória em campo livre sem validação administrativa.
+Parâmetros possuem vigência, escopo, fonte e versão. A simulação usa preços efetivos com impostos incorporados; não decompõe nem recalcula tributos separadamente (§8.6). Não transformar qualquer regra regulatória em campo livre sem validação administrativa.
 
 Exceções rurais/sazonais, períodos de teste, ajustes e contratos especiais ficam fora da fórmula geral até homologação. Uma divergência não transforma automaticamente a fatura em cobrança indevida.
 
@@ -319,7 +319,7 @@ se Dm > 1,05 × Dc:
 senão:
     C_ultrapassagem_sem_tributos = 0
 
-C_demanda = tributacao(C_regular) + tributacao(C_ultrapassagem)
+C_demanda_base = C_regular_sem_tributos + C_ultrapassagem_sem_tributos
 ```
 
 A ultrapassagem é adicional ao faturamento regular. O gatilho de 5% não significa cobrar somente a parcela acima de 105%. A tarifa específica identificada e homologada prevalece sobre uma tarifa deduzida.
@@ -334,7 +334,9 @@ Exemplo sem tributos, Dc = 100 kW:
 
 O resultado 140 × T apresentado no rascunho para 120 kW não deve ser utilizado como teste de referência.
 
-Demanda ociosa física = `max(Dc − Dm, 0)`. Sua valoração considera a incidência tributária efetiva da parcela não utilizada. Quando a fatura separa demanda utilizada e ociosa, aplicar tributos a cada parcela. Um quociente `r` pode ser diagnóstico de preços compatíveis, nunca desconto universal de 18%, nem alíquota inferida pela falta de uma linha.
+Demanda ociosa física = `max(Dc − Dm, 0)`. Na simulação, valorar a demanda utilizada e a ociosa com seus preços efetivos próprios, já com impostos incorporados. Por esclarecimento do usuário em 06/11/2026, a parcela ociosa identificada como LEI ESTADUAL usa `P_ociosa = P_demanda_contratada × (1 − 0,18) = P_demanda_contratada × 0,82`. Aplicar a relação ao preço unitário, não aos kW contratados, na ponta, fora de ponta e demanda única. Não descontar novamente impostos da tarifa cheia nas demais parcelas. A regra informada orienta a simulação; o gabarito histórico preserva o preço e o valor impressos. Divergência entre a relação e a leitura candidata exige conferência, sem substituir o observado ou considerar o corpus aprovado.
+
+O exemplo sem tributos acima fixa apenas a regra elétrica e o gatilho de ultrapassagem. Para preços cheios distintos, o custo regular é `min(Dm, Dc) × P_utilizada + max(Dc − Dm, 0) × P_ociosa + max(Dm − Dc, 0) × P_utilizada`, sem novo acréscimo ou retirada de impostos. O adicional de ultrapassagem usa seu preço efetivo específico quando disponível; o fator 2 exige base compatível e regra validada. Preservar valores observados quando faltarem preços para reproduzir ou simular parcelas.
 
 Conferir o cenário atual com as linhas faturadas. Se não reconciliar, preservar o valor observado, registrar diferença e bloquear recomendações quantitativas que dependam da regra não validada. Uma base atual correta não torna automaticamente correto o cenário alternativo.
 
@@ -394,16 +396,18 @@ A obtenção de dados intervalares do portal da distribuidora para os meses anal
 
 Mostrar economia técnica recorrente separada do prazo de implementação. Redução de demanda e mudança de modalidade dependem de elegibilidade, contrato, prazos e histórico de alterações. Não supor benefício imediato no mês seguinte. O relatório só informa datas de efeito quando as condições foram verificadas; sem elas registra “data de implantação não confirmada”.
 
-### 8.6 Bases de preço e tributos
+### 8.6 Preços efetivos com impostos incorporados
 
 Duas visões independentes:
 
 - **Histórico:** conferir valores e regras nas vigências das faturas.
 - **Comparativo de referência:** reproduzir o mesmo perfil de carga na data tarifária escolhida, com tarifas completas e equivalentes para ambos os cenários.
 
-Não comparar contrato atual a preços antigos contra alternativa com tarifas novas. Fonte “com tributos” exige tratamento distinto da fonte “sem tributos”. Conversão usa política por item, UF, classe, incidência e período, com isenções e descontos explícitos. Não usar média única de `k` nem inferir alíquota tributária atual de uma conta antiga sem identificá-la como hipótese.
+Não comparar contrato atual a preços antigos contra alternativa com tarifas novas. Por decisão do usuário em 06/11/2026, a simulação utiliza a tarifa cheia, isto é, o preço efetivo com impostos incorporados, sem análise, decomposição, recálculo, acréscimo ou dedução separada de ICMS, PIS/COFINS e outros impostos. As colunas tributárias eventualmente extraídas são informação documental e não condicionam o cálculo quando o preço cheio aplicável está disponível. Divergências dessas colunas não bloqueiam por si só o gabarito econômico ou a simulação.
 
-Se faltar base tributária, permitir comparação sem tributos claramente rotulada, ou bloquear a visão com tributos. Sem tarifa adequada, bloquear somente a comparação afetada. Não substituir tarifa ausente por zero.
+Para a parcela ociosa LEI ESTADUAL, aplicar a relação de 82% do preço da demanda contratada definida no §8.2, por posto ou demanda única. Essa é a exceção explícita de formação de preço solicitada pelo usuário; os demais impostos permanecem incorporados, sem análise separada. Tarifa oficial sem impostos não equivale ao preço cheio; não convertê-la por percentual presumido. Comparações exigem preços cheios compatíveis por componente, modalidade e período.
+
+A ausência de bases ou alíquotas tributárias separadas não bloqueia o uso de preço efetivo cheio identificado. Se faltar esse preço para uma parcela ou cenário, bloquear somente o cálculo dependente; não substituí-lo por zero nem inventar conversão tributária. A formação do preço ocioso segue a relação explícita de 82% do §8.2 quando o preço-base estiver disponível. Exemplos matemáticos sintéticos sem tributos continuam identificados como tais e não substituem o preço exigido na simulação real.
 
 ### 8.7 Economia sem dupla contagem
 
@@ -598,7 +602,7 @@ Os valores visíveis de demanda de 338 kW e candidato de 290 kW, custos de R$ 13
 
 A conferência de 06/11/2026 das planilhas recebidas reproduziu aritmeticamente os totais citados, sob as hipóteses dos próprios arquivos, mas identificou divergências de período, tributação e fórmulas. Evidências: [conferência das planilhas](docs/corpus/workbook-review.md) e [conferência inicial das faturas](docs/corpus/invoice-review.md). Essa reprodução não homologa as premissas nem os valores das imagens.
 
-Homologar a comparação somente com dados estruturados, fórmulas da planilha, bases tributárias e tarifas por vigência conferidos. Registrar divergências por mês/componente. Uma captura de gráfico não permite recuperar medições precisas pela altura das barras. Nenhum valor das imagens se torna teste homologado automaticamente; novos exemplos devem ser sintéticos identificados ou derivados de corpus autorizado e conferido.
+Homologar a comparação somente com dados estruturados, fórmulas da planilha e preços efetivos cheios por componente e vigência conferidos; não exigir auditoria separada dos impostos. Registrar divergências por mês/componente. Uma captura de gráfico não permite recuperar medições precisas pela altura das barras. Nenhum valor das imagens se torna teste homologado automaticamente; novos exemplos devem ser sintéticos identificados ou derivados de corpus autorizado e conferido.
 
 ## 12. Segurança, privacidade e operação
 
@@ -731,9 +735,9 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
   - [ ] Distinguir candidato exploratório, sugestão automática e resultado salvo; preservar diferença desfavorável.
   - [ ] Validar que tarifa unitária não seja somada como tarifa do período e que demanda em kW não vire total contratável por soma mensal.
 
-  - [ ] Demanda regular/ultrapassagem, ociosidade com tributos validados, otimização, reativos observados, comparação de modalidade e cenários encadeados.
+  - [ ] Demanda regular/ultrapassagem, ociosidade com relação de 82% do preço da demanda contratada e confronto com os valores observados, otimização, reativos observados, comparação de modalidade e cenários encadeados.
 
-  - [ ] Aceite: testes de fronteira 105%, exemplo 160 × T, ausência versus zero, comparação tributária coerente, limite global de ciclos e igualdade entre economia total e diferenças dos cenários. Aumento de demanda contratada não pode reduzir custos por erro de sinal ou duplicação tributária.
+  - [ ] Aceite: testes de fronteira 105%, exemplo 160 × T, ausência versus zero, comparação com preços cheios compatíveis, limite global de ciclos e igualdade entre economia total e diferenças dos cenários. Aumento de demanda contratada não pode reduzir custos por erro de sinal ou duplicação tributária.
 
 - [ ] **Fase 4 — Coração 3/3: relatório, interface e captação**
 
@@ -766,7 +770,7 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
 
   - [ ] Conferir dados e fórmulas originais da planilha antes de homologar os números das capturas.
   - [ ] Validar nomenclatura/unidades de UFER/UFDR no layout e documento de origem.
-  - [ ] Reconciliar custos atual/manual e reativos por mês, componente, tarifa e tratamento tributário.
+  - [ ] Reconciliar custos atual/manual e reativos por mês, componente, preço efetivo cheio aplicável.
 
   - [ ] Série real comparada com planilha manual independente, regras e tarifas por vigência. Homologar Azul→Verde; Verde→Azul fica condicionado aos dados disponíveis. AS e outros layouts só são habilitados após testes próprios.
 
@@ -816,7 +820,7 @@ Restam informações externas que não podem ser inventadas:
 | --- | --- | --- |
 | Corpus real ENEL e conferência | Série e planilha de referência do cliente-piloto | Parser e fórmulas não homologados comercialmente |
 | Identidade da distribuidora | CNPJ emissor da primeira conta | Nenhuma tarifa escolhida só pelo nome ENEL |
-| Tratamento tributário e perdas | Contas, resolução e regra aplicável | Comparação sem tributos ou módulo bloqueado |
+| Preços cheios por componente e perdas | Faturas e fontes aplicáveis por vigência; ociosidade com preço próprio | Falta de preço cheio ou perdas necessárias bloqueia somente o cálculo dependente; impostos separados fora da análise |
 | Contrato e restrições de alteração | CUSD, histórico e regra vigente | Potencial técnico sem data de implantação |
 | Dados por posto na Verde | Fatura/portal/registros intervalares | Migração condicional/inconclusiva |
 | Dados horários de reativos | Medição ou arquivo da distribuidora | Cobrança observada e potencial condicionado |

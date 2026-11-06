@@ -30,7 +30,7 @@ Referência regulatória recebida: `docs/ANEEL/REN 1000.pdf`, 3.919.570 bytes, S
 | Planilha original e fórmulas | Células/fórmulas e entradas estruturadas, preços, tributos e perdas por ciclo, resultados por componente | Comparação financeira com planilha pendente |
 | Tarifas e atos oficiais por vigência | Fonte oficial, arquivo/versão, distribuidora/CNPJ, subgrupo, modalidade e base de preço | Nenhuma tarifa real fixada nesta fase |
 | CUSD, aditivos e histórico contratual | Demandas por posto, restrições e datas de alteração, exceções e perdas | Recomendação de implantação condicionada |
-| Incidências tributárias e perdas | Regra aplicável e bases verificadas nos documentos | Comparação com tributos condicionada; sem alíquota inventada |
+| Preços cheios e perdas | Preços efetivos próprios por componente e vigência; perdas quando necessárias | Impostos separados fora da análise; falta de preço cheio bloqueia somente o cálculo dependente |
 | Verde/AS e novos layouts | Fixtures próprias e tarifas correspondentes; demandas por posto quando necessárias | Estar no escopo não homologa esses adaptadores |
 | Reativos intervalares | Medição/arquivo da distribuidora e regra aplicável | Não inferir correção completa de FP mensal |
 | Dados comerciais/privacidade/hospedagem | Responsável, canal, finalidades, retenção, provedor e isolamento | Publicação e operação comercial pendentes |
@@ -49,7 +49,7 @@ Fluxo de homologação: receber autorização → anonimizar em processo control
 | --- | --- | --- |
 | D01 | Cliente-piloto: confirmar condições de uso/anonimização da série recebida e indicar quem aprova o gabarito? | Modelos e pipeline com casos sintéticos |
 | D02 | Especialista/piloto: qual CNPJ/layout real e quais exceções contratuais? | Adaptadores com interface definida, sem selo de homologação |
-| D03 | Especialista: quais tributos, perdas, tarifas e política de arredondamento por vigência? | Aritmética sem tributos rotulada, nenhuma tarifa ausente igual a zero |
+| D03 | Especialista: quais preços cheios por componente, perdas e política de arredondamento por vigência? Impostos separados fora da análise por decisão do usuário. | Nenhum preço ausente igual a zero; ociosidade = preço da demanda contratada × 0,82, conforme regra informada pelo usuário |
 | D04 | Finalidade/período esclarecidos: Verde é simulação real; referência principal PDF agosto/2025–julho/2026, anterior à migração ao mercado livre informada para agosto/2026. Faltam fontes e validação das entradas/resultados. | Relatório demonstrativo sem reproduzir resultados como aprovados |
 | D05 | Piloto/distribuidora: existem dados por posto na Verde e intervalares de reativos? | Módulos parciais com motivos explícitos |
 | D06 | Responsável do produto: aprovar nomes/tipos deste contrato e conjuntos reais esperados? | Implementar proposta versionada, registrar ajustes antes de migrar dados reais |
@@ -68,3 +68,12 @@ O candidato com dados reais normalizados fica exclusivamente em `.local-analysis
 ## Avanço do gabarito em 06/11/2026
 
 Dezembro/2025 recebeu conferência textual do quadro completo e rascunho local para revisão. A ampliação preliminar reconheceu 135 linhas financeiras, incluindo bandeiras e COSIP, com residual monetário zero nos 12 totais. Divergências tributárias e de precisão continuam abertas; setembro/2025 tem diferenças relevantes entre quadro tributário e itens. Gabarito detalhado e JSON ficam em `.local-analysis/`, sem publicação. Não houve revisão visual, aprovação humana, fixture real autorizada ou homologação da Verde. Ver [fatura representativa](representative-review.md) para limites e próximo passo. A competência de dezembro/2025 foi conferida pelo campo explícito e histórico; as demais ainda exigem confirmação individual do cabeçalho, atualizando o limite do inventário inicial acima.
+
+## Regra esclarecida pelo usuário em 06/11/2026
+
+A simulação utiliza preço cheio com impostos incorporados, sem auditoria ou recálculo separado dos tributos. Para a demanda ociosa LEI ESTADUAL, o usuário esclareceu: `P_ociosa = P_demanda_contratada × 0,82`, na ponta, fora de ponta e demanda única. A redução de 18% é aplicada ao preço unitário, não à quantidade contratada. Preservar o preço e o valor observados no gabarito histórico; a divergência encontrada na extração candidata continua para conferência do preço-base e da precisão, sem declarar a regra informada ou o candidato homologados. Achados das colunas tributárias ficam como histórico documental e deixam de ser bloqueio da simulação com preço cheio disponível. Continuam pendentes identidade/mercado, cobertura visual, preços/componentes necessários e aprovação do gabarito.
+
+
+## Tolerância monetária atual — decisão do usuário em 06/11/2026
+
+Diferença absoluta de até BRL 0.99 por item, inclusive, aceita na reconciliação entre cálculo e valor faturado. Reavaliação em Decimal: 105 de 105 produtos quantificados e 20 de 20 parcelas ociosas pela relação de 82% passam. As quatro parcelas ociosas somente monetárias não tiveram quantidade/preço inventados. Resultados e pendências acima relativos a BRL 0.02 são históricos e ficam superados quanto ao aceite monetário. Não há pendência de impostos separados na simulação com preços cheios. Permanecem cobertura visual, identidade/mercado, campos necessários ausentes, fontes dos cenários alternativos e aprovação do gabarito. Diferenças e valores observados são preservados; os 12 residuais do total continuam zero, sem ajuste. A tolerância não altera kW, gatilho de ultrapassagem ou validação dos campos. Fronteiras ±0.99 aceitas e ±1.00 recusadas verificadas em Decimal.

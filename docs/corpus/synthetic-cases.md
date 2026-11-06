@@ -34,8 +34,8 @@ Cada linha é um caso independente; valores monetários em BRL, demanda em kW. T
 | S04 | Dc=100, Dm=120 | Regular 1200.00; adicional (120−100)×2×10=400.00; total 1600.00 |
 | S05 | Dc=100, Dm=105.01 | Regular 1050.10; adicional 100.20; total 1150.30; não cobrar apenas excesso sobre 105 |
 | S06 | Quantidade 2 MWh | Normalizar para 2000 kWh; manter unidade/origem da conversão |
-| S07 | Quantidade 100 kWh, preço 0.50, valor 50.02 | Diferença 0.02, dentro da tolerância inicial; registrar verificação |
-| S08 | Mesmos dados, valor 50.03 | Diferença 0.03, pendência de reconciliação; não ampliar tolerância silenciosamente |
+| S07 | Quantidade 100 kWh, preço 0.50, valor 50.02 | Diferença 0.02, dentro da tolerância atual de 0.99; registrar verificação |
+| S08 | Mesmos dados, valor 50.03 | Diferença 0.03, dentro da tolerância atual de 0.99; preservar diferença, sem pendência monetária por esse item |
 | S09 | Linha crédito other, amount=-25.00 | Preservar sinal; não converter em consumo negativo |
 | S10 | Quantidade/preço missing, idle_demand amount=30.00 | Guardar cobrança observada; não reconstruir quantidade ou tarifa |
 | S11 | Dc missing; reativos monetários confirmed=40.00 | Otimização indisponível; observado reativo 40.00, economia evitável desconhecida |
@@ -64,5 +64,8 @@ S21–S25 também são inteiramente sintéticos. Não contêm dados da unidade r
 | S21 | Dc=100, Dm=120, T=10; conferir cenário atual e alternativo com o mesmo contrato | Ambos: regular 1200.00, adicional 400.00, total 1600.00. Um multiplicador 3 produziria adicional 600.00 e deve ser detectado mesmo que o exemplo original da planilha não acione ultrapassagem. |
 | S22 | Leitura completa confirma ausência de cobrança reativa excedente | Zero confirmado para cobrança observada, sem cenário independente de surgimento; não buscar tarifa para fabricar oportunidade. Efeitos futuros de mudança contratual sem dados são limitação separada. |
 | S23 | Demandas medidas ponta=80 e fora=120 kW, bases/períodos compatíveis | Para cenário Verde derivado desse perfil, demanda medida única=120 kW; não copiar apenas ponta=80. |
-| S24 | Quantidade=1000, preço impresso=0.12345, valor=123.48 | Produto=123.45000, diferença=0.03; pendência por superar 0.02. Hipótese de arredondamento do preço a cinco casas mais fechamento a centavos daria limite=0.01000 e também não explica a diferença. |
+| S24 | Quantidade=1000, preço impresso=0.12345, valor=123.48 | Produto=123.45000, diferença=0.03; aceita pela tolerância atual de 0.99, embora a hipótese de precisão do preço (limite 0.01000) não explique a diferença. Aceite monetário não prova a origem do desvio. |
 | S25 | Dois componentes sintéticos de BRL 0.014 cada | Fechar cada componente por ROUND_HALF_UP e somar=0.02; somar antes de fechar=0.03. Exigir política explícita; o experimento não fixa a política da distribuidora. |
+## Fronteira da tolerância autorizada em 06/11/2026
+
+Mesma quantidade 100 e preço 0.50: valor 50.99 tem diferença 0.99 e passa; valor 51.00 tem diferença 1.00 e gera pendência. Valor 49.01 também passa por diferença absoluta 0.99; valor 49.00 gera pendência de 1.00. Não usar tolerância por item para ocultar residual do total, criar valores ausentes ou alterar gatilho de ultrapassagem.

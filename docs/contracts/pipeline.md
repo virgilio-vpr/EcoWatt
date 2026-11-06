@@ -20,7 +20,7 @@ Entrada `CalculationInput`: `simulation_id`, `owner_id`, `company_id`, `actor_id
 
 Admissão exige 1–12 faturas válidas/conferidas, até 12 competências em janela máxima de 18 meses, nenhuma pendência do conjunto, envio/leitura em andamento ou erro não resolvido. Arquivos apenas selecionados devem ser lidos/removidos; como a seleção é local, a interface bloqueia o envio do cálculo e informa os selecionados pendentes; o servidor revalida todo processamento admitido e não confia em sinalizador do cliente para tornar faturas prontas. Revisão esperada impede corrida com edição/remoção. Uma conta basta para admitir cálculo, sem garantir todos os módulos.
 
-Congelar entradas, referências/valores tarifários efetivamente usados, regras e versão do motor em `calculation_run`. Motor recebe objetos de domínio, sem ORM, rotas, OCR ou PDF. Indisponibilidade de tarifa/tributo não se transforma em zero. Visões histórica e comparativa usam bases identificadas e equivalentes.
+Congelar entradas, referências/valores tarifários efetivamente usados, regras e versão do motor em `calculation_run`. Motor recebe objetos de domínio, sem ORM, rotas, OCR ou PDF. Indisponibilidade de preço efetivo cheio não se transforma em zero. A simulação não recalcula impostos; ausência/divergência de tributos separados não bloqueia preço cheio disponível. Ociosidade LEI ESTADUAL usa a regra informada pelo usuário: preço da demanda contratada × 0,82, na ponta, fora de ponta e demanda única. Preservar preço/valor histórico observado e registrar divergência, sem aprovação implícita do candidato. Visões histórica e comparativa usam bases identificadas e equivalentes.
 
 ## Simulação → relatório
 
@@ -60,3 +60,7 @@ Edição/remoção incrementa `dataset_revision`, invalida resultado atual e pre
 - Relatório online/PDF: mesmos valores, run e versões; acesso cruzado negado.
 
 Estes são contratos de verificação, não testes executados.
+
+## Regra esclarecida pelo usuário em 06/11/2026
+
+A simulação utiliza preço cheio com impostos incorporados, sem auditoria ou recálculo separado dos tributos. Para a demanda ociosa LEI ESTADUAL, o usuário esclareceu: `P_ociosa = P_demanda_contratada × 0,82`, na ponta, fora de ponta e demanda única. A redução de 18% é aplicada ao preço unitário, não à quantidade contratada. Preservar o preço e o valor observados no gabarito histórico; a divergência encontrada na extração candidata continua para conferência do preço-base e da precisão, sem declarar a regra informada ou o candidato homologados. Achados das colunas tributárias ficam como histórico documental e deixam de ser bloqueio da simulação com preço cheio disponível. Continuam pendentes identidade/mercado, cobertura visual, preços/componentes necessários e aprovação do gabarito.
