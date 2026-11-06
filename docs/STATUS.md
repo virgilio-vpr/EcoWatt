@@ -4,9 +4,11 @@ Atualizado em 06/11/2026. Referência: SPEC versão 3.10; contratos mínimos v0.
 
 ## Direção atual
 
-Fase 0: concentrar somente em **faturamento, informações do cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas**, conforme os quatro blocos mostrados pelo usuário. Não cadastrar exaustivamente a conta ou exigir auditoria de informações fiscais, boleto, pagamento, códigos de medidor e outros dados administrativos. A investigação ampliada anterior foi além do escopo e permanece apenas como histórico.
+**Fase 0 concluída**, com aceite explícito do usuário desta conversa em 06/11/2026 para os contratos e o gabarito mínimo local das doze faturas. O aceite inclui desconhecidos e ressalvas documentados, sem autorizar publicação de dados reais ou homologação comercial. Não foi informado nome civil do responsável.
 
-Nenhuma aplicação implementada ou dependência instalada nesta entrega. Fase 1 ainda não iniciada; o usuário pediu concluir a revisão recomendada antes dela.
+Escopo aceito: concentrar somente em **faturamento, informações do cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas**, conforme os quatro blocos mostrados pelo usuário. Não cadastrar exaustivamente a conta ou exigir auditoria de informações fiscais, boleto, pagamento, códigos de medidor e outros dados administrativos. A investigação ampliada anterior foi além do escopo e permanece apenas como histórico.
+
+Nenhuma aplicação implementada ou dependência instalada nesta entrega. Fase 1 ainda não iniciada; próxima entrega é a base técnica local.
 
 ## Regras que permanecem
 
@@ -26,9 +28,9 @@ Nenhuma aplicação implementada ou dependência instalada nesta entrega. Fase 1
 
 ## Gabarito atual e verificações
 
-`.local-analysis/minimum-billing-review.json` contém a projeção mínima v0.2; `.local-analysis/review-package/MINIMUM-REVIEW.md` é o resumo atual para revisão. Arquivos de auditoria ampliada anteriores são históricos e não geram pendências administrativas obrigatórias. Aprovação do responsável segue pendente, sem aprovação presumida de todos os campos da conta.
+`.local-analysis/minimum-billing-review.json` contém a projeção mínima v0.2; `.local-analysis/review-package/MINIMUM-REVIEW.md` é o resumo atual para revisão. Arquivos de auditoria ampliada anteriores são históricos e não geram pendências administrativas obrigatórias. Aceite registrado no JSON e no resumo local em 06/11/2026, limitado ao mínimo v0.2; os candidatos ampliados anteriores não foram aprovados integralmente.
 
-Verificados por projeção e asserções: doze bases do quadro fecham; diferença de setembro preservada como informação; quatro itens monetários sem dados inventados; consumos, datas e demandas originais preservados. S01 deixa de bloquear por CNPJ opcional; S26 distingue residual do quadro e diferença de total a pagar, sem bloqueio artificial. São 26 casos sintéticos documentais; sem testes da aplicação, nova leitura de PDF ou instalação nesta alteração. Links, codificação e lista explícita de oito arquivos públicos conferidos. SPEC e contratos atualizados; nenhum checkbox de aceite marcado.
+Verificados por projeção e asserções: doze bases do quadro fecham; diferença de setembro preservada como informação; quatro itens monetários sem dados inventados; consumos, datas e demandas originais preservados. S01 deixa de bloquear por CNPJ opcional; S26 distingue residual do quadro e diferença de total a pagar, sem bloqueio artificial. São 26 casos sintéticos documentais; sem testes da aplicação, nova leitura de PDF ou instalação nesta alteração. Encerramento: metadados de aceite, preservação das entradas locais, links e checklist da SPEC conferidos. Somente a Fase 0 foi marcada; nenhuma funcionalidade foi declarada implementada.
 
 
 
@@ -36,10 +38,12 @@ Hipótese de setembro conferida a pedido do usuário: forte compatibilidade num�
 
 ## Próximo passo
 
-Revisar/aceitar os dados mínimos e seus desconhecidos, confirmar UC/cliente e ponto de conexão quando necessário, e registrar responsável/data do conjunto esperado. Preços/entradas adicionais somente para cenários que precisarem deles. A comparação alternativa exige dados próprios; não usar a Verde de exemplo como gabarito. Autorização/procedimento de anonimização para fixtures públicas permanece separado da análise local. Não exigir resolver setembro ou outros assuntos administrativos para prosseguir no diagnóstico faturável.
+Iniciar a primeira entrega da Fase 1 conforme [plano](phases/phase-01-backend.md) e [texto para o novo chat](phases/phase-01-start.md): verificar ambiente, preparar configuração e estrutura mínima FastAPI com dependências locais fixadas. Seguir backend → modelos/migrações → autenticação/permissões → seed. Usar dados sintéticos; não reabrir auditoria ampliada como pré-requisito.
+
+Homologação comercial, tarifas/entradas próprias para cenários alternativos e autorização/procedimento de anonimização para fixtures públicas permanecem separados. Setembro é compatível numericamente com bandeira, sem confirmação de item. Junho não equivale a dois consumos medidos. Verde exemplificativa não é gabarito financeiro.
 
 ## Arquivos e commit
 
-Alterados: `EcoWatt_PROJECT_SPEC.md`, `docs/contracts/invoice-data.md`, `docs/contracts/pipeline.md`, `docs/STATUS.md`, `docs/corpus/synthetic-cases.md`, `docs/corpus/README.md`, `docs/corpus/visual-review.md`, `docs/corpus/regulatory-review.md`. Novos/removidos públicos: nenhum. Projeção e script locais ignorados, fora do envio.
+Alterados: `EcoWatt_PROJECT_SPEC.md`, `README.md`, `docs/STATUS.md`, `docs/phases/phase-00-contracts.md` e `docs/corpus/README.md`. Novo: `docs/phases/phase-01-start.md`. Removidos: nenhum. Aceite nos artefatos locais ignorados, fora do envio.
 
-Commit: `docs: define escopo minimo e confere hipotese de bandeira`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
+Commit desta entrega: `docs: encerra fase 0 com aceite e prepara inicio da fase 1`. Consultar histórico remoto para o SHA; este status integra o próprio commit.

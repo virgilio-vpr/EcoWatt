@@ -1,5 +1,7 @@
 # Corpus e homologação — inventário e conferência em 06/11/2026
 
+**Aceite atual — 06/11/2026:** usuário desta conversa aprovou explicitamente os contratos e o gabarito mínimo local das doze faturas (contrato v0.2, SPEC 3.10), incluindo desconhecidos e ressalvas. Não foi informado nome civil do responsável. Fase 0 concluída nesse escopo. Avisos de aprovação pendente abaixo são históricos, superados somente para esse mínimo; não há aprovação integral dos candidatos ampliados. Não autoriza publicar dados reais nem homologa parser, motor, Verde exemplificativa ou tarifas alternativas. Setembro continua hipótese de bandeira; junho preserva premissas e datas impressas separadas.
+
 **Escopo atual — decisão do usuário em 06/11/2026:** somente faturamento, cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas (SPEC 3.10; contrato mínimo v0.2). Não exigir cadastro completo ou auditoria fiscal/bancária. Para o diagnóstico, conciliar itens com TOTAL do quadro; diferença para cabeçalho/boleto é informativa e não bloqueia os módulos com entradas suficientes. A investigação ampla abaixo fica como histórico. Dados atuais do mínimo em `.local-analysis/minimum-billing-review.json` e resumo em `.local-analysis/review-package/MINIMUM-REVIEW.md`; nenhum dado real é enviado.
 
 Atualização atual: [revisão visual das 24 páginas](visual-review.md). CNPJ e rótulos de datas foram lidos nas doze contas; onze totais coincidem com cabeçalho/documento. Setembro tem conflito entre cabeçalho/boleto e quadro de itens; os antigos “12 resíduos zero” fechavam apenas os quadros. Outubro declara substituição de nota, e abril consumo estimado por média de 12 faturamentos. Achados antigos abaixo ficam como histórico, sem prevalecer sobre essa correção.
@@ -30,7 +32,7 @@ Referência regulatória recebida: `docs/ANEEL/REN 1000.pdf`, 3.919.570 bytes, S
 | Material a obter | Evidência esperada | Uso / bloqueio atual |
 | --- | --- | --- |
 | Série real ENEL SP A4 Azul autorizada, idealmente 12 competências consecutivas | PDFs textuais/digitalizados com autorização e processo de anonimização separado do fluxo de clientes; CNPJ emissor, UC, mercado e layout conferidos | Homologação do primeiro adaptador pendente |
-| Gabarito manual por fatura | Todos os campos do dicionário, linhas, postos, estados de ausência, unidades e proveniência; revisor/data; totais/residuais conferidos | Não há conjunto real esperado aprovado |
+| Gabarito manual por fatura | Todos os campos do dicionário, linhas, postos, estados de ausência, unidades e proveniência; revisor/data; totais/residuais conferidos | Mínimo local aceito em 06/11/2026; publicação de fixtures e homologação do parser/motor pendentes |
 | Planilha original e fórmulas | Células/fórmulas e entradas estruturadas, preços, tributos e perdas por ciclo, resultados por componente | Comparação financeira com planilha pendente |
 | Tarifas e atos oficiais por vigência | Fonte oficial, arquivo/versão, distribuidora/CNPJ, subgrupo, modalidade e base de preço | Nenhuma tarifa real fixada nesta fase |
 | CUSD, aditivos e histórico contratual | Demandas por posto, restrições e datas de alteração, exceções e perdas | Recomendação de implantação condicionada |
@@ -56,7 +58,7 @@ Fluxo de homologação: receber autorização → anonimizar em processo control
 | D03 | Especialista: quais preços cheios por componente, perdas e política de arredondamento por vigência? Impostos separados fora da análise por decisão do usuário. | Nenhum preço ausente igual a zero; ociosidade = preço da demanda contratada × 0,82, conforme regra informada pelo usuário |
 | D04 | Finalidade/período esclarecidos: Verde é referência de estrutura/apresentação, com demanda copiada da Azul e sem valor de gabarito econômico; referência principal PDF agosto/2025–julho/2026, anterior à migração ao mercado livre informada para agosto/2026. Para um cenário Verde calculado, obter entradas e preços próprios; não homologar os números exemplificativos dessa planilha. | Relatório demonstrativo sem reproduzir resultados como aprovados |
 | D05 | Piloto/distribuidora: existem dados por posto na Verde e intervalares de reativos? | Módulos parciais com motivos explícitos |
-| D06 | Responsável do produto: aprovar nomes/tipos deste contrato e conjuntos reais esperados? | Implementar proposta versionada, registrar ajustes antes de migrar dados reais |
+| D06 | Encerrada no escopo mínimo: contrato e gabarito local aceitos em 06/11/2026. | Implementar contrato versionado; registrar alterações futuras |
 | D07 | Especialista: convenção de dias do ciclo, grandezas reativas ambíguas e agrupamentos TE/TUSD do layout? | Preservar unidade/origem; bloquear uso ambíguo |
 | D08 | Responsável comercial/privacidade: confirmar retenção e tratamento de vínculos de orçamento na exclusão? | Definir autorização/cancelamento; não lançar operação comercial |
 

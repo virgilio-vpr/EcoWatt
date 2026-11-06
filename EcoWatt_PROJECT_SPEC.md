@@ -675,7 +675,7 @@ Medir tempos de extração/OCR/cálculo/PDF separadamente, pico de memória, fil
 
 ## 15. Fases e critérios de aceite
 
-Todos os itens de aceite continuam pendentes; os contratos v0.1 e casos sintéticos da Fase 0 estão documentados em [docs/contracts/invoice-data.md](docs/contracts/invoice-data.md) e [docs/corpus/README.md](docs/corpus/README.md), com materiais reais disponíveis para análise local, ainda sem gabarito real conferido e aprovado. O checklist não representa funcionalidades implementadas. Marcar cada fase somente após concluir seus subitens e critérios de aceite. As fases abaixo incluem as entregas técnicas originais e os requisitos desta revisão.
+Fase 0 concluída com aceite explícito do usuário em 06/11/2026 para os contratos e o gabarito mínimo local (fatura/pipeline v0.2; acesso v0.1). Referências: [contratos](docs/contracts/invoice-data.md) e [corpus](docs/corpus/README.md). As demais fases continuam pendentes; o checklist não representa funcionalidades implementadas.
 
 ### Sequência de construção
 
@@ -691,11 +691,13 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
 
 ### Checklist de entregas
 
-- [ ] **Fase 0 — Contratos e corpus**
+- [x] **Fase 0 — Contratos e corpus**
 
-  - [ ] Obter série real ENEL A4 Azul e dados de referência conferidos manualmente; confirmar concessionária, mercado e layout. Anonimizar fixtures com autorização, fora do fluxo de clientes. Fixar exemplos sintéticos e fontes regulatórias. Nenhuma fatura antiga mencionada no rascunho é considerada disponível automaticamente.
+  - [x] Preparar contratos e exemplos sintéticos; conferir a série local ENEL SP A4 Azul de agosto/2025 a julho/2026 nos blocos mínimos de faturamento, cliente/UC, classificação, datas e demandas contratadas. Registrar fontes consultadas, proveniência, limites e desconhecidos.
 
-  - [ ] Aceite: dicionário mínimo dos blocos faturáveis, cliente/UC, classificação, datas e demandas contratadas, restrições e esperado por fatura aprovado; desconhecidos identificados. Não exigir cadastro fiscal/administrativo completo, auditoria de boleto ou aprovação de informações fora desse escopo.
+  - [x] Aceite: dicionário mínimo dos blocos faturáveis, cliente/UC, classificação, datas e demandas contratadas, restrições e esperado por fatura aprovado; desconhecidos identificados. Não exigir cadastro fiscal/administrativo completo, auditoria de boleto ou aprovação de informações fora desse escopo.
+
+  Aceite explícito do usuário em 06/11/2026 para o mínimo das doze faturas, com ressalvas no STATUS. Anonimização/publicação de fixtures reais e homologação comercial de parser, motor, tarifas alternativas e vigências permanecem na Fase 5 e nas dependências da seção 16; não foram aprovadas por este aceite.
 
 - [ ] **Fase 1 — Base leve e banco**
 

@@ -14,3 +14,7 @@ Na [SPEC](../../EcoWatt_PROJECT_SPEC.md): seções 1 (objetivo), 3.1 (escopo), 7
 4. Encaminhar o contrato mínimo à Fase 1; manter homologação comercial pendente enquanto faltarem evidências.
 
 Aceite: critérios da Fase 0 na SPEC. Não tratar planilha/imagem como teste financeiro homologado. Registrar no STATUS quais informações faltam, sem bloquear construção com fixtures claramente identificadas.
+
+## Encerramento
+
+Concluída com aceite explícito do usuário em 06/11/2026 para os contratos e o gabarito mínimo local das doze faturas. Desconhecidos e ressalvas permanecem no [STATUS](../STATUS.md). Não reabrir auditoria fiscal/administrativa como requisito da Fase 1. Homologação comercial e autorização para publicar fixtures reais continuam separadas. Próxima entrega: [início da Fase 1](phase-01-start.md).

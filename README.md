@@ -4,7 +4,7 @@ Plataforma web para leitura de faturas de energia, simulação de potenciais de 
 
 ## Estado atual
 
-O repositório está na etapa de especificação, com os contratos v0.1 da Fase 0 preparados para revisão e homologação real pendente. A aplicação, as migrações, os comandos de seed e os testes ainda não foram implementados. Os passos abaixo definem o fluxo de desenvolvimento e uso esperado; não representam comandos disponíveis hoje.
+A Fase 0 foi concluída com aceite explícito do usuário em 06/11/2026 para os contratos e o gabarito mínimo local. A Fase 1 ainda não começou. Aplicação, migrações, seed e testes ainda não foram implementados. Os passos abaixo descrevem o fluxo esperado; não representam comandos disponíveis hoje.
 
 A fonte dos requisitos é [EcoWatt_PROJECT_SPEC.md](EcoWatt_PROJECT_SPEC.md). O checklist de implementação fica na seção 15 e a ordem de criação das tabelas na seção 10.4.
 
@@ -12,9 +12,9 @@ Para iniciar uma tarefa, consulte [AGENTS.md](AGENTS.md), [docs/STATUS.md](docs/
 
 O usuário autorizou commits diretos em `virgilio-vpr/EcoWatt`, sem confirmação adicional no site. Preferir a integração GitHub, sem exigir Git instalado. Ao concluir cada entrega, revisar os arquivos, preservar alterações remotas e informar o commit realizado. Enviar somente os documentos e códigos da entrega; faturas e planilhas reais permanecem locais. Commits pela integração não sincronizam automaticamente outros arquivos da pasta local.
 
-Os documentos da Fase 0 estão no [dicionário de faturas](docs/contracts/invoice-data.md), [contrato do pipeline](docs/contracts/pipeline.md), [matriz de acesso](docs/contracts/access.md), [inventário e dependências do corpus](docs/corpus/README.md) e [casos sintéticos](docs/corpus/synthetic-cases.md). São propostas e referências de desenvolvimento; não comprovam homologação ou aprovação do corpus.
+Os documentos da Fase 0 estão no [dicionário de faturas](docs/contracts/invoice-data.md), [contrato do pipeline](docs/contracts/pipeline.md), [matriz de acesso](docs/contracts/access.md), [inventário e dependências do corpus](docs/corpus/README.md) e [casos sintéticos](docs/corpus/synthetic-cases.md). Contratos e gabarito mínimo local foram aceitos; homologação comercial e publicação de fixtures reais continuam pendentes.
 
-A continuação da Fase 0 inclui [conferência das planilhas](docs/corpus/workbook-review.md), [conferência inicial das faturas](docs/corpus/invoice-review.md) e [registro regulatório](docs/corpus/regulatory-review.md). São análises com pendências explícitas; o candidato de gabarito com dados reais permanece local e não aprovado.
+A continuação da Fase 0 inclui [conferência das planilhas](docs/corpus/workbook-review.md), [conferência inicial das faturas](docs/corpus/invoice-review.md) e [registro regulatório](docs/corpus/regulatory-review.md). Os relatórios preservam o histórico da análise; o aceite atual é limitado ao gabarito mínimo local. Use o [texto para o novo chat da Fase 1](docs/phases/phase-01-start.md).
 
 ## Stack definida
 
