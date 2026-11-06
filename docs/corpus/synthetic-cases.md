@@ -8,7 +8,7 @@ Perfil fictício A: dono `synthetic-owner-a`, empresa `synthetic-company-a`; aut
 
 Cabeçalho: emissor `Distribuidora Sintética`, CNPJ `missing/null` (não inventar CNPJ válido), documento `SYN-001`, competência `2026-01`, ciclo `2026-01-01` a `2026-01-31`, 31 dias por convenção inclusiva **deste caso**, A4, Azul, cativo, classe industrial sintética, tensão `not_applicable/null`, total `2600.00` BRL, pagamento desconhecido, refaturamento original, layout `synthetic-v1`.
 
-Campos declarados têm origem `user`, autor `synthetic-author`, instante `2026-11-05T12:00:00Z`, página/região/parser null e marca `source_kind=synthetic`; estado `confirmed` significa apenas entrada conferida deste exemplo, sem validação real. CNPJ missing impede `ready` neste caso completo de revisão. Valores derivados usam origem derived com referência à fórmula. Campo sem dado usa missing; não criar zeros para grandezas reativas ausentes.
+Campos declarados têm origem `user`, autor `synthetic-author`, instante `2026-11-05T12:00:00Z`, página/região/parser null e marca `source_kind=synthetic`; estado `confirmed` significa apenas entrada conferida deste exemplo, sem validação real. CNPJ missing é complemento opcional e não impede `ready` no escopo mínimo; a distribuidora sintética está identificada no cadastro. Valores derivados usam origem derived com referência à fórmula. Campo sem dado usa missing; não criar zeros para grandezas reativas ausentes.
 
 | Posto | Contratada kW | Medida kW | Faturada kW | Energia kWh | Perdas incluídas |
 | --- | --- | --- | --- | --- | --- |
@@ -21,7 +21,7 @@ Campos declarados têm origem `user`, autor `synthetic-author`, instante `2026-1
 | regular_demand | off_peak | 120 | 10.00 | 1200.00 |
 | overrun_demand | off_peak | 20 | 20.00 | 400.00 |
 
-Itens sem tributos **por definição matemática do cenário**, não por inferência de ausência de linha. Não há energia TE/TUSD neste recorte; não representa uma conta real completa. Soma dos itens `2600.00`, residual `0.00`; isso confere a aritmética, mas não elimina a pendência de emissor nem habilita comparação de modalidade. Demanda ociosa física peak `20` kW; não valorar com tributos desconhecidos. Esperado de armazenamento: needs_review; cálculo integrado recusado por CNPJ pendente. O recorte de demanda pode ser usado isoladamente em teste unitário sintético da fórmula, sem burlar admissão do pipeline.
+Itens sem tributos **por definição matemática do cenário**, não por inferência de ausência de linha. Não há energia TE/TUSD neste recorte; não representa uma conta real completa. Soma dos itens `2600.00`, residual `0.00`; isso confere a aritmética do recorte e não habilita comparação de modalidade sem energia/preços correspondentes. Demanda ociosa física peak `20` kW; não valorar com tributos desconhecidos. Esperado: recorte de demanda pode ficar conferido com distribuidora/UC e demais campos mínimos validados, sem bloqueio por CNPJ ausente; comparação de modalidade indisponível por falta de energia/preços. O recorte de demanda pode ser usado isoladamente em teste unitário sintético da fórmula, sem burlar admissão do pipeline.
 
 ## Casos isolados e respectivos esperados
 
@@ -73,4 +73,4 @@ Mesma quantidade 100 e preço 0.50: valor 50.99 tem diferença 0.99 e passa; val
 
 ## S26 — Cabeçalho e quadro com totais conflitantes
 
-Caso inteiramente sintético: cabeçalho e documento de cobrança indicam BRL 120.00; quadro TOTAL e soma dos itens indicam BRL 100.00. Esperado: preservar os quatro valores, residual global BRL 20.00 e conflito de totais, `needs_review`. O quadro tem residual interno zero, sem conciliação integral. A tolerância BRL 0.99 por item não permite criar cobrança de BRL 20.00 ou trocar o total a pagar pelo do quadro.
+Caso inteiramente sintético: cabeçalho e documento de cobrança indicam BRL 120.00; quadro TOTAL e soma dos itens indicam BRL 100.00. Esperado no escopo mínimo atual: base do diagnóstico = TOTAL do quadro BRL 100.00; itens BRL 100.00; residual faturável zero. Guardar total a pagar BRL 120.00, se disponível, com diferença informativa BRL 20.00. A diferença externa ao quadro não impõe `needs_review` ou bloqueia demanda/reativos com entradas consistentes. Não criar cobrança de BRL 20.00 nem declarar o total a pagar auditado.

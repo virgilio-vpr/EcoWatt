@@ -1,5 +1,7 @@
 # Revisão visual do corpus — 06/11/2026
 
+**Escopo atual — decisão do usuário em 06/11/2026:** somente faturamento, cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas (SPEC 3.10; contrato mínimo v0.2). Não exigir cadastro completo ou auditoria fiscal/bancária. Para o diagnóstico, conciliar itens com TOTAL do quadro; diferença para cabeçalho/boleto é informativa e não bloqueia os módulos com entradas suficientes. A investigação ampla abaixo fica como histórico. Dados atuais do mínimo em `.local-analysis/minimum-billing-review.json` e resumo em `.local-analysis/review-package/MINIMUM-REVIEW.md`; nenhum dado real é enviado.
+
 Conferência documental por Codex das duas páginas de cada um dos doze PDFs. **Aprovação do usuário/responsável e aceite da Fase 0 permanecem pendentes.** Este relatório atualiza conclusões da extração textual; não é implementação ou homologação do parser.
 
 ## Método e proteção dos originais
@@ -35,6 +37,8 @@ As afirmações anteriores de “12 totais com residual zero” ficam restritas 
 
 Continuam válidas a regra de preço cheio, ociosidade a 82% e tolerância inclusiva de BRL 0.99 por item. Os 105 produtos comparáveis e vinte parcelas ociosas quantificadas passam nessa tolerância; isso não resolve a diferença global de setembro ou a qualidade de medição de abril/junho. A Verde continua sendo apenas referência estrutural.
 
-## Antes da Fase 1
+## Próximo passo no escopo mínimo
 
-O usuário pediu concluir o trabalho recomendado antes de iniciar a Fase 1; nenhuma instalação ou implementação foi iniciada. Para fechar o gabarito real, resolver o conflito de setembro, registrar aceitação dos desconhecidos e das limitações de abril/junho, confirmar ponto de conexão/mercado e indicar responsável/data de aprovação. Consulta sobre setembro enviada ao usuário; resposta não presumida. Autorização/procedimento de anonimização e fontes/preços por vigência necessários à homologação comercial continuam pendentes. Nenhum item composto da SPEC foi marcado.
+Conferir e aceitar somente os dados centrais e os desconhecidos pertinentes ao cálculo. Setembro deixa de ter bloqueio por diferença para cabeçalho/boleto: seu quadro faturável é internamente consistente. Preservar os dois totais com rótulos distintos e não declarar auditado o valor a pagar. Avisos de estimativa e transição são ressalvas para módulos dependentes, sem inventar consumo. Campos fiscais, pagamento, refaturamento formal, protocolos e medidores não compõem uma lista obrigatória de aprovação. O usuário não autorizou iniciar a Fase 1 nesta correção; aprovação do conjunto mínimo permanece separada da autorização para publicar fixtures reais.
+
+Hipótese de setembro conferida a pedido do usuário: forte compatibilidade numérica da diferença para o total a pagar com bandeira vermelha patamar 2 não discriminada. Fonte Enel para o mês e MME para BRL 78.77/MWh; memória Decimal local em `.local-analysis/september-flag-check.json`, com desvio de poucos centavos na estimativa de preço cheio por proporção da própria conta. Não adicionar item observado ou converter a hipótese em gabarito aprovado. Fontes e método em [referências do corpus](regulatory-review.md).

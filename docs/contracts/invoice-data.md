@@ -1,6 +1,10 @@
 # Dicionário de dados faturáveis — contrato v0.1
 
-Proposta para implementação e revisão, ainda sem aprovação do corpus real. Fonte normativa: SPEC 3.9, §§3.1, 6, 7 e 10. Este documento define nomes e tipos de intercâmbio; não substitui as regras da SPEC nem constitui esquema SQL implementado. Fronteiras: [pipeline](pipeline.md). Evidências e dúvidas: [corpus](../corpus/README.md).
+Proposta para implementação e revisão, ainda sem aprovação do corpus real. Fonte normativa: SPEC 3.10, §§3.1, 6, 7 e 10. Este documento define nomes e tipos de intercâmbio; não substitui as regras da SPEC nem constitui esquema SQL implementado. Fronteiras: [pipeline](pipeline.md). Evidências e dúvidas: [corpus](../corpus/README.md).
+
+## Escopo mínimo
+
+Somente descrição do faturamento, dados do cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas. Informações administrativas/fiscais, colunas tributárias separadas, códigos de medidor e detalhamento completo da conta são complementares e não condicionam diagnóstico com entradas suficientes. As obrigações abaixo se aplicam a esse mínimo; dados C são necessários somente ao módulo que os utiliza. Não solicitar ao cliente confirmação de todos os campos opcionais.
 
 ## Convenções
 
@@ -35,21 +39,25 @@ Histórico de correção: caminho do campo, valor/estado anterior e novo, ator, 
 | `unit.consumer_unit_id` | string | E | Normalizar preservando zeros; chave com distribuidora |
 | `unit.holder_name` | string | E | Titular da ligação; nome extraído pode ser confirmado para a unidade sem alterar automaticamente o cadastro da empresa ou o dono da simulação |
 | `unit.connection_address` | objeto de endereço | E | Endereço confirmado do ponto de conexão/cabine/subestação, inclusive em rua adjacente; campos de endereço e snapshot salvo antes do upload. Cópia do endereço da empresa exige confirmação |
-| `header.issuer_name`, `header.issuer_cnpj` | string | E | Identificar concessionária; CNPJ normalizado como string, não inventar identificação |
+| `header.issuer_name`, `header.issuer_cnpj` | string | O | Complemento opcional; distribuidora central já identificada por `unit.distributor_id`. CNPJ pode vir do catálogo, não precisa ser extraído/conferido em cada PDF |
 | `header.consumer_unit_id` | string | E | Deve coincidir com unidade salva; divergência exige resolução |
 | `header.competence` | competência | E | Não inferir silenciosamente de vencimento/upload |
 | `header.cycle_start`, `header.cycle_end` | date | E | Ordem válida; manter convenção de contagem de dias da fonte |
 | `header.cycle_days` | inteiro / dia | E | Positivo, reconciliar com datas; não fixar inclusão dos extremos sem evidência |
-| `header.invoice_number` | string | E | Duplicidade lógica com emissor |
+| `header.invoice_number` | string | O | Ajuda à duplicidade se disponível; ausência não bloqueia o mínimo |
 | `header.subgroup` | enum A4/AS/outro/desconhecido | E | Outro/desconhecido não habilita fórmula geral |
 | `header.modality` | enum blue/green/other/unknown | E | Preservar por ciclo |
 | `header.market` | enum captive/free/unknown | E | Livre/desconhecido exige análise parcial/encaminhamento |
 | `header.customer_class` | string | E | Identificar exceções; desconhecido explicitado |
 | `header.voltage` | decimal / kV | O | Converter unidade explicitamente |
-| `header.invoice_total` | decimal / BRL | E | Total faturado, sem chamar de pago |
+| `header.invoice_total` | decimal / BRL | E | TOTAL do quadro de faturamento, base financeira do diagnóstico; não é valor pago nem substitui o total a pagar do cabeçalho |
+| `header.amount_payable` | decimal / BRL | O | Total a pagar do cabeçalho, apenas informação geral, separado do quadro |
+| `header.supply_type` | string | O | Tipo de fornecimento quando disponível, por exemplo trifásico |
+| `header.next_reading` | date | O | Próxima leitura quando disponível |
+| `header.due_date` | date | O | Vencimento quando disponível; não substitui competência |
 | `header.payment_status` | enum unknown/confirmed_paid | O | Pago somente com confirmação e proveniência |
-| `header.rebilling_status` | enum unknown/original/replacement/complement | E | Conflitos por competência exigem escolha explícita |
-| `header.layout_version` | string | E | Adaptador/layout identificado; desconhecido mantém revisão |
+| `header.rebilling_status` | enum unknown/original/replacement/complement | O | Complemento se localizado; não exigir auditoria de notas anteriores. Duplicatas/conflitos reais no conjunto ainda exigem resolução |
+| `header.layout_version` | string | O | Metadado técnico do adaptador; não é confirmação exigida ao cliente |
 
 Nome e endereço impressos na fatura usam `header.holder_name` e `header.printed_address` (`Field<string>` e `Field<Address>`, condicionais à disponibilidade). Preservar origem/página e valor extraído; não confundir endereço impresso, endereço da empresa e `unit.connection_address`. Dados coincidentes são mantidos após conferência; diferenças permitem confirmar/corrigir o campo pertinente com autoria e motivo estruturado, como `adjacent_street_connection_point`. Diferença de endereço explicada e confirmada para a mesma distribuidora/UC não bloqueia por si só a fatura. Divergência de UC/distribuidora permanece crítica. Cabeçalho incompleto pode ser persistido como `needs_review`, mas não apresentado como fatura pronta.
 
@@ -85,7 +93,7 @@ Cada `items[]` possui `id`, `type`, `post` (null quando não se aplica), `field_
 | --- | --- | --- | --- |
 | `quantity` | decimal / unidade explícita | C | Pode faltar em linha apenas monetária |
 | `quantity_unit` | enum kWh/MWh/kW/kvarh/kvar/other | C | `other` exige definição, sem uso financeiro automático |
-| `regulated_rate` | decimal / BRL por unidade | C | Sem tributos, fonte e vigência; não confundir com preço efetivo |
+| `regulated_rate` | decimal / BRL por unidade | O | Tarifa sem tributos, quando disponível; não confundir com preço cheio nem exigir para diagnóstico observado |
 | `effective_price` | decimal / BRL por unidade | C | Simulação real exige `with_tax`: preço cheio com impostos incorporados, sem recálculo separado. `without_tax`/`unknown` não substituem essa base |
 | `amount` | decimal / BRL | E | Sinal preservado para créditos |
 | `taxes[]` | tributo, base BRL, alíquota adimensional, valor BRL, incidência, estado | O | Informação documental com proveniência; fora da análise da simulação. Ausência/divergência não bloqueia preço efetivo cheio disponível e não equivale a isenção |
@@ -98,9 +106,9 @@ Cada `items[]` possui `id`, `type`, `post` (null quando não se aplica), `field_
 
 Normalizar separadores brasileiros e unidades; verificar sinal, posto, período, limites de escopo e duplicidade (§6.3). Por linha comparável, verificar quantidade × preço: diferença absoluta de até BRL 0.99, inclusive, aceita para reconciliação monetária por autorização do usuário em 06/11/2026. Preservar precisão, produto, valor observado, diferença e versão da política; acima do limite gera pendência. Não usar a tolerância para preencher ausentes, validar identidade ou alterar limites em kW. Quantidade/preço ausentes não são inventados para fechar a linha; residual do total continua registrado separadamente.
 
-Registrar `known_components_total`, `invoice_total` e `residual` (total menos componentes conhecidos). Residual precisa de explicação ou pendência; não declarar conciliação integral por tolerância sem classificação. Conflitos de identidade, duplicatas não resolvidas e campos críticos pendentes impedem `ready`. Falta de dados exclusivos de um módulo permite fatura conferida com módulo indisponível, por exemplo demanda ausente e reativos monetários observados válidos.
+Registrar `known_components_total`, `invoice_total` e `residual` (TOTAL do quadro menos componentes conhecidos). Residual dessa base precisa de explicação ou pendência; não declarar conciliação do quadro por tolerância sem classificação. Conflitos de identidade, duplicatas não resolvidas e campos críticos pendentes impedem `ready`. Falta de dados exclusivos de um módulo permite fatura conferida com módulo indisponível, por exemplo demanda ausente e reativos monetários observados válidos.
 
-`header.invoice_total` representa o total a pagar do cabeçalho, não uma escolha automática da linha TOTAL do quadro. Registrar separadamente `reconciliation.header_total`, `payment_document_total`, `financial_table_total`, `known_components_total` e `residual`, com estado/proveniência. Confrontar essas fontes: soma de itens igual ao total do quadro não resolve divergência para cabeçalho/documento. Conflito não explicado mantém `needs_review`, sem parcela por diferença ou uso da tolerância por item para apagar residual. Ausência de uma fonte é registrada, não inventada. Nenhum desses valores comprova pagamento.
+`header.invoice_total` representa o TOTAL do quadro de faturamento no contrato v0.2. `reconciliation.financial_table_total`, `known_components_total` e `residual` conciliam essa base. `header.amount_payable`/`reconciliation.header_total` são opcionais, separados; `payment_document_total` fica fora do mínimo. Diferença externa ao quadro é informativa e não impõe `needs_review` quando os itens e dados necessários ao módulo estão consistentes. Preservar valores e bases, sem criar parcela por diferença ou declarar o total a pagar auditado. Registros anteriores que usavam `invoice_total` como cabeçalho precisam manter sua versão de origem, sem reinterpretar silenciosamente o valor.
 
 Aviso de consumo calculado por média exige `estimated` e regra/proveniência da estimativa, preservando quantidade/preço/valor observados. Igualdade numérica entre medição impressa e cobrança não prova medição efetiva. Premissa do usuário de cobertura de um ciclo de transição fica separada das datas/dias impressos; não reconstruir consumo, médias ou série horária automaticamente.
 

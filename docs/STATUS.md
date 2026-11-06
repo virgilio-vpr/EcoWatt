@@ -1,44 +1,45 @@
 # Estado do EcoWatt
 
-Atualizado em 06/11/2026. Referência: SPEC versão 3.9.
+Atualizado em 06/11/2026. Referência: SPEC versão 3.10; contratos mínimos v0.2.
 
-## Entrega atual
+## Direção atual
 
-Fase 0 em revisão, com contratos documentais v0.1 e 26 casos sintéticos. Usuário pediu seguir a revisão recomendada antes da Fase 1; nenhuma instalação ou aplicação iniciada. As 24 páginas do corpus foram conferidas visualmente por Codex; aprovação do responsável e aceite continuam pendentes.
+Fase 0: concentrar somente em **faturamento, informações do cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas**, conforme os quatro blocos mostrados pelo usuário. Não cadastrar exaustivamente a conta ou exigir auditoria de informações fiscais, boleto, pagamento, códigos de medidor e outros dados administrativos. A investigação ampliada anterior foi além do escopo e permanece apenas como histórico.
 
-**Correção de reconciliação:** onze faturas fecham contra cabeçalho/documento; setembro/2025 tem diferença relevante entre total a pagar e quadro de itens. A conclusão anterior de doze resíduos zero fechava apenas os quadros e fica superada quanto à conciliação integral. Valores exatos e diferenças ficam no pacote local, sem parcela inventada ou tolerância global aplicada.
+Nenhuma aplicação implementada ou dependência instalada nesta entrega. Fase 1 ainda não iniciada; o usuário pediu concluir a revisão recomendada antes dela.
 
-## Decisões preservadas
+## Regras que permanecem
 
-- Referência principal: PDFs agosto/2025–julho/2026. Planilhas comparadas somente nos dez meses comuns, outubro/2025–julho/2026. Verde é referência de estrutura, com demanda copiada da Azul, sem gabarito financeiro.
-- Preço cheio com impostos incorporados; sem auditoria separada de impostos. Ociosidade LEI ESTADUAL = preço da demanda contratada × 0,82, para ponta/fora de ponta/única. Até BRL 0.99 inclusive por item: 105 produtos e 20 parcelas ociosas quantificadas passam. Quatro parcelas ociosas de agosto/setembro continuam somente monetárias.
-- Não transportar fator 3 de ultrapassagem da planilha. Ausência observada de cobrança reativa não cria cenário independente de surgimento ou garante ausência futura.
-- Cadastro da empresa, endereço impresso e ponto de conexão/cabine são distintos; dados coincidentes podem ser mantidos, divergentes confirmados/corrigidos com proveniência. Não sobrescrever cadastro automaticamente.
-- Mercado é sugerido cativo pelos itens correntes TE/TUSD da série e pelo contexto informado; não confirmado automaticamente. Livre permanece fora do cálculo cativo completo.
+- Preço unitário cheio com impostos incorporados; sem análise separada de PIS/COFINS/ICMS. Ociosidade LEI ESTADUAL = preço da demanda contratada × 0,82 em ponta/fora de ponta/única. Tolerância de até BRL 0.99 inclusive por item. Quatro parcelas somente monetárias mantêm quantidade/preço desconhecidos.
+- Base financeira do diagnóstico = **TOTAL do quadro de faturamento**. Comparar com itens e subtotais, com residual dessa base. Total a pagar do cabeçalho, se disponível, é informação geral separada. Divergência externa ao quadro não bloqueia automaticamente demanda/reativos com dados consistentes, não cria parcela por diferença e não equivale a auditoria do valor a pagar.
+- Cadastro da empresa, endereço impresso e ponto de conexão/cabine são separados. Copiar dados coincidentes com confirmação; corrigir ponto de conexão se diferente, inclusive rua adjacente. CNPJ completo do cliente não é exigido se impresso mascarado.
+- Distribuidora corretamente identificada no cadastro/catálogo, UC, subgrupo/modalidade e período continuam necessários às regras aplicáveis. CNPJ emissor, nota fiscal, chave/protocolo e status formal de refaturamento são opcionais; versão do layout é metadado técnico. Duplicatas reais no lote ainda exigem resolução por hash/UC/competência/ciclo/dados.
+- Demandas contratadas e itens quantificados são centrais. Demanda medida só é exigida para módulos que dela dependem; aproveitar demanda utilizada faturada quando seu significado estiver identificado. Não exigir contadores de medidor, FP ou séries impressas para diagnóstico observado.
+- Mercado sugerido por energia ativa TE/TUSD e contexto, com confirmação quando necessária ao módulo. Livre permanece fora do cálculo cativo completo. Ausência de cobrança reativa confirmada não cria oportunidade hipotética nem garante ausência futura.
 
-## Revisão visual e achados
+## Corpus no escopo mínimo
 
-- `docs/corpus/visual-review.md`: CNPJ da distribuidora lido em cada um dos doze cabeçalhos, inclusive agosto/setembro. Correspondência oficial Enel conferida anteriormente; não comprova autenticidade dos PDFs. Nome/endereço impressos e UC conferidos, mantidos somente no rascunho local; ponto de conexão depende do cliente.
-- Rótulos de leitura anterior/atual, dias e próxima leitura conferidos: deixam de ser associação meramente candidata, sem alteração das datas. Cobertura do quadro de cobrança e página 2 revista; sem novos itens financeiros na página 2. Ausências observadas registradas com cobertura, separadas de medição DMCR.
-- Setembro: cabeçalho e documento coincidem entre si, mas diferem do quadro e dos componentes. Pergunta ao usuário enviada, sem resposta presumida; `needs_review` mantido.
-- Outubro declara substituição de nota anterior; marcar `replacement`, evitar dupla contagem se original for fornecido. SEGUNDA VIA isoladamente não determina refaturamento.
-- Abril declara consumo pela média aritmética dos últimos 12 faturamentos. Preservar observado como estimado; igualdade entre tabela/cobrança não prova medição real.
-- Mudança de calendário antes da migração ao ML em agosto/2026 confirmada pelo usuário que acompanhou a transição. Junho mantém 30 dias impressos, separadamente da premissa de ~60 dias e possível média de dois meses informada pelo usuário. Dois registros MAI/26 no histórico preservados. Sem consumo dobrado, interpolado ou anualização medida contínua homologada.
+- Doze quadros faturáveis consistentes, com 135 linhas e residual zero contra TOTAL do próprio quadro. 105 produtos comparáveis e vinte parcelas ociosas quantificadas passam na tolerância. Setembro tem diferença para cabeçalho/boleto, agora **informativa**, sem bloqueio automático; não foi apagada ou classificada por hipótese.
+- Doze competências, datas/rótulos e demandas contratadas conferidos; CNPJ da distribuidora foi lido nas doze contas, mas essa conferência não será requisito repetido do produto. Informação visual anterior preservada nos rascunhos, sem imagens/PDFs/texto bruto gravados.
+- Abril tem aviso de consumo pela média de 12 faturamentos: conservar como estimado quando afetar cálculo. Junho mantém 30 dias impressos e premissa do usuário de cobertura aproximada de 60 dias, sem acumulação e com possível média de dois meses. Mudança de calendário antes do ML em agosto/2026 confirmada pelo usuário. Não dobrar/interpolar consumo; limitar apenas conclusões dependentes da comparabilidade temporal.
+- PDFs agosto/2025–julho/2026 são referência principal; planilhas só nos dez meses comuns. Verde é referência estrutural, não cenário financeiro esperado. Fator 3 de ultrapassagem da planilha não será reproduzido.
 
-## Evidências locais e verificações
+## Gabarito atual e verificações
 
-`.local-analysis/visual-review.json` é o rascunho atual para total/residual, leitura de CNPJ/datas e exceções. Candidatos anteriores preservados como histórico. Doze fichas atualizadas em `.local-analysis/review-package/`, com `REVIEW-RESULT.md`, manifesto e aprovação do usuário pendente. Arquivos reais, ferramentas e dados pessoais fora do envio.
+`.local-analysis/minimum-billing-review.json` contém a projeção mínima v0.2; `.local-analysis/review-package/MINIMUM-REVIEW.md` é o resumo atual para revisão. Arquivos de auditoria ampliada anteriores são históricos e não geram pendências administrativas obrigatórias. Aprovação do responsável segue pendente, sem aprovação presumida de todos os campos da conta.
 
-Renderização nativa Windows.Data.Pdf por PowerShell 5.1, em streams de memória; sem nova dependência, imagem em disco ou texto bruto persistido. Transporte em blocos e comprimento conferido antes de inspecionar; tentativas incompletas descartadas. Releitura em memória com pypdf existente dos totais nos doze PDFs; asserções de onze reconciliações e um conflito, CNPJ por documento, preservação dos quatro itens monetários e 30 dias impressos de junho. Nenhum teste de aplicação ou OCR.
+Verificados por projeção e asserções: doze bases do quadro fecham; diferença de setembro preservada como informação; quatro itens monetários sem dados inventados; consumos, datas e demandas originais preservados. S01 deixa de bloquear por CNPJ opcional; S26 distingue residual do quadro e diferença de total a pagar, sem bloqueio artificial. São 26 casos sintéticos documentais; sem testes da aplicação, nova leitura de PDF ou instalação nesta alteração. Links, codificação e lista explícita de oito arquivos públicos conferidos. SPEC e contratos atualizados; nenhum checkbox de aceite marcado.
 
-SPEC §7 e dicionário reforçados para distinguir totais de cabeçalho/documento/quadro/soma, e consumo estimado versus medição; caso sintético S26. Links, codificação e lista explícita de dez documentos públicos conferidos antes do commit. Nenhum aceite marcado. Tarifas oficiais, vigências e regra regulatória consolidada continuam sem homologação comercial.
 
-## Próximo passo antes da Fase 1
 
-Esclarecer o conflito de setembro; revisar/aceitar desconhecidos e limitações de abril/junho, confirmar ponto de conexão e mercado, registrar responsável/data de aprovação. Autorização/procedimento de anonimização de fixtures reais e fontes/preços necessários aos cenários continuam pendentes. Não iniciar Fase 1 nesta entrega.
+Hipótese de setembro conferida a pedido do usuário: forte compatibilidade numérica da diferença para o total a pagar com bandeira vermelha patamar 2 não discriminada. Fonte Enel para o mês e MME para BRL 78.77/MWh; memória Decimal local em `.local-analysis/september-flag-check.json`, com desvio de poucos centavos na estimativa de preço cheio por proporção da própria conta. Não adicionar item observado ou converter a hipótese em gabarito aprovado. Fontes e método em [referências do corpus](corpus/regulatory-review.md).
+
+## Próximo passo
+
+Revisar/aceitar os dados mínimos e seus desconhecidos, confirmar UC/cliente e ponto de conexão quando necessário, e registrar responsável/data do conjunto esperado. Preços/entradas adicionais somente para cenários que precisarem deles. A comparação alternativa exige dados próprios; não usar a Verde de exemplo como gabarito. Autorização/procedimento de anonimização para fixtures públicas permanece separado da análise local. Não exigir resolver setembro ou outros assuntos administrativos para prosseguir no diagnóstico faturável.
 
 ## Arquivos e commit
 
-Novo: `docs/corpus/visual-review.md`. Alterados: `EcoWatt_PROJECT_SPEC.md`, `docs/STATUS.md`, `docs/contracts/invoice-data.md`, `docs/corpus/README.md`, `docs/corpus/series-review.md`, `docs/corpus/invoice-review.md`, `docs/corpus/representative-review.md`, `docs/corpus/regulatory-review.md`, `docs/corpus/synthetic-cases.md`. Removidos: nenhum. Materiais reais e scripts locais excluídos.
+Alterados: `EcoWatt_PROJECT_SPEC.md`, `docs/contracts/invoice-data.md`, `docs/contracts/pipeline.md`, `docs/STATUS.md`, `docs/corpus/synthetic-cases.md`, `docs/corpus/README.md`, `docs/corpus/visual-review.md`, `docs/corpus/regulatory-review.md`. Novos/removidos públicos: nenhum. Projeção e script locais ignorados, fora do envio.
 
-Commit: `docs: revisa visualmente corpus e corrige conciliacao dos totais`. Consultar histórico remoto para o SHA; este status integra o próprio commit.
+Commit: `docs: define escopo minimo e confere hipotese de bandeira`. Consultar histórico remoto para o SHA; este status integra o próprio commit.

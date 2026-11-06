@@ -1,5 +1,7 @@
 # Corpus e homologação — inventário e conferência em 06/11/2026
 
+**Escopo atual — decisão do usuário em 06/11/2026:** somente faturamento, cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas (SPEC 3.10; contrato mínimo v0.2). Não exigir cadastro completo ou auditoria fiscal/bancária. Para o diagnóstico, conciliar itens com TOTAL do quadro; diferença para cabeçalho/boleto é informativa e não bloqueia os módulos com entradas suficientes. A investigação ampla abaixo fica como histórico. Dados atuais do mínimo em `.local-analysis/minimum-billing-review.json` e resumo em `.local-analysis/review-package/MINIMUM-REVIEW.md`; nenhum dado real é enviado.
+
 Atualização atual: [revisão visual das 24 páginas](visual-review.md). CNPJ e rótulos de datas foram lidos nas doze contas; onze totais coincidem com cabeçalho/documento. Setembro tem conflito entre cabeçalho/boleto e quadro de itens; os antigos “12 resíduos zero” fechavam apenas os quadros. Outubro declara substituição de nota, e abril consumo estimado por média de 12 faturamentos. Achados antigos abaixo ficam como histórico, sem prevalecer sobre essa correção.
 
 ## Materiais efetivamente disponíveis
@@ -84,3 +86,5 @@ Diferença absoluta de até BRL 0.99 por item, inclusive, aceita na reconciliaç
 ## Pacote local para revisão por fatura
 
 Consolidadas doze fichas em `.local-analysis/review-package/` (índice e manifesto locais), sem envio de dados reais. Incluem medições, itens, totais, diferenças e decisões pendentes. Correspondência cadastral entre nome Enel SP e CNPJ derivado de dez chaves conferida na fonte oficial da distribuidora; agosto/setembro seguem sem CNPJ extraído. A confirmação da identidade cadastral não aprova as faturas nem preenche campos ausentes. Junho mantém separados os 30 dias impressos e a premissa de transição aproximada de 60 dias. Detalhes no [relatório da série](series-review.md).
+
+Hipótese de setembro conferida a pedido do usuário: forte compatibilidade numérica da diferença para o total a pagar com bandeira vermelha patamar 2 não discriminada. Fonte Enel para o mês e MME para BRL 78.77/MWh; memória Decimal local em `.local-analysis/september-flag-check.json`, com desvio de poucos centavos na estimativa de preço cheio por proporção da própria conta. Não adicionar item observado ou converter a hipótese em gabarito aprovado. Fontes e método em [referências do corpus](regulatory-review.md).

@@ -1,6 +1,6 @@
 # EcoWatt — Especificação de produto e implementação
 
-Versão 3.9 • 06/11/2026 • Documento autossuficiente para orientar a implementação.
+Versão 3.10 • 06/11/2026 • Documento autossuficiente para orientar a implementação.
 
 ## 1. Objetivo e critérios do produto
 
@@ -254,7 +254,7 @@ A confiança do OCR é um indicador técnico, não probabilidade de o cálculo e
 ### 6.3 Duplicidade e lote
 
 - Mesmo hash no lote: arquivo duplicado, independente do nome.
-- Mesmo emissor e número de documento: duplicidade lógica.
+- Mesmo emissor e número de documento, quando disponível: duplicidade lógica. Ausência do número não bloqueia a extração mínima; usar hash e confronto UC/competência/ciclo/dados faturáveis para detectar possíveis duplicatas.
 - Mesma unidade, competência, período e impressão digital dos dados: possível duplicata.
 - Mesma competência com documentos diferentes: possível refaturamento, complemento ou dois períodos. Solicitar escolha explícita e manter apenas a versão válida; não somar automaticamente nem rejeitar refaturamento legítimo como fraude.
 - Identificar UC pela combinação distribuidora + identificador normalizado, preservando zeros à esquerda.
@@ -264,9 +264,13 @@ A confiança do OCR é um indicador técnico, não probabilidade de o cálculo e
 
 ## 7. Contrato de dados faturáveis
 
-### 7.1 Cabeçalho
+### 7.1 Cabeçalho e escopo mínimo
 
-Distribuidora e CNPJ do emissor; UC; nome/titular e endereço impressos quando disponíveis, com proveniência; competência; início/fim do ciclo; número de dias; identificador da fatura; subgrupo; modalidade; mercado cativo/livre/desconhecido; classe; tensão quando disponível; valor total da fatura; situação de refaturamento; versão do layout. O endereço extraído permanece separado do cadastro da empresa e do ponto de conexão confirmado (§4.2).
+Por definição do usuário em 06/11/2026, extrair apenas os blocos necessários ao diagnóstico: descrição do faturamento; informações do cliente e UC; classificação da unidade/tipo de fornecimento; datas gerais de leitura; grandezas contratadas. Não cadastrar exaustivamente a conta. Campos administrativos/fiscais extras são opcionais e sua ausência não impede conferência ou cálculo dos dados faturáveis suficientes. Segurança, proveniência mínima e autorização continuam aplicáveis.
+
+Dados centrais: distribuidora identificada no cadastro/catálogo; UC; nome/titular e endereço; competência; leitura anterior/atual e dias do ciclo; demandas contratadas por posto ou única; classificação (subgrupo, modalidade, classe). Tipo de fornecimento, próxima leitura, vencimento e total a pagar podem ser capturados quando disponíveis, como informação geral. O endereço extraído permanece separado do cadastro da empresa e do ponto de conexão confirmado (§4.2). CNPJ completo do cliente não é exigido se a fatura o mascara.
+
+CNPJ do emissor, número fiscal, chave NF3e, protocolo de autorização, situação formal de refaturamento, pagamento, boleto, códigos de barras/QR e informações de atendimento não fazem parte do mínimo a conferir. Não solicitar preenchimento ou investigação desses dados para liberar diagnóstico válido. A distribuidora precisa ser corretamente identificada para usar preços compatíveis; seu CNPJ pode vir do catálogo, sem reextração obrigatória em cada PDF. Versão técnica do parser/layout é metadado do sistema, não campo a confirmar pelo cliente.
 
 Classificação de mercado por ciclo: priorizar identificação explícita da fatura e confirmação do cliente com proveniência. Em leitura completa do quadro financeiro, presença de cobrança de energia ativa TE sugere cativo; ausência dessa cobrança com identificação de cobrança de uso da rede/TUSD sugere livre. São indícios para sugestão, não prova automática. Procurar itens de energia e agrupamentos equivalentes do layout, não apenas a sequência de letras “TE”; UFER TE, referências históricas e ajustes isolados não bastam para classificar o fornecimento corrente. Leitura incompleta, agrupamento ambíguo, ausência de TE sem cobertura suficiente ou evidências conflitantes mantém mercado desconhecido e exige conferência. Registrar indício, cobertura, confirmação e origem sem guardar texto bruto. Mercado livre continua fora do cálculo cativo completo do MVP; não ampliar escopo pela classificação.
 
@@ -274,7 +278,7 @@ O total da fatura não é necessariamente o valor pago. Só usar “pago” quan
 
 ### 7.2 Medições e contratação
 
-Por posto `peak`, `off_peak` ou `single`: demanda contratada, demanda ativa medida, demanda ativa faturada, energia ativa, grandezas de reativos e fator de potência quando presentes. Registrar se o valor já inclui ajuste de perdas para não aplicá-lo duas vezes. Aviso de faturamento pela média ou outra estimativa exige estado `estimated` e método/proveniência; coincidência de números entre tabela de medição e itens não comprova medição real. Preservar dados impressos e separar hipóteses do usuário sobre ciclos de transição, sem reconstruir consumo ou anualizar como série medida contínua.
+Por posto `peak`, `off_peak` ou `single`: demanda contratada e quantidades faturadas de demanda/energia necessárias ao diagnóstico. Demanda medida só é necessária aos módulos que dependem dela; aproveitar a quantidade de demanda utilizada do quadro de cobrança quando seu significado estiver identificado, sem chamar toda demanda faturada de medida. Grandezas reativas de medidor, fator de potência, números/códigos de medidor, contadores de leitura e séries históricas impressas são complementares; não exigir cadastro desses dados para analisar cobranças observadas. Registrar se o valor já inclui ajuste de perdas para não aplicá-lo duas vezes. Aviso de faturamento pela média ou outra estimativa exige estado `estimated` e método/proveniência; coincidência de números entre tabela de medição e itens não comprova medição real. Preservar dados impressos e separar hipóteses do usuário sobre ciclos de transição, sem reconstruir consumo ou anualizar como série medida contínua.
 
 Na Verde, registrar demandas medidas por posto quando a fatura ou informação complementar as trouxer, mesmo que a contratação seja única.
 
@@ -282,7 +286,7 @@ Na Verde, registrar demandas medidas por posto quando a fatura ou informação c
 
 Tipos: `active_energy_te`, `active_energy_tusd`, `regular_demand`, `idle_demand`, `overrun_demand`, `reactive_energy_excess`, `reactive_demand_excess`, `flag`, `tax`, `other`, `unclassified`.
 
-Por item: posto; natureza indutiva/capacitiva quando conhecida; quantidade e unidade; tarifa homologada sem tributos quando disponível; preço efetivo; valor; tributos e bases identificados; vigência ou segmento; estado e proveniência.
+Por item: descrição/tipo; posto quando identificável; quantidade e unidade disponíveis; preço unitário cheio com impostos incorporados; valor cobrado; estado e proveniência mínima. Incluir energia TE/TUSD, demanda, parcela ociosa LEI ESTADUAL, UFER e demais linhas monetárias do quadro, com subtotais/total do faturamento. Tarifa unitária sem impostos pode ser guardada se disponível, sem substituir o preço cheio. Colunas de PIS/COFINS, base/alíquota/valor ICMS e detalhes fiscais não são exigidos nem analisados separadamente.
 
 TE e TUSD agrupadas em uma linha exigem identificação explícita de agrupamento. Não duplicar energia ao somar linhas TE/TUSD da mesma medição. Valores monetários de ociosidade podem existir sem quantidade ou preço; não inventar o campo ausente.
 
@@ -292,7 +296,7 @@ TE e TUSD agrupadas em uma linha exigem identificação explícita de agrupament
 - Tarifa e quantidade compatíveis com unidade e posto.
 - `quantidade × preço ≈ valor`, considerando precisão impressa e arredondamento.
 - Tolerância monetária de reconciliação: diferença absoluta de até R$ 0,99 por item, inclusive, autorizada pelo usuário em 06/11/2026. Preservar produto, valor observado e diferença; valores acima do limite geram pendência. Não aplicar esse limite aos kW, ao gatilho de ultrapassagem, a campos ausentes ou à identidade. O residual do total continua explícito e exige classificação; não o apagar por essa tolerância.
-- Total faturado é conciliado com componentes conhecidos e residual identificado; não exigir que apenas itens analisados somem a conta inteira. Conferir separadamente total a pagar do cabeçalho, valor do documento de cobrança, total do quadro de itens e soma dos componentes. Fechamento do quadro não prova conciliação da fatura. Divergência não explicada mantém `needs_review`; preservar valores/proveniência sem escolher silenciosamente um total ou criar parcela por diferença. A tolerância por item não elimina residual global ou conflito entre totais.
+- Para o diagnóstico, a base financeira é o quadro de faturamento: comparar soma das linhas reconhecidas, subtotais e TOTAL desse quadro, com residual explícito. Inconsistência nos itens/base efetivamente usados exige revisão ou limita somente o módulo dependente. Total a pagar do cabeçalho pode ser mostrado separadamente; diferença para quadro ou boleto é observação informativa, não bloqueio automático dos módulos cujos dados faturáveis estão consistentes. Não criar parcela por diferença, misturar bases ou declarar auditado o valor a pagar. Boleto e documentos fiscais não precisam ser conferidos.
 - Demanda contratada ou medida ausente bloqueia a otimização daquele posto; não bloqueia diagnóstico válido de reativos.
 - Sem demanda por posto suficiente, migração pode ficar parcial/inconclusiva.
 - Quantidades reativas não são reconstruídas com fator de potência médio mensal quando a regra exige intervalos.
@@ -691,7 +695,7 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
 
   - [ ] Obter série real ENEL A4 Azul e dados de referência conferidos manualmente; confirmar concessionária, mercado e layout. Anonimizar fixtures com autorização, fora do fluxo de clientes. Fixar exemplos sintéticos e fontes regulatórias. Nenhuma fatura antiga mencionada no rascunho é considerada disponível automaticamente.
 
-  - [ ] Aceite: dicionário de campos, restrições e conjunto esperado por fatura aprovado; campos desconhecidos identificados.
+  - [ ] Aceite: dicionário mínimo dos blocos faturáveis, cliente/UC, classificação, datas e demandas contratadas, restrições e esperado por fatura aprovado; desconhecidos identificados. Não exigir cadastro fiscal/administrativo completo, auditoria de boleto ou aprovação de informações fora desse escopo.
 
 - [ ] **Fase 1 — Base leve e banco**
 
@@ -823,7 +827,7 @@ Restam informações externas que não podem ser inventadas:
 | Informação | Como fechar | Efeito enquanto faltar |
 | --- | --- | --- |
 | Corpus real ENEL e conferência | Série e planilha de referência do cliente-piloto | Parser e fórmulas não homologados comercialmente |
-| Identidade da distribuidora | CNPJ emissor da primeira conta | Nenhuma tarifa escolhida só pelo nome ENEL |
+| Identidade da distribuidora | Cadastro/catálogo e nome/unidade da fatura; CNPJ do catálogo quando necessário | Preços somente para a distribuidora identificada, sem reextração fiscal obrigatória em cada conta |
 | Preços cheios por componente e perdas | Faturas e fontes aplicáveis por vigência; ociosidade com preço próprio | Falta de preço cheio ou perdas necessárias bloqueia somente o cálculo dependente; impostos separados fora da análise |
 | Contrato e restrições de alteração | CUSD, histórico e regra vigente | Potencial técnico sem data de implantação |
 | Dados por posto na Verde | Fatura/portal/registros intervalares | Migração condicional/inconclusiva |
