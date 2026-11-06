@@ -135,3 +135,27 @@ class AuditEvent(Base):
     resource_id: Mapped[str] = mapped_column(String(36))
     changes: Mapped[dict | None] = mapped_column(JSON)
     created_at: Mapped[int] = mapped_column(Integer, default=now)
+
+
+class SimulationTask(Base):
+    """Somente controle de execução: nunca contém documentos, texto ou resultado."""
+    __tablename__ = "simulation_tasks"
+    __table_args__ = (
+        CheckConstraint("status IN ('queued','running','finished','cancelled','expired')", name="status"),
+        CheckConstraint("revision >= 1", name="revision"),
+        CheckConstraint("(status = 'running' AND lease_hash IS NOT NULL AND lease_expires_at IS NOT NULL "
+                        "AND executor_id IS NOT NULL) OR (status != 'running' AND lease_hash IS NULL "
+                        "AND lease_expires_at IS NULL)", name="lease"),
+        Index("ix_simulation_tasks_simulation_status", "simulation_id", "status"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    simulation_id: Mapped[str] = mapped_column(ForeignKey("simulations.id", ondelete="CASCADE"))
+    actor_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    revision: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(12), default="queued")
+    executor_id: Mapped[str | None] = mapped_column(String(64))
+    lease_hash: Mapped[str | None] = mapped_column(String(64))
+    lease_expires_at: Mapped[int | None] = mapped_column(Integer)
+    created_at: Mapped[int] = mapped_column(Integer, default=now)
+    ended_at: Mapped[int | None] = mapped_column(Integer)
+    reason: Mapped[str | None] = mapped_column(String(30))

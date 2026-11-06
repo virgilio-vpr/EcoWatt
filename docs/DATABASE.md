@@ -8,6 +8,8 @@ SQLAlchemy 2.0.57 e Alembic 1.20.1; SQLite local 3.50.4 verificado em 06/11/2026
 
 `0002_access_simulations`: rate_buckets, email_tokens, sessions → simulations → idempotency_keys → audit_events. Ativação e recuperação compartilham tabela com finalidade restrita, expiração e consumo único. Instantes são inteiros de segundos Unix UTC; não confundir com datas de competência da futura camada de faturas.
 
+`0003_simulation_tasks`: metadados de operações dependentes de simulação/ator, sem payload. FKs CASCADE para simulação e RESTRICT para ator. Checks de estado/revisão/lease e índice por simulação/estado. Detalhes em [TASKS](TASKS.md).
+
 ```mermaid
 erDiagram
   companies ||--o| users : conta
@@ -17,6 +19,8 @@ erDiagram
   companies ||--o{ simulations : titular
   distributors ||--o{ simulations : unidade
   simulations ||--o{ idempotency_keys : retry
+  simulations ||--o{ simulation_tasks : operacao
+  users ||--o{ simulation_tasks : autor
   users ||--o{ audit_events : autoria
 ```
 
@@ -32,7 +36,7 @@ Criação grava simulação, chave de idempotência por ator e auditoria na mesm
 
 Salvar unidade exige distribuidora do catálogo, UC, titular e endereço próprio do ponto de conexão. Não copia nem altera o endereço da empresa automaticamente. Toda alteração usa expected_revision; UC/distribuidora já salvas não podem virar outra unidade dentro da mesma simulação. Autoria e valores anterior/novo ficam em auditoria estruturada.
 
-Excluir exige confirmação/revisão, marca tombstone, incrementa revisão e libera slot atomicamente. As consultas JSON/HTML e o guard `require_simulation` recusam o ID excluído. O guard usa populate_existing para reler tombstone/revisão mesmo com objeto ORM em cache, verificado com uma sessão que carregou o objeto antes da exclusão. Isso não dispensa transação nova/curta antes da persistência. Não há worker nesta fase: integração do guard, cancelamento e remoção dos futuros filhos serão testados na Fase 2 e seguintes. Tombstones/auditoria ainda não têm expurgo de retenção; não usar dados reais.
+Excluir exige confirmação/revisão, marca tombstone, incrementa revisão, libera slot e cancela tarefas queued/running atomicamente, limpando leases. Guard/finish recusam o ID excluído, inclusive com objeto ORM em cache ou executor que termina depois. Nova revisão da unidade também cancela tarefas antigas. [TASKS](TASKS.md) define confirmação estruturada em transação nova/curta, heartbeat, expiração e resultado/estado atômicos. Coordenador/processos reais e exclusão dos futuros filhos entram na Fase 2; tombstones/auditoria ainda não têm expurgo de retenção. Não usar dados reais.
 
 ## Decimal
 
@@ -50,7 +54,7 @@ Na raiz, depois de preparar `.venv` conforme SETUP:
 .\.venv\Scripts\python.exe -m alembic check
 ```
 
-Revisão atual `0002_access_simulations`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
+Revisão atual `0003_simulation_tasks`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
 
 O seed de SETUP foi executado duas vezes no banco local e preservou contas existentes. A suíte testa também rollback sem órfãos, restrições, FKs, seed em produção recusado e concorrência de cota/idempotência. Não há dados reais de clientes ou documentos no banco criado.
 

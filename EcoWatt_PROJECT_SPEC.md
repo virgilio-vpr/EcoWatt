@@ -699,7 +699,7 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
 
   Aceite explícito do usuário em 06/11/2026 para o mínimo das doze faturas, com ressalvas no STATUS. Anonimização/publicação de fixtures reais e homologação comercial de parser, motor, tarifas alternativas e vigências permanecem na Fase 5 e nas dependências da seção 16; não foram aprovadas por este aceite.
 
-- [ ] **Fase 1 — Base leve e banco**
+- [x] **Fase 1 — Base leve e banco**
 
   - [x] Configurar FastAPI com Jinja2, HTMX local e HTML/CSS, separando rotas web e API JSON dos serviços de aplicação.
   - [x] Definir OpenAPI, cliente HTTP, erros, paginação e idempotência.
@@ -713,13 +713,13 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
   - [x] Organizar configuração local e diretórios de dados, sem executar containers; documentar o caminho futuro para PostgreSQL/Docker.
   - [x] Provisionar administrador internamente e implementar permissões por perfil e dono.
   - [x] Garantir cota de duas simulações em transação, incluindo criações simultâneas.
-  - [ ] Implementar exclusão que libere a vaga e impeça recriação por jobs tardios.
+  - [x] Implementar exclusão que libere a vaga e impeça recriação por jobs tardios.
 
   - [x] FastAPI, API REST independente da apresentação, SQLAlchemy, Alembic, DecimalType, autenticação e catálogo. Verificações locais/CI em SQLite; compatibilidade PostgreSQL planejada e validada antes da produção, sem exigir containers agora.
 
   - [x] Aceite: subida local sem Docker, migrações SQLite do zero e upgrade, seed repetível sem duplicatas, decimal sem perda e acesso isolado por usuário.
 
-  Base local validada em 06/11/2026: 62 testes com contrato OpenAPI, cliente HTTP no Edge, SQLite, migrações/seed/Decimal, concorrência, sessões e SMTP sintético sem envio externo. CI da entrega SMTP aprovada, incluindo navegador; resultado do novo commit registrado no STATUS quando disponível. Respostas tipadas, cookie/CSRF/Origin no OpenAPI, índice HTML conferido e exclusão com guard resistente a cache ORM antigo. O item integrado de jobs permanece aberto para a Fase 2; não declarar toda a fase concluída nem implementar parser/jobs apenas para marcar esse item. Provedor externo não homologado, envio disabled e catálogo sintético. Interface completa/Tailwind/temas ficam na Fase 4. Ver STATUS/API/SETUP/DATABASE/EMAIL; não homologado comercialmente.
+  Conclusão local em 06/11/2026, a pedido do usuário: 68 testes com SQLite/migrações/seed/Decimal, HTTP/Edge, sessões, isolamento/concorrência e SMTP sintético. Critério final validado com tarefas reais de controle e executor sintético concorrente: exclusão cancela queued/running, revoga leases e libera slot atomicamente; conclusão tardia não chama persistência. Rollback, revisão alterada, dois executores, heartbeat e expiração também testados. Não foram implementados coordenador/OCR/cálculos: a Fase 2 integra os adaptadores reais ao protocolo existente. Provedor externo não homologado, envio disabled por padrão e catálogo sintético. Interface completa/Tailwind/temas ficam na Fase 4. Ver STATUS/API/SETUP/DATABASE/EMAIL/TASKS; não homologado comercialmente.
 
 - [ ] **Fase 2 — Coração 1/3: leitura e armazenamento de faturas**
 

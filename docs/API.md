@@ -37,7 +37,7 @@ Criar simulação: POST `/api/v1/simulations`, JSON `{}`, header Idempotency-Key
 
 Uma chave por ator/conteúdo permanece vinculada ao recurso: mesma chave/dono retorna o mesmo ID com 201, inclusive em concorrência; trocar dono com a mesma chave gera 409. Replay após exclusão retorna 404 e não recria. Não há expiração da chave implementada nesta fase. Toda simulação não excluída ocupa uma das duas vagas do dono, inclusive falhas e conta própria do admin. Criar terceira retorna 409; alterações/versões não criam nova vaga.
 
-Salvar unidade e excluir exigem expected_revision atual. Excluir exige boolean JSON `confirm: true`, sem conversão de string/número. UC/distribuidora já salvas não podem ser trocadas por outra unidade na mesma simulação. Tombstone fica inacessível e libera vaga atomicamente. O guard recarrega o banco mesmo se o ORM tiver objeto em cache; futuros jobs precisam abrir transação curta de escrita e aplicar esse guard imediatamente antes de persistir. Não reutilizar transação/snapshot anterior à extração. Integração/cancelamento efetivos dos jobs continuam na Fase 2.
+Salvar unidade e excluir exigem expected_revision atual. Excluir exige boolean JSON `confirm: true`, sem conversão de string/número. UC/distribuidora já salvas não podem ser trocadas por outra unidade na mesma simulação. Tombstone fica inacessível, libera vaga e cancela operações ativas atomicamente. O serviço interno [TASKS](TASKS.md) revoga leases e impede persistência tardia, revalidando ator/tombstone/revisão em transação curta. Não há endpoint público de tarefas nem executor de OCR nesta fase. A futura camada de processamento usa esse protocolo, sem reutilizar transação/snapshot anterior à extração.
 
 ## Cliente HTTP local
 

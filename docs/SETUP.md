@@ -86,7 +86,7 @@ Limites persistidos SQLite: janela de uma hora, 10 tentativas por e-mail/finalid
 .\.venv\Scripts\uv.exe build --wheel
 ```
 
-Resultado local: 62 testes aprovados com ECOWATT_BROWSER_TESTS=1, dependências compatíveis, lock atualizado, Alembic check sem divergência e compilação sem erros. Incluem contrato OpenAPI, cliente HTTP no Edge, migrações/FKs/seed/Decimal, sessões/CSRF, acesso cruzado, concorrência e SMTP sintético. Sem a flag, os dois testes de navegador ficam skipped. A CI da entrega SMTP passou, incluindo navegador; conferir também o novo commit. Detalhes do contrato em [API](API.md).
+Resultado local: 68 testes aprovados com ECOWATT_BROWSER_TESTS=1, dependências compatíveis, lock atualizado, Alembic check sem divergência e compilação sem erros. Incluem contrato HTTP/Edge, migrações/FKs/seed/Decimal, sessões/CSRF, isolamento/concorrência, SMTP sintético e cancelamento/resultado tardio com executor concorrente. Sem a flag, os dois testes de navegador ficam skipped. Conferir a CI do fechamento da fase. Contrato em [API](API.md), ciclo interno de tarefas em [TASKS](TASKS.md).
 
 HTMX 2.0.11, api-client.js e auth.js são servidos localmente, sem eval/scripts inline. O cliente HTTP preserva erros/ID técnico, trata 204, limita chamadas à API da mesma origem e não repete escritas automaticamente em falha de rede/timeout. Playwright 1.64.1 é somente dev, usando o Edge instalado sem baixar navegador. Ciclo de acesso e cliente HTTP passaram no navegador; não representam homologação visual da interface completa. Procedimento de acesso em [EMAIL](EMAIL.md).
 

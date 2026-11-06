@@ -2,7 +2,7 @@
 
 Objetivo: criar base local FastAPI/SQLite e acesso seguro antes do frontend completo.
 
-Estado em 06/11/2026: base local e revisão HTTP verificadas, com serviços, SMTP e cliente no Edge. Contrato em [API](../API.md), comandos em [SETUP](../SETUP.md), esquema em [DATABASE](../DATABASE.md), SMTP em [EMAIL](../EMAIL.md). Envio disabled e provedor externo não homologado. O único critério de implementação ainda aberto é exclusão/cancelamento integrado aos futuros jobs, a validar na Fase 2 antes da extração. Não iniciar OCR/jobs só para fechar o checklist nem declarar aceite integral da fase com essa pendência.
+Concluída em 06/11/2026 para desenvolvimento local. O fechamento solicitado pelo usuário inclui o controle mínimo de tarefas, cancelamento transacional e rejeição de resultado tardio, verificados com executor sintético concorrente; não inicia OCR ou cálculos. Contrato em [API](../API.md), comandos em [SETUP](../SETUP.md), esquema em [DATABASE](../DATABASE.md), SMTP em [EMAIL](../EMAIL.md) e protocolo de tarefas em [TASKS](../TASKS.md). Envio disabled por padrão e provedor externo não homologado; critérios oficiais na seção 15 da SPEC.
 
 ## Leitura dirigida
 

@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from ecowatt.db.models import AuditEvent, Distributor, IdempotencyKey, Simulation, User, now
 from ecowatt.errors import DomainError
 from ecowatt.security.tokens import digest
+from ecowatt.services.tasks import cancel_tasks
 
 
 def require_admin(actor):
@@ -72,6 +73,7 @@ def save_unit(db, actor, simulation_id, payload):
         setattr(simulation, name, value)
     simulation.unit_saved_at, simulation.updated_by = now(), actor.id
     simulation.revision += 1
+    cancel_tasks(db, simulation.id, "revision_changed")
     db.add(AuditEvent(actor_id=actor.id, action="unit_saved", resource_id=simulation.id,
                       changes={"before": before, "after": values}))
     return simulation
@@ -84,6 +86,7 @@ def delete_simulation(db, actor, simulation_id, payload):
     simulation.status, simulation.slot, simulation.deleted_at = "deleted", None, now()
     simulation.revision += 1
     simulation.updated_by = actor.id
+    cancel_tasks(db, simulation.id, "simulation_deleted")
     db.add(AuditEvent(actor_id=actor.id, action="simulation_deleted", resource_id=simulation.id))
 
 
