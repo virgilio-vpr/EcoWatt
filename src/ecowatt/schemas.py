@@ -184,3 +184,14 @@ class DistributorsPage(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class InvoiceAdmissionContext(BaseModel):
+    unit_saved: bool
+    distributor_id: str | None
+    distributor_code: str | None
+    layout_version: str
+    supported: bool
+    reason: str | None
+    contact_required: bool
+    document_upload_enabled: bool

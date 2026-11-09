@@ -90,6 +90,8 @@ def delete_simulation(db, actor, simulation_id, payload):
     # Filhos faturáveis são removidos na mesma transação do tombstone/lease.
     # Itens primeiro: a referência à medição usa RESTRICT deliberadamente.
     from ecowatt.db.invoices import Invoice, InvoiceItem
+    from ecowatt.db.admissions import InvoiceAdmission
+    db.execute(delete(InvoiceAdmission).where(InvoiceAdmission.simulation_id == simulation.id))
     invoice_ids = select(Invoice.id).where(Invoice.simulation_id == simulation.id)
     db.execute(delete(InvoiceItem).where(InvoiceItem.invoice_id.in_(invoice_ids)))
     db.execute(delete(Invoice).where(Invoice.simulation_id == simulation.id))

@@ -736,6 +736,8 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
 
 - [ ] **Fase 2 — Coração 1/3: leitura e armazenamento de faturas**
 
+  Progresso parcial em 09/11/2026: admissão interna exclusivamente sintética com unidade salva, consulta JSON de suporte, limites/reservas transacionais e TASKS; contratos e restrições em `docs/ADMISSION.md`. Sem recebimento real, layout homologado, coordenador de bytes ou interface de leitura. Critérios integrais abaixo permanecem abertos até sua verificação completa.
+
   - [ ] Salvar dados da unidade e endereço da ligação antes de liberar faturas; oferecer cópia confirmada do endereço da empresa.
   - [x] Criar/revisar tabelas de faturas, itens, medições e proveniência antes da extração integrada, respeitando a ordem de FKs.
   - [ ] Capturar demandas medidas por posto no quadro de medição Azul/Verde, separadas da contratação/faturamento; preservar mercado por ciclo e evidências de migração ACL, sem inferência por ausência em leitura incompleta.

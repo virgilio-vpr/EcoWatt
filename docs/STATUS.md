@@ -40,33 +40,37 @@ Hipótese de setembro conferida a pedido do usuário: forte compatibilidade num�
 
 Fase 0 integrada à `main`; Fase 1 integrada pelo [PR #2](https://github.com/virgilio-vpr/EcoWatt/pull/2) no commit `75d32b01671188c263e9b054587546d190cbe40b`. A branch `fase-2` foi criada desse merge e seu estado foi conferido no GitHub nesta entrega. Novos commits seguem nela, com integração por PR; nenhum novo merge foi solicitado nesta atualização documental. Operações pela integração GitHub, sem Git local.
 
-## Entrega atual — Fase 2, modelos e migrações
+## Entrega atual — Fase 2, admissão sintética
 
-Primeira entrega implementada em 09/11/2026 sobre a branch fase-2, preservando o commit documental `03a08016c1c75bc30050f48340719267fcb97268` posterior ao merge da Fase 1. Nenhum merge novo solicitado.
+Segunda entrega dividida em fatia coerente de infraestrutura, em 09/11/2026. Branch remota `fase-2` conferida no commit `aadd1d38dfc85bdd07d5ef42a29c198e3487cc31`, preservado como pai. Primeira entrega: esquema 0004, 95 testes e CI aprovada; Fase 1 segue integrada pelo PR #2. Nenhum merge nesta entrega.
 
-Migração aditiva `0004_invoices`: faturas, medições por posto, itens, proveniência versionada, dependências de campos, validações e evidências de mercado. Cabeçalho/identidade/ciclo/classificação em colunas; TOTAL do quadro separado do total a pagar. Contratação, demanda medida e faturada independentes, inclusive Verde com contratação única e medições por posto. Mercado/cobertura/sugestão/evidências preservados por ciclo, sem inferir ACL por ausência parcial. Sem documentos, imagens, texto integral ou payload livre nas novas tabelas.
+Implementados: consulta JSON autenticada de suporte a distribuidora/layout; pré-condição de unidade salva; contrato imutável de inspeção e protocolo de adaptador; reserva de quantidade/bytes/páginas e capacidade global na mesma transação de TASKS. Catálogo não habilita parser: somente a fixture interna SYNTHETIC/synthetic-v1 é reconhecida. Todos os layouts documentais, inclusive ENEL, continuam bloqueados. Consulta informa necessidade de contato, sem criar um pedido ou canal fictício.
 
-DecimalType preservado: quantidades/valores (30,10), preços/validações (38,18), FP (20,16), região (20,10); excedentes rejeitados sem arredondamento implícito. Ausentes são NULL e têm estado por campo na proveniência. Zero confirmado exige zero e cobertura completa; estimativa exige hipótese. Correções têm versões/ator/motivo e entradas de regras referenciam versões de campos. Limites e obrigações do futuro serviço em [DATABASE](DATABASE.md): esquema não sincroniza automaticamente coluna/proveniência nem valida sozinho prontidão.
+Migração aditiva `0005_invoice_admissions` guarda exclusivamente metadados/hash/versões, autoria e tombstone de remoção. Limites: 12 arquivos, 10 MB/10 páginas por arquivo, 60 MB/60 páginas acumulados; MB decimal. Quatro reservas ativas globais; um executor de admissão por vez, além da restrição TASKS de uma simulação por dono. Retry idêntico retorna a mesma tarefa; conflitos e capacidade recusam sem reserva parcial. Remoção revoga lease/libera orçamento e conserva chave antiga; reenvio explícito usa outra chave. Exclusão da simulação remove reservas e filhos na transação do tombstone/cancelamento.
 
-Consulta interna require_invoice usa autorização da simulação, revisão, tombstone e vínculo. Dono/empresa continuam no pai, autoria da fatura separada. Exclusão remove itens e faturas/filhos na mesma transação que cancela tarefas, incrementa revisão e libera slot. Testes usam finish existente para gravar registros reais; falha após flush de todos os filhos não deixa órfãos, e resultado tardio após exclusão/revisão não grava. Detalhes em [TASKS](TASKS.md).
-
-Seção 15: marcado somente o critério de criação/revisão das tabelas antes da extração integrada. Fase 2 permanece aberta. Não foram antecipados parser/OCR, cálculo, interface completa, admissão, idempotência de upload ou revisão operacional. Unique por hash não substitui resolução futura de duplicatas lógicas/refaturamento.
+Contratos, códigos e limitações em [ADMISSION](ADMISSION.md), [DATABASE](DATABASE.md) e [TASKS](TASKS.md). O contrato de inspeção não implementa resultado de extração. Não há bytes, texto bruto, PDFs ou imagens em reservas. O comando interno exige ação read_invoice; selecionar não cria trabalho. A consulta pública é somente GET, sem endpoint multipart de recebimento.
 
 ## Verificações reais
 
-- **95 testes aprovados**, com ECOWATT_BROWSER_TESTS=1: 68 anteriores e 27 novos casos sintéticos, incluindo Edge, SMTP em loopback, Decimal, permissões, cota, revisões, exclusão, rollback e executor em thread.
-- Migração 0004 aplicada ao SQLite local; alembic current confirma head e alembic check sem divergência. Bancos descartáveis cobrem upgrade limpo, preservação dos pais, downgrade/upgrade com filhos e PRAGMA foreign_key_check.
-- compileall aprovado; uv pip check: 41 pacotes compatíveis; uv lock --check --offline aprovado. Nenhuma dependência instalada ou alterada. Execução inicial no sandbox falhou por acesso aos temporários do pytest; execução local autorizada pela revisão automática passou. Cache uv direcionado ao workspace após negativa de acesso ao cache padrão.
-- Ambiente virtual existente, sem instalações globais, administrador, containers ou mudança de políticas. .env preservado e excluído do envio. Nenhum PDF/corpus real processado/publicado. PostgreSQL não validado. CI deste novo commit deve ser consultada no histórico remoto; resultado local não equivale a CI aprovada.
+- **120 testes aprovados**, com ECOWATT_BROWSER_TESTS=1, incluindo Edge, loopback SMTP e 25 casos novos exclusivamente sintéticos. Versão final executada após incluir exclusão das reservas: 65,62 s.
+- Cobertos limites por arquivo/acumulados e disputas concorrentes pela última vaga, retry concorrente, hash duplicado, executor global único, capacidade, autoria admin/titularidade, acesso cruzado, ator bloqueado, rollback da reserva/remoção/conclusão/exclusão, expiração e resultado tardio após remoção/exclusão/revisão.
+- Suíte de migrações verifica upgrade limpo e preservação de raízes, downgrade/upgrade descartável, Alembic check e FKs. Migração local aplicada: alembic current = 0005_invoice_admissions (head); alembic check sem divergências. Nenhuma validação PostgreSQL.
+- compileall aprovado. uv pip check: 41 pacotes compatíveis; uv lock --check --offline aprovado. Sem dependências novas. Cache uv direcionado ao workspace após bloqueio do cache padrão. Pytest exigiu execução local autorizada pela revisão automática por bloqueio de temporários no sandbox.
+- Ambiente virtual existente; sem instalações globais, administrador, containers ou alteração de políticas. .env preservado e fora do envio. Nenhum dado/artefato real do corpus processado ou publicado.
+- CI do novo commit deve ser consultada no GitHub; resultado local não equivale a CI aprovada. Estado final e SHA serão informados na resposta, pois este documento integra o próprio commit.
 
-## Próximo passo
+## Pendências e próximo passo
 
-Segunda entrega da Fase 2: admissão condicionada à unidade salva e suporte explícito a distribuidora/layout, com contrato do coordenador/adaptador, limites acumulados e processamento fora da transação, conforme [plano](phases/phase-02-invoices.md). Integrar persistência/revisão ao protocolo TASKS e às tabelas novas antes de declarar extração pronta. Regressões de cancelamento continuam obrigatórias com o adaptador real. Não presumir homologação de layout, tarifa ou fórmula tributária.
+Implementar coordenador único/fila efêmera real e verificar integralmente §5/§12 antes de habilitar PDFs: ausência de spool no framework/proxy, isolamento sem rede, limites CPU/RAM/tempo/pixels, armazenamento RAM quando indispensável, descarte e observabilidade. Depois integrar adaptador/layout específico homologado e contrato de resultado normalizado, sincronização valores/proveniência, vínculo fatura/tarefa, remoção do grafo individual, revisão do conjunto e persistência por finish. Cabeçalho visual, seletor e pedido de contato continuam pendentes. Recuperação de queued sem bytes após reinício ainda precisa do coordenador real.
 
-Fase 1 segue concluída (68 testes e CI aprovada no PR #2); SMTP externo/remetente/entregabilidade, MFA/produção e retenção têm homologação/fases próprias. Ressalvas da Fase 0 intactas: desconhecido não equivale a zero; hipótese de setembro não é cobrança observada; junho não equivale a dois consumos medidos; Verde exemplificativa não é gabarito financeiro.
+A reserva sintética não prova extração, segurança de PDF ou prontidão para cálculo. Não publicar faturas pelo callback desta reserva sem implementar vínculo e remoção atômica do grafo. Nenhum critério integral adicional da seção 15 foi marcado; anotado somente progresso parcial. Fase 2 permanece aberta.
+
+Ressalvas da Fase 0 intactas: desconhecido não equivale a zero; hipóteses não são homologação; Verde exemplificativa não é gabarito financeiro. SMTP externo/MFA/produção/retenção permanecem nas fases próprias.
 
 ## Arquivos e commit
 
-Novos: src/ecowatt/db/invoices.py, src/ecowatt/services/invoices.py, migrations/versions/0004_invoices.py, tests/test_invoices.py. Alterados: src/ecowatt/services/simulations.py, src/ecowatt/api/health.py, migrations/env.py, EcoWatt_PROJECT_SPEC.md, docs/DATABASE.md, docs/TASKS.md, docs/phases/phase-02-invoices.md, README.md e este status. Removidos: nenhum. Banco, temporários, caches, ambiente e artefatos reais fora do envio.
+Novos: docs/ADMISSION.md; migrations/versions/0005_invoice_admissions.py; src/ecowatt/db/admissions.py; src/ecowatt/services/admission.py; tests/test_admission.py.
 
-Commit na fase-2: feat: add invoice schema and transactional lifecycle integration. SHA e confirmação de envio na resposta/histórico remoto; este status integra o próprio commit.
+Alterados: EcoWatt_PROJECT_SPEC.md; README.md; docs/API.md; docs/DATABASE.md; docs/STATUS.md; docs/TASKS.md; docs/phases/phase-02-invoices.md; migrations/env.py; src/ecowatt/api/health.py; src/ecowatt/api/resources.py; src/ecowatt/schemas.py; src/ecowatt/services/simulations.py; src/ecowatt/services/tasks.py. Removidos: nenhum.
+
+Commit na fase-2: feat: reserve synthetic invoice admission capacity transactionally. Envio limitado aos 18 arquivos acima, sobre a árvore remota; .env, corpus, bancos, caches, temporários e alterações locais preexistentes em docs/contracts/access.md e docs/corpus/regulatory-review.md ficam preservados e fora deste envio.

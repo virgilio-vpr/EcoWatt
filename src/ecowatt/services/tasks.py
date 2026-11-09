@@ -52,6 +52,11 @@ def claim(engine, task_id, executor_id, ttl=60):
     lease = new_token()
     with transaction(engine, write=True) as db:
         task, _ = require_task(db, task_id)
+        from ecowatt.db.admissions import InvoiceAdmission
+        if db.get(InvoiceAdmission, task_id) is not None and db.scalar(
+                select(InvoiceAdmission.task_id).join(SimulationTask).where(
+                    SimulationTask.status == "running").limit(1)):
+            raise DomainError("admission_executor_busy", "Executor de leitura ocupado.", 409)
         if task.status != "queued" or db.scalar(select(SimulationTask.id).where(
                 SimulationTask.simulation_id == task.simulation_id, SimulationTask.status == "running").limit(1)):
             raise DomainError("task_unavailable", "Operação já assumida ou unidade ocupada.", 409)

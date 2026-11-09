@@ -20,7 +20,7 @@ Os documentos da Fase 0 estão no [dicionário de faturas](docs/contracts/invoic
 
 A continuação da Fase 0 inclui [conferência das planilhas](docs/corpus/workbook-review.md), [conferência inicial das faturas](docs/corpus/invoice-review.md) e [registro regulatório](docs/corpus/regulatory-review.md). Os relatórios preservam o histórico da análise; o aceite atual é limitado ao gabarito mínimo local. O [texto original de início da Fase 1](docs/phases/phase-01-start.md) é histórico; retome pelo STATUS atual.
 
-A primeira entrega da **Fase 2** acrescenta modelos e migração `0004_invoices` para faturas estruturadas, medições, itens, proveniência/estado, validações e evidências de mercado. São **95 testes aprovados** com navegador habilitado. Exclusão da simulação inclui os novos filhos atomicamente; parser/OCR, admissão, cálculo e interface completa seguem nas próximas entregas. Detalhes em [DATABASE](docs/DATABASE.md) e [STATUS](docs/STATUS.md). Execute o comando de migração abaixo antes de usar a nova readiness.
+A **Fase 2** contém o esquema faturável e a reserva interna de admissão exclusivamente sintética (`0005_invoice_admissions`): unidade salva, suporte exato a layout, limites acumulados/capacidade e TASKS. A consulta autenticada `GET /api/v1/simulations/{id}/invoice-admission` informa suporte e bloqueio; não recebe arquivos. **PDFs reais permanecem desabilitados**, inclusive ENEL. Contratos e restante da entrega em [ADMISSION](docs/ADMISSION.md); resultados reais em [STATUS](docs/STATUS.md). Execute o comando de migração abaixo antes de usar a nova readiness. Parser/OCR, coordenador de bytes, cálculo e interface de leitura ainda não estão disponíveis.
 
 ## Stack definida
 

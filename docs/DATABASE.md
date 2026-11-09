@@ -54,11 +54,15 @@ Na raiz, depois de preparar `.venv` conforme SETUP:
 .\.venv\Scripts\python.exe -m alembic check
 ```
 
-Revisão atual `0004_invoices`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
+Revisão atual `0005_invoice_admissions`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
 
 O seed de SETUP foi executado duas vezes no banco local e preservou contas existentes. A suíte testa também rollback sem órfãos, restrições, FKs, seed em produção recusado e concorrência de cota/idempotência. Não há dados reais de clientes ou documentos no banco criado.
 
 PostgreSQL, backup/restauração e transporte tipado dos dados serão preparados antes da produção, sem containers nesta entrega.
+
+## Segunda entrega da Fase 2 — reserva sintética
+
+`0005_invoice_admissions` adiciona metadados vinculados a tarefa, simulação e ator: hash do documento sintético, hashes de chave/pedido, bytes/páginas inteiros, versões layout/parser e tombstone de remoção. Não há bytes, nome do arquivo, texto ou resultado livre. Checks por arquivo e unicidade ator/chave complementam contagem transacional no serviço; capacidade e totais não são garantidos por SQL direto. Uma tarefa por reserva, CASCADE nos pais e RESTRICT no ator. Autor/dono são revalidados no serviço; não se admite escrita direta por clientes. Detalhes e limitações em [ADMISSION](ADMISSION.md). Exclusão lógica da simulação remove também as reservas na transação do cancelamento; não espera CASCADE de um pai que permanece como tombstone.
 
 ## Primeira entrega da Fase 2 — esquema faturável
 

@@ -16,6 +16,8 @@ Na [SPEC](../../EcoWatt_PROJECT_SPEC.md): 4.2–4.4 (unidade, suporte ao layout 
 
 Saída para cálculo: conjunto estruturado confirmado e versionado, nunca PDF/texto bruto persistente. Não exigir 12 faturas para liberar uma primeira análise.
 
+Segunda entrega dividida em fatia sintética de admissão: consulta JSON autenticada de suporte, unidade salva como pré-condição, contrato de inspeção, reservas acumuladas/capacidade em `0005_invoice_admissions` e integração TASKS. [ADMISSION](../ADMISSION.md) define os contratos, decisões e restante: coordenador/fila efêmera real, garantias §5/§12, resultado tipado/proveniência, vínculo fatura/tarefa, remoção do grafo e cabeçalho visual/contato. Nenhum layout documental ou recebimento de PDF habilitado. Os critérios completos de aceite continuam abertos na SPEC.
+
 Verificação: corpus textual/digitalizado/híbrido, arquivos inválidos, campos desconhecidos, rollback sem órfãos, retries, limites acumulados e resultados tardios após remoção. Auditar temporários e observabilidade antes de afirmar descarte. Aceite oficial na SPEC.
 
 Primeira entrega implementada em 09/11/2026: esquema `0004_invoices` e regressões sintéticas de persistência pelo protocolo TASKS. Detalhes do modelo, escalas, FKs e limites desta entrega em [DATABASE](../DATABASE.md). Próxima entrega: admissão após unidade salva e contrato do coordenador/adaptador, mantendo processamento fora da transação. O esquema não homologa layout nem implementa extração, revisão ou liberação de cálculo.

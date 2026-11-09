@@ -1,5 +1,7 @@
 # Controle de tarefas da simulação — Fase 1
 
+Extensão da Fase 2: [ADMISSION](ADMISSION.md) define reservas sintéticas associadas a TASKS. `claim` de admissão limita a execução global a uma; reserva/capacidade, remoção e exclusão são transacionais. Nenhum worker, fila de bytes ou recebimento de PDF foi habilitado. O restante deste documento preserva o protocolo base e a evidência da primeira entrega.
+
 Fecha o critério de exclusão/cancelamento da base local. A tabela `simulation_tasks` guarda somente IDs, revisão, estado, executor, hash de lease, validade e motivo técnico. Não contém documento, imagem, texto extraído, resultado, senha ou payload JSON. Não há endpoint público de tarefas, coordenador automático ou executor de OCR/cálculo nesta entrega.
 
 Estados: queued → running → finished; queued/running podem virar cancelled, e leases running vencidas podem virar expired. O controle é serviço interno, compartilhável pela futura camada de processamento.

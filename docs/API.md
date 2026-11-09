@@ -2,6 +2,8 @@
 
 Fonte executável: `/api/v1/openapi.json`. Índice HTML local: `/api/v1/docs`. Contrato de apresentação independente de Jinja2/HTMX; serviços de aplicação compartilhados, sem chamadas HTTP internas entre web e API. Não há rotas de faturas/cálculos/relatórios implementadas nesta fase.
 
+Consulta de admissão da Fase 2: `GET /api/v1/simulations/{id}/invoice-admission?layout_version=...`, autenticada e autorizada para dono/admin. Retorna pré-condição da unidade, distribuidora/layout, suporte, motivo e necessidade de contato, sem criar tarefa. `unit_not_saved` e `layout_not_supported` são motivos no JSON de consulta (200), não admissão de processamento. `document_upload_enabled` é sempre falso. POST nesse recurso não é permitido; nenhum endpoint multipart recebe PDFs. O serviço interno sintético, limites e códigos de comando estão em [ADMISSION](ADMISSION.md), sem apresentá-los como comandos públicos.
+
 ## Acesso
 
 `GET /api/v1/auth/csrf` devolve csrf_token e cookie auxiliar HttpOnly. Comandos POST/PATCH/DELETE exigem Origin exatamente igual a PUBLIC_ORIGIN e X-CSRF-Token. O navegador informa Origin automaticamente; clientes HTTP precisam enviá-lo e preservar cookies. O token CSRF não é a credencial de sessão.

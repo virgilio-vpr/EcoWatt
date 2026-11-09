@@ -31,7 +31,7 @@ def ready(request: Request) -> HealthResponse:
     try:
         with request.app.state.engine.connect() as conn:
             revision = conn.scalar(text("SELECT version_num FROM alembic_version"))
-            if revision != "0004_invoices":
+            if revision != "0005_invoice_admissions":
                 raise DomainError("not_ready", "Serviço ainda não disponível.", 503)
     except SQLAlchemyError:
         raise DomainError("not_ready", "Serviço ainda não disponível.", 503) from None

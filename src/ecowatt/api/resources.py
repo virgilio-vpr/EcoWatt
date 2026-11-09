@@ -9,12 +9,31 @@ from ecowatt.db.models import AuditEvent, Company, Distributor
 from ecowatt.schemas import CompanyInput, DeleteInput, ProfileInput, SimulationCreate, UnitInput
 from ecowatt.schemas import CompanyOutput, MeOutput, SimulationOutput, SimulationsPage
 from ecowatt.schemas import ProfileOutput, DistributorsPage
+from ecowatt.schemas import InvoiceAdmissionContext
 from ecowatt.services import simulations as service
 
 router = APIRouter(tags=["resources"])
 Key = Annotated[str, Header(alias="Idempotency-Key", min_length=8, max_length=128)]
 Page = Annotated[int, Query(ge=1)]
 PageSize = Annotated[int, Query(ge=1, le=100)]
+
+
+@router.get("/simulations/{simulation_id}/invoice-admission", response_model=InvoiceAdmissionContext)
+def invoice_admission_context(simulation_id: UUID,
+        layout_version: Annotated[str, Query(min_length=1, max_length=80)] = "unknown",
+        principal=Depends(authenticated, scope="function")):
+    """Consulta suporte; não recebe arquivos nem inicia leitura. PDFs desabilitados."""
+    from ecowatt.services.admission import support
+    db, actor, _ = principal
+    simulation = service.require_simulation(db, actor, simulation_id)
+    distributor = db.get(Distributor, simulation.distributor_id) if simulation.distributor_id else None
+    capability = support(distributor.code if distributor else None, layout_version)
+    if simulation.unit_saved_at is None:
+        capability.update(supported=False, reason="unit_not_saved")
+    return {"unit_saved": simulation.unit_saved_at is not None,
+            "distributor_id": simulation.distributor_id,
+            "distributor_code": distributor.code if distributor else None,
+            "layout_version": layout_version, **capability}
 
 
 @router.get("/me", response_model=MeOutput)
