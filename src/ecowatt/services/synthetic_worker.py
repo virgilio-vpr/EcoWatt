@@ -57,7 +57,7 @@ def decode_receipt(packet):
     return Receipt(**{key: value[key] for key in fields - {"status"}})
 
 
-def work(connection, content, pages, delay=0, fail=False):
+def work(connection, content, pages, delay=0, fail=False, normalized=False):
     """Sem banco ou logs de conteúdo. Delay/fail são injeções internas de teste."""
     try:
         if delay:
@@ -65,8 +65,15 @@ def work(connection, content, pages, delay=0, fail=False):
         if fail or not content.startswith(PREFIX):
             connection.send_bytes(b'{"status":"error","code":"synthetic_worker_failed"}')
             return
-        result = Receipt(hashlib.sha256(content).hexdigest(), len(content), pages)
-        connection.send_bytes(json.dumps({"status": "ok", **asdict(result)}).encode("ascii"))
+        source_hash = hashlib.sha256(content).hexdigest()
+        if normalized:
+            from ecowatt.synthetic_invoice import synthetic_result
+            header = json.loads(content[len(PREFIX):].split(b"\n", 1)[0])
+            result = synthetic_result(source_hash, len(content), pages, header["unit_identifier"], header["serial"])
+            connection.send_bytes(result.model_dump_json().encode("utf-8"))
+        else:
+            result = Receipt(source_hash, len(content), pages)
+            connection.send_bytes(json.dumps({"status": "ok", **asdict(result)}).encode("ascii"))
     except Exception:
         # Não envia exceção/traceback, documento ou diagnóstico da biblioteca.
         try:

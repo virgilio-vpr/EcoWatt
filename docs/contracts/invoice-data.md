@@ -8,6 +8,8 @@ Descrição do faturamento, dados do cliente/UC, classificação/tipo de forneci
 
 ## Convenções
 
+Implementação inicial sintética: [INVOICE-STORAGE](../INVOICE-STORAGE.md) e `src/ecowatt/invoice_result.py` definem normalized-invoice-v1 e persistência invoice-v0.3. Trata-se de subconjunto fechado deste dicionário, com origem user/derived, proveniência inicial, dependências e estado needs_review obrigatório; não equivale à revisão, aprovação financeira ou extração documental de todo o contrato planejado. A nova dataset_revision do conjunto é distinta da revisão da unidade. Não reinterpretar registros históricos invoice-v0.2 sem vínculo de publicação.
+
 - `decimal`: string JSON decimal canônica, ponto decimal, sem separador de milhar ou notação exponencial; conversão direta para Decimal, nunca float. Preservar precisão de origem; moeda fechada a centavos por política versionada. Valores desconhecidos são `null`, nunca zero implícito.
 - `date`: `YYYY-MM-DD`; competência: `YYYY-MM`; instantes: ISO 8601 UTC. IDs são strings opacas; UC e número de documento são strings para preservar zeros à esquerda.
 - Obrigatoriedade: **E** = estrutura sempre exigida (valor pode ser desconhecido, com estado explícito); **C** = exigida quando aplicável/disponível ou pelo módulo; **O** = opcional. Ausência de valor E impede confirmação do cabeçalho; dados C ausentes afetam somente os módulos dependentes, salvo inconsistência crítica da fatura.

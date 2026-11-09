@@ -94,10 +94,11 @@ def finish(engine, task_id, lease, persist):
     """
     with transaction(engine, write=True) as db:
         task, simulation = require_lease(db, task_id, lease)
-        persist(db, simulation)
+        result = persist(db, simulation)
         task.status, task.lease_hash, task.lease_expires_at = "finished", None, None
         task.ended_at = now()
         db.add(AuditEvent(actor_id=task.actor_id, action="task_finished", resource_id=task.id))
+        return result
 
 
 def expire(engine):

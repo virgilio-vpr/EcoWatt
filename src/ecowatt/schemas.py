@@ -125,6 +125,7 @@ class SimulationOutput(BaseModel):
     updated_by: str
     status: Literal["draft", "processing", "completed", "partial", "failed"]
     revision: int
+    dataset_revision: int
     distributor_id: str | None
     unit_identifier: str | None
     holder_name: str | None
@@ -195,3 +196,66 @@ class InvoiceAdmissionContext(BaseModel):
     reason: str | None
     contact_required: bool
     document_upload_enabled: bool
+
+
+class InvoiceDeleteInput(DeleteInput):
+    expected_dataset_revision: int = Field(strict=True, ge=1)
+
+
+class ProvenanceOutput(BaseModel):
+    id: str
+    field_path: str
+    version: int
+    value: str | None
+    unit: str | None
+    state: str
+    origin: str
+    coverage: str
+    actor_id: str | None
+    recorded_at: int
+    reason_code: str | None
+    hypothesis_code: str | None
+    rule_version: str | None
+    inputs: list[str]
+
+
+class InvoiceRecordOutput(BaseModel):
+    id: str
+    post: str | None = None
+    position: int | None = None
+    measurement_id: str | None = None
+    fields: dict[str, str | int | bool | None]
+
+
+class StructuredInvoiceOutput(BaseModel):
+    id: str
+    simulation_id: str
+    created_by: str
+    revision: int
+    dataset_revision: int
+    contract_version: str
+    source_kind: str
+    status: str
+    coverage: str
+    header: dict[str, str | int | bool | None]
+    measurements: list[InvoiceRecordOutput]
+    items: list[InvoiceRecordOutput]
+    provenance: list[ProvenanceOutput]
+
+
+class InvoiceSummary(BaseModel):
+    id: str
+    status: str
+    competence: str | None
+    cycle_start: str | None
+    cycle_end: str | None
+    revision: int
+    dataset_revision: int
+
+
+class InvoicesPage(BaseModel):
+    items: list[InvoiceSummary]
+    total: int
+    page: int
+    page_size: int
+    dataset_revision: int

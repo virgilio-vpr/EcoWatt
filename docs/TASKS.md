@@ -14,6 +14,8 @@ Estados: queued → running → finished; queued/running podem virar cancelled, 
 - `finish(engine, task_id, lease, persist)`: abre nova transação de escrita, revalida lease/ator/tombstone/revisão e só então chama a persistência estruturada. Resultado e estado finished confirmam juntos; exceção desfaz ambos. Lease é consumida, sem replay.
 - `expire(engine)`: comando interno explícito que expira somente leases vencidas. Não roda no startup e não cancela uma instância viva por iniciar outra.
 
+Extensão de persistência: finish devolve o retorno do callback depois do commit, sem mudar seu guard de lease consumida. [INVOICE-STORAGE](INVOICE-STORAGE.md) integra cabeçalho/filhos/proveniência/vínculo e revisão do conjunto ao mesmo commit. O serviço finish_normalized admite replay somente para publicação já confirmada, mesmo conteúdo e hash da lease original, com autorização/revisão revalidadas; não executa o callback outra vez. Remoção elimina o vínculo e impede recriação por replay. TASKS usa revisão da unidade, separada da nova dataset_revision, para permitir publicação incremental sem cancelar as demais tarefas independentes.
+
 Trabalho pesado ocorre **antes** de finish, sem transação SQL aberta. O callback persist é código interno, não payload vindo da API: não faz OCR/rede, não chama commit e não recebe documentos por esta infraestrutura. A futura integração deve usar esse ponto de confirmação; gravar por fora dele viola o protocolo.
 
 ## Exclusão e revisão

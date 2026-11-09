@@ -10,12 +10,36 @@ from ecowatt.schemas import CompanyInput, DeleteInput, ProfileInput, SimulationC
 from ecowatt.schemas import CompanyOutput, MeOutput, SimulationOutput, SimulationsPage
 from ecowatt.schemas import ProfileOutput, DistributorsPage
 from ecowatt.schemas import InvoiceAdmissionContext
+from ecowatt.schemas import InvoiceDeleteInput, StructuredInvoiceOutput, InvoicesPage
 from ecowatt.services import simulations as service
 
 router = APIRouter(tags=["resources"])
 Key = Annotated[str, Header(alias="Idempotency-Key", min_length=8, max_length=128)]
 Page = Annotated[int, Query(ge=1)]
 PageSize = Annotated[int, Query(ge=1, le=100)]
+
+
+@router.get("/simulations/{simulation_id}/invoices", response_model=InvoicesPage)
+def invoice_listing(simulation_id: UUID, page: Page = 1, page_size: PageSize = 20,
+        principal=Depends(authenticated, scope="function")):
+    from ecowatt.services.invoices import list_invoices
+    db, actor, _ = principal
+    return list_invoices(db, actor, str(simulation_id), page, page_size)
+
+
+@router.get("/simulations/{simulation_id}/invoices/{invoice_id}", response_model=StructuredInvoiceOutput)
+def invoice_detail(simulation_id: UUID, invoice_id: UUID, principal=Depends(authenticated, scope="function")):
+    from ecowatt.services.invoices import require_invoice, serialize_invoice
+    db, actor, _ = principal
+    return serialize_invoice(db, require_invoice(db, actor, str(simulation_id), str(invoice_id)))
+
+
+@router.delete("/simulations/{simulation_id}/invoices/{invoice_id}", status_code=204)
+def invoice_remove(simulation_id: UUID, invoice_id: UUID, payload: InvoiceDeleteInput,
+        principal=Depends(authenticated, scope="function")):
+    from ecowatt.services.invoices import remove_invoice
+    db, actor, _ = principal
+    remove_invoice(db, actor, str(simulation_id), str(invoice_id), payload)
 
 
 @router.get("/simulations/{simulation_id}/invoice-admission", response_model=InvoiceAdmissionContext)

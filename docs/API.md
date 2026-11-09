@@ -1,6 +1,6 @@
 # Contrato HTTP local — API v1
 
-Fonte executável: `/api/v1/openapi.json`. Índice HTML local: `/api/v1/docs`. Contrato de apresentação independente de Jinja2/HTMX; serviços de aplicação compartilhados, sem chamadas HTTP internas entre web e API. Não há rotas de faturas/cálculos/relatórios implementadas nesta fase.
+Fonte executável: `/api/v1/openapi.json`. Índice HTML local: `/api/v1/docs`. Contrato de apresentação independente de Jinja2/HTMX; serviços de aplicação compartilhados, sem chamadas HTTP internas entre web e API. Faturas estruturadas já têm GET/listagem e DELETE; upload, edição/ready, cálculos e relatórios permanecem desabilitados.
 
 Consulta de admissão da Fase 2: `GET /api/v1/simulations/{id}/invoice-admission?layout_version=...`, autenticada e autorizada para dono/admin. Retorna pré-condição da unidade, distribuidora/layout, suporte, motivo e necessidade de contato, sem criar tarefa. `unit_not_saved` e `layout_not_supported` são motivos no JSON de consulta (200), não admissão de processamento. `document_upload_enabled` é sempre falso. POST nesse recurso não é permitido; nenhum endpoint multipart recebe PDFs. O serviço interno sintético, limites e códigos de comando estão em [ADMISSION](ADMISSION.md), sem apresentá-los como comandos públicos.
 
@@ -32,6 +32,8 @@ Erros devolvem `{code, message, fields, request_id}`: code estável, mensagem ap
 Os demais códigos de operação administrativa constam nos serviços; não há promessa de enum fechado de erros para todos os clientes futuros.
 
 ## Paginação, cota e idempotência
+
+Faturas estruturadas: GET `/api/v1/simulations/{id}/invoices` usa page/page_size e retorna dataset_revision atual; ordena por ciclo/competência com desconhecidos ao final. GET `.../invoices/{invoice_id}` retorna cabeçalho, medições/itens e proveniência, com decimais em strings e revisão da publicação. DELETE exige sessão, Origin/CSRF e JSON `{confirm: true, expected_revision: <unidade>, expected_dataset_revision: <conjunto atual>}`. Conflito do conjunto devolve 409/dataset_revision_conflict; remoção do grafo/vínculo e liberação do orçamento são atômicas. IDs alheios, vínculo incorreto ou removidos retornam 404. POST/PATCH não habilitados. Todas as novas faturas sintéticas permanecem needs_review; detalhes em [INVOICE-STORAGE](INVOICE-STORAGE.md).
 
 GET de simulações e catálogo usa page>=1, page_size de 1 a 100 (padrão 20); retorna items, total, page e page_size. Simulações também retornam limit=2. A ordenação de simulações é created_at/id e a do catálogo é code. Total e página vêm da mesma transação; paginação por offset não é snapshot entre requisições diferentes.
 

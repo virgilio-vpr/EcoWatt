@@ -127,16 +127,27 @@ def admit_synthetic(engine, actor_id, simulation_id, revision, key, inspection, 
         return task_id
 
 
-def remove_synthetic(engine, actor_id, simulation_id, revision, task_id):
+def remove_synthetic(engine, actor_id, simulation_id, revision, task_id, *, expected_dataset_revision=None):
     """Libera orçamento e cancela autorização de escrita na mesma transação."""
     with transaction(engine, write=True) as db:
         actor = db.get(User, actor_id, populate_existing=True)
         if not actor or actor.status != "active":
             reject("task_unavailable", "Operação indisponível.")
-        require_simulation(db, actor, simulation_id, revision)
+        simulation = require_simulation(db, actor, simulation_id, revision)
         row = db.get(InvoiceAdmission, task_id)
         if row is None or row.simulation_id != simulation_id:
             reject("not_found", "Recurso não encontrado.", 404)
+        if row.removed:
+            return
+        from ecowatt.db.admissions import InvoicePublication
+        publication = db.get(InvoicePublication, task_id)
+        if publication is not None:
+            if expected_dataset_revision != simulation.dataset_revision:
+                reject("dataset_revision_conflict", "Atualize a revisão do conjunto antes de remover.")
+            from ecowatt.services.invoice_storage import delete_graph
+            delete_graph(db, publication.invoice_id)
+            simulation.dataset_revision += 1
+            simulation.updated_by = actor.id
         task = db.get(SimulationTask, task_id)
         if task.status in tasks.ACTIVE:
             from ecowatt.db.models import now

@@ -54,7 +54,7 @@ Na raiz, depois de preparar `.venv` conforme SETUP:
 .\.venv\Scripts\python.exe -m alembic check
 ```
 
-Revisão atual `0006_coordinator_lease`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
+Revisão atual `0007_invoice_publications`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
 
 O seed de SETUP foi executado duas vezes no banco local e preservou contas existentes. A suíte testa também rollback sem órfãos, restrições, FKs, seed em produção recusado e concorrência de cota/idempotência. Não há dados reais de clientes ou documentos no banco criado.
 
@@ -70,7 +70,19 @@ PostgreSQL, backup/restauração e transporte tipado dos dados serão preparados
 
 Downgrade para 0005 e novo upgrade com reserva preenchida preservam o registro e TASKS, removendo a geração na volta a 0005 e restaurando-a como NULL no novo upgrade; verificadas FKs e Alembic check. Essa perda de metadados é esperada somente em descartáveis: nunca fazer downgrade com coordenador em operação. Migração local aplicada, readiness exige 0006. PostgreSQL e contenção de processos pelo SO ainda não validados.
 
+## Quarta entrega da Fase 2 — publicação normalizada sintética
+
+`0007_invoice_publications` adiciona `simulations.dataset_revision` positivo, com default 1 para registros existentes, e `invoice_publications`: task_id PK/FK da admissão, invoice_id único/FK da fatura, hashes do resultado e da lease de conclusão. CASCADE nos dois pais remove o vínculo; não guarda documento, resultado livre ou lease em claro. O serviço confere simulação/identidade/autoria antes de publicar; SQL direto não substitui essas regras.
+
+Unidade e tombstone continuam em Simulation.revision/TASKS.revision; publicação/remoção avançam somente dataset_revision, evitando cancelar as demais faturas independentes já admitidas. Salvar unidade/excluir avançam ambas. Novas faturas usam invoice-v0.3 e registram a revisão do conjunto na publicação; versões anteriores mantêm o significado histórico da revisão de admissão. Não existe cálculo ou relatório antigo a liberar automaticamente.
+
+Persistência inicial cria colunas/proveniência v1/dependências/validações/evidências/vínculo e TASKS finished juntos. Grafo removido libera orçamento e conserva tombstone da admissão; exclusão da simulação remove os dois. Consultas/autorização, Decimal, replay vinculado à lease e limites do contrato estão em [INVOICE-STORAGE](INVOICE-STORAGE.md). Toda publicação nova permanece needs_review.
+
+Downgrade/upgrade descartável com publicação preenchida preserva fatura/filhos/tarefa, perde o vínculo e restaura dataset_revision como 1. Nunca realizar essa perda deliberada em operação. SQLite local e FKs verificados; PostgreSQL ainda não validado. Readiness atual exige 0007.
+
 ## Primeira entrega da Fase 2 — esquema faturável
+
+As descrições abaixo são o histórico da entrega 0004. A persistência inicial sintética, consulta/remoção JSON e sincronização de valores/proveniência v1 foram implementadas depois, conforme [INVOICE-STORAGE](INVOICE-STORAGE.md). Revisão operacional e prontidão continuam pendentes.
 
 `0004_invoices` cria, depois dos pais: invoices → invoice_measurements / invoice_market_evidence / invoice_validations → invoice_items → field_provenance → field_dependencies. Modelos em `src/ecowatt/db/invoices.py`, registrados explicitamente no metadata Alembic. Migração estática com precisões/escalas revisadas; não importa os modelos para criar tabelas.
 

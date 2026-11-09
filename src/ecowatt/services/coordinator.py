@@ -41,6 +41,7 @@ class Outcome:
     task_id: str
     state: str
     reason: str | None = None
+    invoice_id: str | None = None
 
 
 class Coordinator:
@@ -168,7 +169,11 @@ class Coordinator:
         except DomainError:
             pass  # nova geração recupera apenas conteúdo perdido/leases vencidas
 
-    def run_once(self, persist=None):
+    def run_invoice_once(self):
+        """Publica somente o gabarito inventado normalizado; sempre needs_review."""
+        return self.run_once(_invoice=True)
+
+    def run_once(self, persist=None, *, _invoice=False):
         """Executa uma fixture; callback interno curto recebe apenas Receipt.
 
         Não publicar fatura: Receipt não é extração normalizada. Não há loop
@@ -192,7 +197,7 @@ class Coordinator:
                 context = multiprocessing.get_context("spawn")
                 reader, writer = context.Pipe(duplex=False)
                 process = context.Process(target=work,
-                    args=(writer, entry.content, entry.inspection.page_count, self.worker_delay, self.worker_fail),
+                    args=(writer, entry.content, entry.inspection.page_count, self.worker_delay, self.worker_fail, _invoice),
                     daemon=True)
                 process.start()
                 writer.close()
@@ -207,7 +212,12 @@ class Coordinator:
                     tasks.heartbeat(self.engine, task_id, lease, self.ttl)
                     if reader.poll(self.poll_interval):
                         try:
-                            result = decode_receipt(reader.recv_bytes(maxlength=1024))
+                            packet = reader.recv_bytes(maxlength=262144 if _invoice else 1024)
+                            if _invoice:
+                                from ecowatt.invoice_result import ExtractionResult
+                                result = ExtractionResult.model_validate_json(packet)
+                            else:
+                                result = decode_receipt(packet)
                         except (ValueError, UnicodeError):
                             reason = "invalid_worker_result"
                             break
@@ -215,7 +225,7 @@ class Coordinator:
                             reason = "synthetic_worker_failed"
                             break
                         expected = entry.inspection
-                        if (result.version != "synthetic-receipt-v1" or result.source_hash != expected.source_hash
+                        if (result.version != ("normalized-invoice-v1" if _invoice else "synthetic-receipt-v1") or result.source_hash != expected.source_hash
                                 or result.byte_count != expected.byte_count or result.page_count != expected.page_count):
                             reason = "invalid_worker_result"
                             break
@@ -225,9 +235,12 @@ class Coordinator:
                             if self._stop.is_set() or time.monotonic() >= deadline:
                                 admission.reject("task_unavailable", "Operação encerrada ou vencida.")
                             if persist:
-                                persist(db, simulation, result)
-                        tasks.finish(self.engine, task_id, lease, commit_receipt)
-                        return Outcome(task_id, "finished")
+                                return persist(db, simulation, result)
+                            if _invoice:
+                                from ecowatt.services.invoice_storage import _persist
+                                return _persist(db, simulation, task_id, lease, result)
+                        invoice_id = tasks.finish(self.engine, task_id, lease, commit_receipt)
+                        return Outcome(task_id, "finished", invoice_id=invoice_id if _invoice else None)
                     if not process.is_alive():
                         reason = "synthetic_worker_failed"
                         break

@@ -14,7 +14,9 @@ Limites existentes de arquivos/bytes/páginas continuam acumulados por simulaç�
 
 `run_once(persist=None)` assume uma entrada, inicia um filho por `spawn` e aguarda fora de transação SQL. Uma trava local impede dois runners; TASKS limita execução global e por simulação. O filho não recebe engine/sessão, só a fixture e parâmetros técnicos. Faz apenas verificação sintética/hash. Não contém parser e não calcula dados faturáveis.
 
-O retorno usa `send_bytes`/`recv_bytes`, JSON de até 1.024 bytes, schema fechado e tipos estritos. Não desserializa pickle retornado pelo filho. `Receipt` contém hash, bytes, páginas e versão `synthetic-receipt-v1`. O coordenador confronta esses valores com a reserva. Receipt é recibo técnico, não extração nem prontidão. O callback opcional é interno, curto, recebe somente Receipt e usa `tasks.finish`; não deve publicar faturas antes da integração do grafo/proveniência/remoção individual.
+O modo Receipt usa `send_bytes`/`recv_bytes`, JSON de até 1.024 bytes, schema fechado e tipos estritos. Não desserializa pickle retornado pelo filho. `Receipt` contém hash, bytes, páginas e versão `synthetic-receipt-v1`. O coordenador confronta esses valores com a reserva. Receipt é recibo técnico, não extração nem prontidão. O callback opcional é interno e curto; não deve publicar faturas por esse modo técnico.
+
+Extensão normalizada: `run_invoice_once()` transporta JSON de até 262.144 bytes no contrato normalized-invoice-v1 e publica somente o gabarito inventado fornecido pelo filho, com valores/proveniência/vínculo/estado atômicos. Sempre termina em needs_review. Não executa parser nem lê documento. Revisões do conjunto e remoção estão em [INVOICE-STORAGE](INVOICE-STORAGE.md). O ciclo de liderança, cancelamento e descarte permanece o mesmo nos dois modos.
 
 ## Liderança, fencing e recuperação
 
@@ -40,4 +42,4 @@ Em saída normal, erro, timeout e cancelamento controlado, o pai encerra/recolhe
 
 Ainda precisam ser implementados e verificados: confinamento sem rede e privilégios, CPU/RAM/pixels, controle de descendentes inclusive após morte abrupta do pai, watchdog rígido, swap/dumps, política de diretório RAM se necessário e ausência de spool no framework/proxy. O processo spawn sintético herda o ambiente de execução; separação de processo não prova isolamento de segurança.
 
-Depois dessa verificação, integrar inspeção e adaptador específico homologado, contrato versionado de extração normalizada/Decimal/proveniência, vínculo fatura/tarefa, persistência e remoção do grafo, revisão do conjunto, consulta operacional e interface. Não habilitar upload com base apenas na existência deste coordenador. Critérios integrais da seção 15 permanecem abertos.
+Contrato normalizado/Decimal, proveniência inicial, vínculo tarefa/fatura, persistência/remoção e consulta JSON já existem somente para fixtures. Depois da verificação de segurança, integrar inspeção e adaptador específico homologado; completar revisão operacional versionada, validações financeiras, duplicidade lógica/refaturamento, prontidão e interface. Não habilitar upload com base apenas na existência deste coordenador. Critérios integrais da seção 15 permanecem abertos.

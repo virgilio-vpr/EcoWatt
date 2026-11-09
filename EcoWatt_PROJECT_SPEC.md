@@ -736,7 +736,7 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
 
 - [ ] **Fase 2 — Coração 1/3: leitura e armazenamento de faturas**
 
-  Progresso parcial em 09/11/2026: admissão interna exclusivamente sintética com unidade salva, consulta JSON de suporte, limites/reservas transacionais e TASKS; coordenador com liderança/fencing, fila efêmera, subprocesso sintético, timeout e recuperação. Contratos e barreiras restantes em `docs/ADMISSION.md` e `docs/COORDINATOR.md`. Sem recebimento real, isolamento de PDF homologado, layout documental habilitado ou interface de leitura. Critérios integrais abaixo permanecem abertos até sua verificação completa.
+  Progresso parcial em 09/11/2026: admissão, coordenador/subprocesso e persistência de resultado normalizado exclusivamente sintéticos, com valores/proveniência inicial, vínculo tarefa/fatura, revisões distintas de unidade/conjunto e consulta/remoção JSON. Contratos e barreiras em `docs/ADMISSION.md`, `docs/COORDINATOR.md` e `docs/INVOICE-STORAGE.md`. Toda publicação nova fica needs_review; sem recebimento real, isolamento de PDF homologado, layout documental habilitado, revisão operacional/prontidão ou interface de leitura. Critérios integrais abaixo permanecem abertos até sua verificação completa.
 
   - [ ] Salvar dados da unidade e endereço da ligação antes de liberar faturas; oferecer cópia confirmada do endereço da empresa.
   - [x] Criar/revisar tabelas de faturas, itens, medições e proveniência antes da extração integrada, respeitando a ordem de FKs.

@@ -8,6 +8,8 @@ Objetos persistíveis/transportáveis levam `contract_version`, IDs de recurso, 
 
 ## Leitura → armazenamento
 
+Fatia implementada para fixtures em 09/11/2026: resultado normalizado versionado, vínculo tarefa/fatura, proveniência inicial sincronizada e remoção atômica em [INVOICE-STORAGE](../INVOICE-STORAGE.md). `run_invoice_once` executa exclusivamente gabarito inventado; nenhuma entrada pública recebe documentos ou payloads de extração. Todas as novas faturas ficam needs_review. O restante desta seção é o contrato completo planejado, sujeito às garantias §5/§12 antes de PDFs reais.
+
 Entrada efêmera `ReadRequest`: simulação e revisão esperada, chave de idempotência, metadados de admissão e bytes do PDF em memória. Unidade já salva; seleção local não envia arquivo. Somente “Ler fatura” admite e processa. Aplicar limites acumulados da SPEC §5.1; reserva atômica da capacidade, OCR fora de transação. Bytes nunca entram em jobs duráveis, logs, banco ou snapshots.
 
 Saída `ExtractionResult`: ID de processamento, revisão de admissão, SHA-256, versão do adaptador/parser, cabeçalho (incluindo nome e endereço impressos quando disponíveis), medições, itens, proveniência, validações, cobertura e conflitos. A conferência mantém separados cadastro da empresa, endereço impresso e ponto de conexão confirmado. Confirmação/correção não sobrescreve automaticamente os outros registros; diferença de rua pode ser explicada pela localização da cabine, com UC/distribuidora coincidentes. Sugestão de mercado por TE/TUSD exige cobertura e confirmação; ausência em leitura incompleta não classifica livre. Não contém PDF, imagem ou texto integral. `source_kind=synthetic` identifica fixtures; não atribuir proveniência PDF/OCR fictícia.

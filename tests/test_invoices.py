@@ -244,7 +244,8 @@ def test_upgrade_from_phase_one_preserves_existing_data_and_downgrade(environmen
     command.downgrade(cfg, "0003_simulation_tasks")
     assert "invoices" not in inspect(engine).get_table_names()
     with transaction(engine) as db:
-        assert db.get(Simulation, simulation["id"]).owner_id == simulation["owner_id"]
+        # Esquema histórico não contém colunas adicionadas ao modelo atual.
+        assert db.scalar(select(Simulation.owner_id).where(Simulation.id == simulation["id"])) == simulation["owner_id"]
     command.upgrade(cfg, "head")
     command.check(cfg)
     with transaction(engine, write=True) as db:

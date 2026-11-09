@@ -26,3 +26,15 @@ class InvoiceAdmission(Base):
     removed: Mapped[bool] = mapped_column(Boolean, default=False)
     # NULL preserva reservas de testes/contrato anteriores ao coordenador.
     coordinator_epoch: Mapped[int | None] = mapped_column(Integer)
+
+
+class InvoicePublication(Base):
+    __tablename__ = "invoice_publications"
+    __table_args__ = (
+        UniqueConstraint("invoice_id"),
+        CheckConstraint("length(result_hash) = 64 AND length(completion_hash) = 64", name="hashes"),
+    )
+    task_id: Mapped[str] = mapped_column(ForeignKey("invoice_admissions.task_id", ondelete="CASCADE"), primary_key=True)
+    invoice_id: Mapped[str] = mapped_column(ForeignKey("invoices.id", ondelete="CASCADE"))
+    result_hash: Mapped[str] = mapped_column(String(64))
+    completion_hash: Mapped[str] = mapped_column(String(64))

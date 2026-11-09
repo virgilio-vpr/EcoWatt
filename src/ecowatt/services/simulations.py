@@ -25,7 +25,7 @@ def require_simulation(db, actor, simulation_id, revision=None):
 
 
 def serialize(simulation):
-    fields = ("id", "owner_id", "company_id", "created_by", "updated_by", "status", "revision",
+    fields = ("id", "owner_id", "company_id", "created_by", "updated_by", "status", "revision", "dataset_revision",
               "distributor_id", "unit_identifier", "holder_name", "address_line", "city", "state",
               "postal_code", "created_at")
     return {**{name: getattr(simulation, name) for name in fields},
@@ -73,6 +73,7 @@ def save_unit(db, actor, simulation_id, payload):
         setattr(simulation, name, value)
     simulation.unit_saved_at, simulation.updated_by = now(), actor.id
     simulation.revision += 1
+    simulation.dataset_revision += 1
     cancel_tasks(db, simulation.id, "revision_changed")
     db.add(AuditEvent(actor_id=actor.id, action="unit_saved", resource_id=simulation.id,
                       changes={"before": before, "after": values}))
@@ -85,6 +86,7 @@ def delete_simulation(db, actor, simulation_id, payload):
     simulation = require_simulation(db, actor, simulation_id, payload.expected_revision)
     simulation.status, simulation.slot, simulation.deleted_at = "deleted", None, now()
     simulation.revision += 1
+    simulation.dataset_revision += 1
     simulation.updated_by = actor.id
     cancel_tasks(db, simulation.id, "simulation_deleted")
     # Filhos faturáveis são removidos na mesma transação do tombstone/lease.

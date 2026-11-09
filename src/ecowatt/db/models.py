@@ -94,6 +94,7 @@ class Simulation(Base):
         CheckConstraint("slot IN (1,2) OR slot IS NULL", name="slot"),
         CheckConstraint("(status = 'deleted' AND slot IS NULL) OR (status != 'deleted' AND slot IS NOT NULL)", name="active_slot"),
         CheckConstraint("revision >= 1", name="revision"),
+        CheckConstraint("dataset_revision >= 1", name="dataset_revision"),
         UniqueConstraint("owner_id", "slot"),
         Index("ix_simulations_owner_created", "owner_id", "created_at"),
     )
@@ -106,6 +107,7 @@ class Simulation(Base):
     slot: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(15), default="draft")
     revision: Mapped[int] = mapped_column(Integer, default=1)
+    dataset_revision: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
     unit_identifier: Mapped[str | None] = mapped_column(String(100))
     holder_name: Mapped[str | None] = mapped_column(String(200))
     address_line: Mapped[str | None] = mapped_column(String(300))
