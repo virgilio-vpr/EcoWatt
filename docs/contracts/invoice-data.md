@@ -1,10 +1,10 @@
 # Dicionário de dados faturáveis — contrato v0.1
 
-Proposta para implementação e revisão, ainda sem aprovação do corpus real. Fonte normativa: SPEC 3.10, §§3.1, 6, 7 e 10. Este documento define nomes e tipos de intercâmbio; não substitui as regras da SPEC nem constitui esquema SQL implementado. Fronteiras: [pipeline](pipeline.md). Evidências e dúvidas: [corpus](../corpus/README.md).
+Contrato para implementação; o aceite mínimo local da Fase 0 não equivale à homologação comercial ou de todos os campos/layouts. Fonte normativa: SPEC 3.11, §§3.1, 6, 7, 8.6 e 10. Este documento define nomes e tipos de intercâmbio; não substitui as regras da SPEC nem constitui esquema SQL implementado. Fronteiras: [pipeline](pipeline.md). Evidências e dúvidas: [corpus](../corpus/README.md).
 
 ## Escopo mínimo
 
-Somente descrição do faturamento, dados do cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas. Informações administrativas/fiscais, colunas tributárias separadas, códigos de medidor e detalhamento completo da conta são complementares e não condicionam diagnóstico com entradas suficientes. As obrigações abaixo se aplicam a esse mínimo; dados C são necessários somente ao módulo que os utiliza. Não solicitar ao cliente confirmação de todos os campos opcionais.
+Descrição do faturamento, dados do cliente/UC, classificação/tipo de fornecimento, datas gerais de leitura e demandas contratadas; pela atualização de 09/11/2026, incluir demandas ativas medidas por posto do quadro de medição quando necessárias à comparação/otimização. Informações administrativas/fiscais, códigos de medidor e detalhamento completo da conta continuam complementares. Colunas tributárias separadas não condicionam preço cheio observado; parâmetros tributários são condicionais à formação de preço ausente via ANEEL (§8.6). Dados C são necessários somente ao módulo que os utiliza. Não solicitar ao cliente confirmação de todos os campos opcionais.
 
 ## Convenções
 
@@ -85,6 +85,8 @@ Cobrança corrente de energia ativa TE sugere cativo. Ausência dessa cobrança 
 
 Grandezas não negativas; créditos são tratados nos itens financeiros, não convertidos em consumo negativo sem classificação. Medições reativas adicionais exigem código de grandeza e unidade explícitos antes de uso pelo motor.
 
+Na Azul e na Verde, procurar `measured_active_demand` de `peak` e `off_peak` no quadro de medição do próprio ciclo, preservando a proveniência, a unidade e a base de perdas. Na Verde, `contracted_demand` pode existir somente em `single`, enquanto as medições existem por posto; não copiar a contratação única para os dois postos nem derivar medições a partir dela. Não somar máximos de linhas fora de ponta capacitiva/indutiva ou mapear contadores sem regra validada do layout. Ausência/ambiguidade bloqueia somente o uso dependente, com estados explícitos.
+
 ## Itens faturados
 
 Cada `items[]` possui `id`, `type`, `post` (null quando não se aplica), `field_state` e proveniência de classificação; seus valores usam Field. Tipos fechados da SPEC §7.3: `active_energy_te`, `active_energy_tusd`, `regular_demand`, `idle_demand`, `overrun_demand`, `reactive_energy_excess`, `reactive_demand_excess`, `flag`, `tax`, `other`, `unclassified`.
@@ -94,9 +96,9 @@ Cada `items[]` possui `id`, `type`, `post` (null quando não se aplica), `field_
 | `quantity` | decimal / unidade explícita | C | Pode faltar em linha apenas monetária |
 | `quantity_unit` | enum kWh/MWh/kW/kvarh/kvar/other | C | `other` exige definição, sem uso financeiro automático |
 | `regulated_rate` | decimal / BRL por unidade | O | Tarifa sem tributos, quando disponível; não confundir com preço cheio nem exigir para diagnóstico observado |
-| `effective_price` | decimal / BRL por unidade | C | Simulação real exige `with_tax`: preço cheio com impostos incorporados, sem recálculo separado. `without_tax`/`unknown` não substituem essa base |
+| `effective_price` | decimal / BRL por unidade | C | Preço cheio observado `with_tax`, sem reaplicar impostos. Preço alternativo formado via ANEEL fica no snapshot de cálculo, não substitui o item histórico; `without_tax`/`unknown` não equivalem a preço cheio |
 | `amount` | decimal / BRL | E | Sinal preservado para créditos |
-| `taxes[]` | tributo, base BRL, alíquota adimensional, valor BRL, incidência, estado | O | Informação documental com proveniência; fora da análise da simulação. Ausência/divergência não bloqueia preço efetivo cheio disponível e não equivale a isenção |
+| `taxes[]` | tributo, base BRL, alíquota adimensional, valor BRL, incidência, estado | O | Informação documental com proveniência; pode fundamentar parâmetros de formação de preço somente se aplicável ao componente/modalidade/período e validada. Ausência/divergência não bloqueia preço cheio observado nem equivale a isenção |
 | `valid_from`, `valid_to`, `segment_id` | datas / ID | C | Segmentação por mudança de tarifa/contrato |
 | `reactive_nature` | enum | C | Quando identificada |
 | `grouped_components` | lista TE/TUSD | C | Linha agrupada explicitamente identificada; `unclassified` até decomposição validada, sem duplicar valor |
@@ -120,4 +122,8 @@ A ausência confirmada de cobrança excedente permite `zero_confirmed`, com evid
 
 ## Regra esclarecida pelo usuário em 06/11/2026
 
-A simulação utiliza preço cheio com impostos incorporados, sem auditoria ou recálculo separado dos tributos. Para a demanda ociosa LEI ESTADUAL, o usuário esclareceu: `P_ociosa = P_demanda_contratada × 0,82`, na ponta, fora de ponta e demanda única. A redução de 18% é aplicada ao preço unitário, não à quantidade contratada. Preservar o preço e o valor observados no gabarito histórico; a divergência encontrada na extração candidata continua para conferência do preço-base e da precisão, sem declarar a regra informada ou o candidato homologados. Achados das colunas tributárias ficam como histórico documental e deixam de ser bloqueio da simulação com preço cheio disponível. Continuam pendentes identidade/mercado, cobertura visual, preços/componentes necessários e aprovação do gabarito.
+A regra de 06/11/2026 preserva o preço cheio observado, sem auditoria fiscal, e `P_ociosa = P_demanda_contratada × 0,82` na ponta, fora de ponta e demanda única. A redução é aplicada ao preço, não aos kW. Atualização de 09/11/2026: preço ausente pode ser formado a partir da tarifa ANEEL com bases/incidências/alíquotas documentadas, conforme SPEC §8.6, sem alterar os itens históricos ou o aceite mínimo da Fase 0. Achados tributários continuam sem bloquear preço cheio já disponível; parâmetros faltantes bloqueiam apenas a formação dependente.
+
+## Referência tarifária para cenários — 09/11/2026
+
+Mercado permanece confirmado por ciclo; a execução deriva o marco de migração ACL das evidências estruturadas existentes, sem guardar texto bruto ou supor data pela simples ausência de TE. Preservar períodos e incertezas para selecionar o maior preço unitário elegível por componente: série inteira, trecho pré-ACL quando a migração ocorrer dentro dela, ou série inteira ACL para os componentes suportados. A seleção, preços ANEEL, parâmetros tributários e memória de formação pertencem ao snapshot da execução ([pipeline](pipeline.md)), não a correções das faturas. Não registrar tarifa alternativa como cobrança observada nem ampliar o escopo para energia de fornecedor ACL ausente.

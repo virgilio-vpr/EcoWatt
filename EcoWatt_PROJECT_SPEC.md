@@ -1,6 +1,6 @@
 # EcoWatt — Especificação de produto e implementação
 
-Versão 3.10 • 06/11/2026 • Documento autossuficiente para orientar a implementação.
+Versão 3.11 • 09/11/2026 • Documento autossuficiente para orientar a implementação.
 
 ## 1. Objetivo e critérios do produto
 
@@ -27,7 +27,7 @@ Esta especificação substitui integralmente o rascunho recebido. Referências a
 | Lentidão atribuída à linguagem e ao banco sem medição | Arquitetura mais simples e orçamento de desempenho; a causa anterior permanece não comprovada |
 | Ultrapassagem substitui indevidamente parte do faturamento regular | Separar demanda regular e cobrança adicional de ultrapassagem |
 | Desconto de ociosidade presumido em 18% | Regra definida pelo usuário: preço da demanda ociosa = preço da demanda contratada × 0,82, na ponta, fora de ponta e demanda única; conferir contra os valores observados |
-| Recálculo de impostos sobre preço já cheio | Usar preço efetivo com impostos incorporados; tributos separados fora da análise da simulação |
+| Recálculo de impostos sobre preço já cheio | Preservar preço cheio observado; formar preço cheio de tarifa ANEEL sem impostos somente com regra tributária aplicável e documentada (§8.6) |
 | Item ausente tratado automaticamente como zero | Distinguir zero confirmado, não aplicável, não encontrado e ilegível |
 | Reativos calculados pela tarifa comum de energia | Valores de referência próprios e dependência de registros horários para reconstrução |
 | Banco de capacitores como solução universal | Potencial de redução sujeito à engenharia, inclusive para excesso capacitivo |
@@ -145,6 +145,8 @@ O frontend Jinja2 + HTMX deve ser elegante e fluido: hierarquia tipográfica, co
 O cliente pode excluir a simulação e solicitar exclusão da conta. Uma nova tentativa não deve duplicar simulações ou pedidos de contato por repetição de requisição.
 
 Antes de habilitar o campo de faturas, solicitar e salvar: distribuidora, identificador do consumidor/unidade (MTE, quando essa for a nomenclatura da fatura), nome da empresa titular e endereço do ponto de conexão. O cliente informa os dados da empresa no cadastro antes de iniciar a simulação. Oferecer “Usar o mesmo endereço da empresa”, copiando os campos com confirmação. Se a cabine/subestação ou ponto de conexão estiver em outra rua, inclusive adjacente, o cliente informa/corrige esse endereço próprio da unidade. Após salvar, liberar anexação/leitura; a API também exige essa etapa concluída.
+
+No cabeçalho dessa mesma tela de anexação/leitura, exibir seletor de distribuidora e indicação do suporte ao layout. O piloto tem somente ENEL como família inicial de documentos, ainda sujeita à homologação do adaptador/layout; não tratar toda empresa ENEL ou todo layout como equivalente. Oferecer “Outra distribuidora / layout não suportado”, incluindo exemplos CPFL, EDP e Elektro, e ação explícita “Solicitar contato para análise das faturas”. O pedido registra distribuidora e canal autorizado, sem guardar documentos nem enviar mensagens automaticamente; a obtenção posterior de faturas exige procedimento autorizado próprio. Não exigir que a pessoa chegue ao resultado para solicitar esse atendimento. Tarifa no catálogo ANEEL não significa suporte ao parser. Bloquear leitura/simulação automática para layout não suportado também na API, com motivo e preservação dos dados já salvos. Confrontar a escolha com o documento na leitura: divergência exige resolução e nunca deve acionar silenciosamente o parser ENEL.
 
 A extração pode sugerir nome/titular e endereço impressos na fatura para conferência: se coincidirem com os dados informados, mantê-los; se diferirem, o cliente confirma ou corrige o campo pertinente. Distinguir endereço da empresa, endereço impresso na fatura e endereço confirmado do ponto de conexão; não presumir que todo endereço impresso seja o da cabine ou que divergência de rua signifique outra unidade. Preservar o valor extraído e a justificativa estruturada da diferença. Não sobrescrever o cadastro da empresa nem o endereço confirmado automaticamente. Manter snapshots e autoria da confirmação/correção; mudança futura do perfil não modifica o histórico. Divergência de distribuidora/UC continua exigindo resolução, sem misturar unidades.
 
@@ -280,13 +282,13 @@ O total da fatura não é necessariamente o valor pago. Só usar “pago” quan
 
 Por posto `peak`, `off_peak` ou `single`: demanda contratada e quantidades faturadas de demanda/energia necessárias ao diagnóstico. Demanda medida só é necessária aos módulos que dependem dela; aproveitar a quantidade de demanda utilizada do quadro de cobrança quando seu significado estiver identificado, sem chamar toda demanda faturada de medida. Grandezas reativas de medidor, fator de potência, números/códigos de medidor, contadores de leitura e séries históricas impressas são complementares; não exigir cadastro desses dados para analisar cobranças observadas. Registrar se o valor já inclui ajuste de perdas para não aplicá-lo duas vezes. Aviso de faturamento pela média ou outra estimativa exige estado `estimated` e método/proveniência; coincidência de números entre tabela de medição e itens não comprova medição real. Preservar dados impressos e separar hipóteses do usuário sobre ciclos de transição, sem reconstruir consumo ou anualizar como série medida contínua.
 
-Na Verde, registrar demandas medidas por posto quando a fatura ou informação complementar as trouxer, mesmo que a contratação seja única.
+Na Azul e na Verde, extrair as demandas ativas medidas de ponta e fora de ponta do quadro de registro/dados de medição, quando presentes. A contratação única na Verde não elimina essas medições. Preservar separadamente demanda contratada, medida e faturada, unidade, posto, ciclo, ajuste de perdas e proveniência. Os exemplos visuais enviados em 09/11/2026 justificam essa fonte de extração, sem homologar todos os layouts. Não exigir cadastro integral dos contadores ou demais grandezas do quadro: somente os campos necessários ao módulo. Medição fora de ponta capacitiva/indutiva e outros rótulos exigem mapeamento validado; não somar máximos, escolher coluna ou equiparar grandezas pelo nome. Se a fatura só trouxer demanda única ou medições ambíguas, preservar a insuficiência em vez de fabricar os postos.
 
 ### 7.3 Itens de cobrança
 
 Tipos: `active_energy_te`, `active_energy_tusd`, `regular_demand`, `idle_demand`, `overrun_demand`, `reactive_energy_excess`, `reactive_demand_excess`, `flag`, `tax`, `other`, `unclassified`.
 
-Por item: descrição/tipo; posto quando identificável; quantidade e unidade disponíveis; preço unitário cheio com impostos incorporados; valor cobrado; estado e proveniência mínima. Incluir energia TE/TUSD, demanda, parcela ociosa LEI ESTADUAL, UFER e demais linhas monetárias do quadro, com subtotais/total do faturamento. Tarifa unitária sem impostos pode ser guardada se disponível, sem substituir o preço cheio. Colunas de PIS/COFINS, base/alíquota/valor ICMS e detalhes fiscais não são exigidos nem analisados separadamente.
+Por item: descrição/tipo; posto quando identificável; quantidade e unidade disponíveis; preço unitário cheio com impostos incorporados; valor cobrado; estado e proveniência mínima. Incluir energia TE/TUSD, demanda, parcela ociosa LEI ESTADUAL, UFER e demais linhas monetárias do quadro, com subtotais/total do faturamento. Tarifa unitária sem impostos pode ser guardada se disponível, sem substituir o preço cheio. Colunas tributárias não são obrigatórias para usar preço cheio observado. Alíquotas, bases e incidências tornam-se necessárias somente à formação de preço ausente via catálogo (§8.6); sua extração não transforma o diagnóstico em auditoria fiscal.
 
 TE e TUSD agrupadas em uma linha exigem identificação explícita de agrupamento. Não duplicar energia ao somar linhas TE/TUSD da mesma medição. Valores monetários de ociosidade podem existir sem quantidade ou preço; não inventar o campo ausente.
 
@@ -307,7 +309,7 @@ TE e TUSD agrupadas em uma linha exigem identificação explícita de agrupament
 
 Todos os cálculos usam Decimal; entrada/saída JSON representa decimais como strings. Precisão interna mínima de 28 dígitos. Não truncar tarifas a cinco casas antes do cálculo: preservar precisão de origem. Arredondar moeda a centavos por item no fechamento, com política versionada e validada contra a distribuidora.
 
-Parâmetros possuem vigência, escopo, fonte e versão. A simulação usa preços efetivos com impostos incorporados; não decompõe nem recalcula tributos separadamente (§8.6). Não transformar qualquer regra regulatória em campo livre sem validação administrativa.
+Parâmetros possuem vigência, escopo, fonte e versão. A simulação usa preços efetivos com impostos incorporados; não reaplica tributos sobre preço já cheio. A formação de preço a partir da tarifa ANEEL sem impostos segue o §8.6, com parâmetros próprios e memória versionada. Não transformar qualquer regra regulatória em campo livre sem validação administrativa.
 
 Exceções rurais/sazonais, períodos de teste, ajustes e contratos especiais ficam fora da fórmula geral até homologação. Uma divergência não transforma automaticamente a fatura em cobrança indevida.
 
@@ -392,7 +394,7 @@ Calcular energia ativa por posto, demanda regular, ultrapassagem e parcelas rele
 
 **Azul → Verde:** quando as demandas medidas por posto usam a mesma base/período, a demanda única medida é o máximo entre ponta e fora de ponta. Otimizar contratação única. Reavaliar tarifas de energia ponta e fora de ponta; não transportar TUSD ponta da Azul para Verde.
 
-**Verde → Azul:** primeiro procurar demandas por posto no próprio documento ou dados complementares. Se houver, calcular normalmente. Se existir somente o máximo único:
+**Verde → Azul:** procurar primeiro as demandas ativas medidas por posto no quadro de medição da própria fatura (§7.2), independentemente da contratação única. Com ponta e fora de ponta validadas para os ciclos analisados, calcular os dois contratos da Azul sem estimar a repartição da demanda única. O preço da demanda única Verde não substitui os preços de ponta/fora de ponta Azul: resolver os componentes faltantes no catálogo ANEEL e formar preços cheios conforme §8.6. Dados complementares podem suprir medições ausentes, com proveniência. Se existir somente o máximo único:
 
 - Não inventar o horário do pico.
 - Exibir cenário superior conservador de custo de demanda, atribuindo o máximo a ambos os postos, se as demais condições forem compatíveis.
@@ -400,22 +402,32 @@ Calcular energia ativa por posto, demanda regular, ultrapassagem e parcelas rele
 - Exibir sensibilidade opcional com `Dm_ponta = alfa × Dm_unica` e `Dm_fora = Dm_unica`, alfa entre 0 e 1. O limiar é uma hipótese comum à série, não medição mensal nem único valor universal em kW.
 - Se não houver mudança de sinal ou dados suficientes, mostrar “inconclusivo” ou “não houve vantagem nos cenários calculados”.
 
-A obtenção de dados intervalares do portal da distribuidora para os meses analisados é preferível. Uma semana de medição pode apoiar diagnóstico, mas não comprova sazonalidade anual.
+Quando faltarem medições por posto suficientes na fatura, buscar registros do portal da distribuidora para os meses analisados. Dados intervalares não são pré-requisito adicional se as medições mensais por posto já forem suficientes ao módulo; continuam necessários às regras que dependem de intervalos. Uma semana de medição pode apoiar diagnóstico, mas não comprova sazonalidade anual.
 
 Mostrar economia técnica recorrente separada do prazo de implementação. Redução de demanda e mudança de modalidade dependem de elegibilidade, contrato, prazos e histórico de alterações. Não supor benefício imediato no mês seguinte. O relatório só informa datas de efeito quando as condições foram verificadas; sem elas registra “data de implantação não confirmada”.
 
 ### 8.6 Preços efetivos com impostos incorporados
 
-Duas visões independentes:
+Por atualização de escopo solicitada em 09/11/2026, distinguir duas visões independentes:
 
 - **Histórico:** conferir valores e regras nas vigências das faturas.
-- **Comparativo de referência:** reproduzir o mesmo perfil de carga na data tarifária escolhida, com tarifas completas e equivalentes para ambos os cenários.
+- **Comparativo de referência:** reproduzir o mesmo perfil de carga com preços de referência selecionados pela regra abaixo, completos e equivalentes para os cenários atual e alternativo. Aplicar também ao ajuste de demanda sem mudança de modalidade; não apresentar a diferença contra gastos históricos como economia comparável.
 
-Não comparar contrato atual a preços antigos contra alternativa com tarifas novas. Por decisão do usuário em 06/11/2026, a simulação utiliza a tarifa cheia, isto é, o preço efetivo com impostos incorporados, sem análise, decomposição, recálculo, acréscimo ou dedução separada de ICMS, PIS/COFINS e outros impostos. As colunas tributárias eventualmente extraídas são informação documental e não condicionam o cálculo quando o preço cheio aplicável está disponível. Divergências dessas colunas não bloqueiam por si só o gabarito econômico ou a simulação.
+**Fonte e formação do preço cheio.** Usar o preço unitário cheio aplicável extraído e validado da fatura para os componentes disponíveis; não acrescentar novamente impostos. Quando faltar tarifa de outra modalidade ou de qualquer componente necessário à simulação, buscar a Tarifa de Aplicação no catálogo local aprovado, importado do arquivo oficial ANEEL (§9), para distribuidora, subgrupo, modalidade, posto, componente, mercado e vigência corretos. A tabela não supre quantidades, medições nem cobranças que não existiram. Não usar preço de componente, concessionária ou modalidade diferente como substituto.
 
-Para a parcela ociosa LEI ESTADUAL, aplicar a relação de 82% do preço da demanda contratada definida no §8.2, por posto ou demanda única. Essa é a exceção explícita de formação de preço solicitada pelo usuário; os demais impostos permanecem incorporados, sem análise separada. Tarifa oficial sem impostos não equivale ao preço cheio; não convertê-la por percentual presumido. Comparações exigem preços cheios compatíveis por componente, modalidade e período.
+Se a fonte estiver sem impostos, formar o preço cheio com percentuais, bases e incidências aplicáveis a cada componente/modalidade e período, inclusive isenções/reduções quando comprovadas. Obter parâmetros da fatura quando identificados e transferíveis ao cenário, ou de fonte tributária/distribuidora documentada e aprovada. A importação ANEEL não fornece, por si, todas essas informações. Não fixar percentuais universais, copiar a carga tributária global da conta ou multiplicar por uma soma presumida de alíquotas. A fórmula de inclusão de tributos depende das bases/incidências e deve ser validada antes da implementação comercial. Registrar tarifa-base, unidade, alíquotas e origem, incidências, regra/versão, arredondamento e preço cheio resultante. Falta de parâmetro necessário bloqueia somente o componente/cenário dependente; nunca equivale a zero ou isenção. A ausência/divergência de colunas tributárias não bloqueia preço cheio observado já disponível. Não auditar ou reescrever o histórico fiscal.
 
-A ausência de bases ou alíquotas tributárias separadas não bloqueia o uso de preço efetivo cheio identificado. Se faltar esse preço para uma parcela ou cenário, bloquear somente o cálculo dependente; não substituí-lo por zero nem inventar conversão tributária. A formação do preço ocioso segue a relação explícita de 82% do §8.2 quando o preço-base estiver disponível. Exemplos matemáticos sintéticos sem tributos continuam identificados como tais e não substituem o preço exigido na simulação real.
+**Maior tarifa da série e migração ACL.** Para os novos cenários de demanda/modalidade e demais componentes simuláveis, selecionar a maior tarifa unitária cheia elegível da série, por componente/posto e base compatível; não somar tarifas, escolher pelo maior total da fatura nem confundir preço com maior demanda em kW. Não assumir que a última fatura seja a maior. Em empate, usar a referência mais recente e registrar a escolha. Não comparar máximos entre Azul e Verde ou entre componentes diferentes para eleger a modalidade mais barata.
+
+- Série inteiramente cativa: usar o maior preço elegível de todo o período.
+- Migração cativo → ACL dentro da série: identificar o marco por mercado confirmado de cada ciclo (§7.1) e escolher o maior preço no trecho anterior à migração. Descontos ou mudanças posteriores do ACL não substituem essa referência. Ciclo misto sem segmentação confiável ou marco incerto exige conferência; não escolher uma data presumida.
+- Série inteiramente no ACL: usar o maior preço elegível do período para os componentes suportados. Isso não inclui energia comprada do fornecedor que não conste da fatura de distribuição nem autoriza calcular conta cativa completa com dados incompletos. Informar o escopo parcial e componentes excluídos.
+
+Para cada componente, congelar conjunto elegível, exclusões, ciclo de origem, preço máximo e data/versão de referência. Na modalidade alternativa ou componente ausente, resolver a tarifa ANEEL e os tributos na mesma referência aplicável; não selecionar uma vigência mais barata para a alternativa. Reprecificar C0 e os cenários comparados na base equivalente, preservando medições/ciclos; a referência pode variar por componente e deve ficar visível. Não substituir os valores históricos observados. Mercado desconhecido, transições múltiplas ou falta de fonte equivalente tornam o trecho dependente parcial/inconclusivo até revisão, sem misturar preços incompatíveis.
+
+Para a parcela ociosa LEI ESTADUAL, preservar a relação de 82% do preço cheio da demanda contratada definida no §8.2, por posto ou demanda única, sem reaplicar uma segunda redução tributária. A nova formação de preço ANEEL não revoga essa regra nem altera o gabarito histórico aceito.
+
+Exemplos matemáticos sintéticos sem tributos continuam identificados como tais e não substituem o preço exigido na simulação real. Esta atualização amplia a formação de preços alternativos e a referência comparativa; não homologa tarifas, fórmulas tributárias, novos layouts ou cálculo integral ACL.
 
 ### 8.7 Economia sem dupla contagem
 
@@ -468,6 +480,7 @@ Identificação mínima: distribuidora/CNPJ, resolução, início/fim da vigênc
 - Tarifa manual só com fonte, justificativa e auditoria.
 - Não carregar todo o histórico ANEEL em memória nem no banco do piloto: selecionar distribuidora e vigências necessárias durante a importação.
 - Não consultar ANEEL em cada simulação; resolver a partir do catálogo local aprovado.
+- Importar tarifas das duas modalidades e dos componentes ausentes necessários ao cenário; associar regras tributárias aprovadas para formar preços cheios (§8.6). Manter tarifa sem impostos e preço formado separados, com referência temporal, origem e versão; catálogo de tarifas e suporte ao layout são capacidades independentes (§4.2).
 
 Parâmetros: tolerância e multiplicador de ultrapassagem; fator de potência; regras de perdas e exceções; janela de reativos; limites contratuais; precisão; restrições de otimização e validade. Parâmetro comercial e regra regulatória têm identificação distinta.
 
@@ -725,6 +738,8 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
 
   - [ ] Salvar dados da unidade e endereço da ligação antes de liberar faturas; oferecer cópia confirmada do endereço da empresa.
   - [ ] Criar/revisar tabelas de faturas, itens, medições e proveniência antes da extração integrada, respeitando a ordem de FKs.
+  - [ ] Capturar demandas medidas por posto no quadro de medição Azul/Verde, separadas da contratação/faturamento; preservar mercado por ciclo e evidências de migração ACL, sem inferência por ausência em leitura incompleta.
+  - [ ] Identificar distribuidora/layout no cabeçalho da etapa de anexação/leitura; tratar não suportados com bloqueio explícito e pedido de contato, sem fallback silencioso para ENEL.
   - [ ] Persistir cada extração em transação atômica, com retry idempotente e rollback sem órfãos.
   - [ ] Implementar seleção local e botão “Ler fatura” que envia e extrai cada arquivo, permitindo adições incrementais até 12.
   - [ ] Aplicar limites acumulados por simulação e controlar capacidade de admissão.
@@ -746,6 +761,8 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
   - [ ] Retornar custos e séries mensais de prévia com a mesma base do cenário atual.
   - [ ] Distinguir candidato exploratório, sugestão automática e resultado salvo; preservar diferença desfavorável.
   - [ ] Validar que tarifa unitária não seja somada como tarifa do período e que demanda em kW não vire total contratável por soma mensal.
+  - [ ] Comparar Azul↔Verde com medições por posto e preços cheios equivalentes; suprir preços ausentes via ANEEL com incidências/alíquotas documentadas, sem tributar duas vezes nem inventar medições.
+  - [ ] Testar maior tarifa por componente, máximo anterior ao último mês, empate, série cativa, migração ACL intermediária, série toda ACL e mercado incerto; manter histórico e comparação separados, referência equivalente e bloqueio seletivo por parâmetros ausentes.
 
   - [ ] Demanda regular/ultrapassagem, ociosidade com relação de 82% do preço da demanda contratada e confronto com os valores observados, otimização, reativos observados, comparação de modalidade e cenários encadeados.
 
@@ -768,6 +785,7 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
   - [ ] Criar painel do cliente com empresa, cartões e contador de simulações “0/2”.
   - [ ] Bloquear terceira simulação até excluir uma das existentes, com confirmação clara.
   - [ ] Entregar formulário em etapas, acessível, responsivo e com preservação dos dados salvos.
+  - [ ] Exibir distribuidora/suporte no cabeçalho da anexação/leitura e contato explícito para layout não suportado; apresentar referência tarifária, recorte ACL, formação do preço cheio e limites da comparação no relatório.
   - [ ] Entregar CRM essencial exclusivo do administrador: clientes, leads, busca, filtros e ficha comercial.
   - [ ] Implementar notas internas, situação comercial e histórico de contatos.
   - [ ] Permitir edição administrativa de dados com justificativa e auditoria, gerando novo cálculo.
@@ -832,9 +850,10 @@ Restam informações externas que não podem ser inventadas:
 | --- | --- | --- |
 | Corpus real ENEL e conferência | Série e planilha de referência do cliente-piloto | Parser e fórmulas não homologados comercialmente |
 | Identidade da distribuidora | Cadastro/catálogo e nome/unidade da fatura; CNPJ do catálogo quando necessário | Preços somente para a distribuidora identificada, sem reextração fiscal obrigatória em cada conta |
-| Preços cheios por componente e perdas | Faturas e fontes aplicáveis por vigência; ociosidade com preço próprio | Falta de preço cheio ou perdas necessárias bloqueia somente o cálculo dependente; impostos separados fora da análise |
+| Preços cheios por componente e perdas | Fatura validada ou tarifa ANEEL com formação tributária documentada (§8.6); ociosidade com preço próprio | Falta de tarifa, incidência/alíquota necessária ou perdas bloqueia somente o cálculo dependente; não tributar de novo preço já cheio |
 | Contrato e restrições de alteração | CUSD, histórico e regra vigente | Potencial técnico sem data de implantação |
-| Dados por posto na Verde | Fatura/portal/registros intervalares | Migração condicional/inconclusiva |
+| Dados por posto na Verde | Quadro de medição da própria fatura prioritariamente; portal/registros complementares quando faltarem | Contratação única não impede comparação se medições por posto forem suficientes; sem elas, cenário condicionado/inconclusivo |
+| Referência e marco ACL | Mercado confirmado por ciclo e preços elegíveis (§§7.1 e 8.6) | Marco incerto exige revisão; não misturar referência cativa com desconto ACL nem inventar preço do fornecedor |
 | Dados horários de reativos | Medição ou arquivo da distribuidora | Cobrança observada e potencial condicionado |
 | Empresa, canal e política de dados | Dados comerciais do responsável | Publicação comercial bloqueada até configuração |
 | Provedor e ambiente de hospedagem | Serviço com e-mail, RAM e isolamento compatíveis | Login real e metas dependem do ambiente |
@@ -849,6 +868,7 @@ Fontes consultadas em 03/11/2026:
 - PDF oficial indexado da REN 1000: https://www2.aneel.gov.br/cedoc/ren20211000.pdf
 - ANEEL — Tarifas de aplicação das distribuidoras, TE/TUSD e recursos CSV: https://dadosabertos.aneel.gov.br/dataset/tarifas-distribuidoras-energia-eletrica
 - ANEEL — Dicionário de dados tarifários, acessível pelo conjunto acima.
+- ANEEL — Ranking das tarifas e limites dos valores publicados (tributos e outros elementos não incluídos; conferir exceções da fonte): https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas (consulta em 09/11/2026; não define fórmula tributária universal).
 - Energisa — explicação operacional de ultrapassagem: https://www.energisa.com.br/para-sua-empresa/espaco-grandes-clientes/grandes-clientes/tarifas-de-ultrapassagem
 
 Limite desta revisão: os endereços diretos do texto compilado ANEEL retornaram bloqueio de acesso na consulta automatizada; houve acesso ao catálogo tarifário oficial e resultados indexados da norma. Conferir a redação consolidada e eventuais alterações na homologação é requisito antes de liberar cálculos comerciais. Cartilhas antigas baseadas na REN 414 não devem definir automaticamente prazos atuais.

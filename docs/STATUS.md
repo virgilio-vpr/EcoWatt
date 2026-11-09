@@ -1,6 +1,6 @@
 # Estado do EcoWatt
 
-Atualizado em 06/11/2026. Referência: SPEC versão 3.10; contratos mínimos v0.2.
+Atualizado em 09/11/2026. Referência: SPEC versão 3.11; gabarito mínimo aceito v0.2, com extensão documental de escopo para as próximas fases.
 
 ## Direção atual
 
@@ -12,7 +12,7 @@ Escopo aceito: concentrar somente em **faturamento, informações do cliente/UC,
 
 ## Regras que permanecem
 
-- Preço unitário cheio com impostos incorporados; sem análise separada de PIS/COFINS/ICMS. Ociosidade LEI ESTADUAL = preço da demanda contratada × 0,82 em ponta/fora de ponta/única. Tolerância de até BRL 0.99 inclusive por item. Quatro parcelas somente monetárias mantêm quantidade/preço desconhecidos.
+- Preço unitário cheio observado sem reaplicar impostos. Pela atualização de 09/11/2026, preços ausentes de cenários serão obtidos da tarifa ANEEL com formação tributária documentada, sem auditoria fiscal integral (§8.6). Ociosidade LEI ESTADUAL = preço cheio da demanda contratada × 0,82 em ponta/fora de ponta/única. Tolerância de até BRL 0.99 inclusive por item. Quatro parcelas somente monetárias mantêm quantidade/preço desconhecidos.
 - Base financeira do diagnóstico = **TOTAL do quadro de faturamento**. Comparar com itens e subtotais, com residual dessa base. Total a pagar do cabeçalho, se disponível, é informação geral separada. Divergência externa ao quadro não bloqueia automaticamente demanda/reativos com dados consistentes, não cria parcela por diferença e não equivale a auditoria do valor a pagar.
 - Cadastro da empresa, endereço impresso e ponto de conexão/cabine são separados. Copiar dados coincidentes com confirmação; corrigir ponto de conexão se diferente, inclusive rua adjacente. CNPJ completo do cliente não é exigido se impresso mascarado.
 - Distribuidora corretamente identificada no cadastro/catálogo, UC, subgrupo/modalidade e período continuam necessários às regras aplicáveis. CNPJ emissor, nota fiscal, chave/protocolo e status formal de refaturamento são opcionais; versão do layout é metadado técnico. Duplicatas reais no lote ainda exigem resolução por hash/UC/competência/ciclo/dados.
@@ -38,9 +38,19 @@ Hipótese de setembro conferida a pedido do usuário: forte compatibilidade num�
 
 ## Fluxo de branches
 
-Por orientação do usuário, o encerramento é registrado na `fase-0` e integrado à `main` por merge. A branch `fase-1` deve partir da `main` após esse merge; as próximas entregas serão commitadas nela e integradas por pull request. Operações realizadas diretamente pela integração GitHub, sem Git local.
+Fase 0 integrada à `main`; Fase 1 integrada pelo [PR #2](https://github.com/virgilio-vpr/EcoWatt/pull/2) no commit `75d32b01671188c263e9b054587546d190cbe40b`. A branch `fase-2` foi criada desse merge e seu estado foi conferido no GitHub nesta entrega. Novos commits seguem nela, com integração por PR; nenhum novo merge foi solicitado nesta atualização documental. Operações pela integração GitHub, sem Git local.
 
-## Entrega atual — encerramento da Fase 1
+## Entrega atual — escopo de comparação Azul/Verde e tarifas
+
+Solicitação de 09/11/2026 incorporada à SPEC §§4.2, 7.2–7.3, 8.5–8.6, 9, 15 e 16 e aos contratos/planos das Fases 2–4. Demandas medidas de ponta/fora de ponta do quadro de medição Azul e Verde serão extraídas sem confundir contratação única com ausência de medições. Preços faltantes de qualquer componente simulável serão resolvidos no catálogo ANEEL, com formação de preço cheio baseada em incidências/alíquotas aplicáveis e documentadas. Não reaplicar impostos ao preço já cheio nem inventar parâmetros.
+
+Referência dos cenários: maior tarifa unitária elegível por componente/posto; se a migração ao ACL ocorrer dentro da série, usar o trecho anterior. Se todo o período estiver no ACL, usar o maior preço do período nos componentes suportados, sem inventar energia do fornecedor ou alegar conta cativa completa. Histórico preservado; C0 e alternativas reprecificados em base equivalente. Máximo não significa necessariamente último mês. Mercado incerto exige revisão. Fonte, recorte, exclusões e formação do preço ficam no snapshot/memória.
+
+No cabeçalho da etapa de anexação/leitura, identificar distribuidora/layout e oferecer contato explícito para não suportados (por exemplo, CPFL, EDP, Elektro); ENEL é a família inicial, sem homologação automática de todos os layouts. Pedido de contato não envia mensagem nem retém documentos. Suporte ao catálogo tarifário não habilita parser.
+
+Verificações desta entrega: revisão cruzada de requisitos/contratos/planos, links locais e preservação dos critérios já concluídos da seção 15. A fonte oficial ANEEL sobre limites dos preços publicados foi consultada e referenciada; nenhuma fórmula tributária ou alíquota foi homologada. As imagens anexadas foram usadas apenas como evidência estrutural de medições por posto; nenhum dado identificável foi copiado para o repositório. O acesso ao PDF de exemplo no caminho externo F: foi negado, portanto seu conteúdo/marco de migração não foi conferido. Não houve extração de PDF, execução da aplicação, instalação, migração nem novos testes do motor; alteração exclusivamente documental. Novos critérios permanecem desmarcados.
+
+## Última implementação — encerramento da Fase 1
 
 Ambiente Python 3.13.14/SQLite 3.50.4/uv 0.13.7, sem novas dependências, instalações globais, containers ou alteração de políticas. Migração aditiva `0003_simulation_tasks` aplicada ao SQLite local; readiness atualizada. Configuração local do usuário não foi alterada nem incluída nesta entrega. Nenhum e-mail externo enviado ou documento real processado.
 
@@ -64,8 +74,6 @@ Homologação comercial, tarifas/entradas próprias para cenários alternativos 
 
 ## Arquivos e commit
 
-Novos: `migrations/versions/0003_simulation_tasks.py`, `src/ecowatt/services/tasks.py`, `tests/test_task_lifecycle.py`, `docs/TASKS.md`.
+Alterados nesta entrega documental: `EcoWatt_PROJECT_SPEC.md`, `docs/contracts/invoice-data.md`, `docs/contracts/pipeline.md`, `docs/phases/phase-02-invoices.md`, `docs/phases/phase-03-calculation.md`, `docs/phases/phase-04-reports-web.md`, `docs/STATUS.md`. Novos/removidos: nenhum. `.env`, código, banco e artefatos locais fora do envio.
 
-Alterados: `src/ecowatt/db/models.py`, `src/ecowatt/services/simulations.py`, `src/ecowatt/api/health.py`, `README.md`, `docs/SETUP.md`, `docs/DATABASE.md`, `docs/API.md`, `docs/STATUS.md`, `docs/phases/phase-01-backend.md`, `EcoWatt_PROJECT_SPEC.md`. Removidos: nenhum. `.env` local, dados reais, banco, ambientes, caches e wheel fora do envio.
-
-Commit de encerramento na fase-1: `feat: conclui fase 1 com cancelamento transacional de tarefas`. Integração pelo PR #2 após CI aprovada; SHA do commit/merge no histórico remoto e na resposta da entrega. Este status integra o próprio commit.
+Commit na `fase-2`: `docs: define comparacao Azul Verde e referencias tarifarias ACL`. SHA e confirmação de envio na resposta da entrega/histórico remoto; este status integra o próprio commit. O próximo trabalho de implementação continua sendo a primeira entrega da Fase 2, agora considerando os campos/dependências atualizados, sem antecipar o motor da Fase 3.

@@ -4,14 +4,14 @@ Objetivo: apresentar a execução calculada e concluir jornadas web do cliente/a
 
 ## Leitura dirigida
 
-Na [SPEC](../../EcoWatt_PROJECT_SPEC.md): 3.3 (camadas), 4 (jornadas), 5.4 (leitura e progresso), 8.8 (cenário manual), 11 (relatório/gráficos), 12 (HTML/CSRF/autorização), 13 (telas/temas/Tailwind) e 15/Fase 4 (aceite).
+Na [SPEC](../../EcoWatt_PROJECT_SPEC.md): 3.3 (camadas), 4 (jornadas e suporte ao layout), 5.4 (leitura e progresso), 8.6 (referência/formação dos preços e recorte ACL), 8.8 (cenário manual), 11 (relatório/gráficos), 12 (HTML/CSRF/autorização), 13 (telas/temas/Tailwind) e 15/Fase 4 (aceite).
 
 ## Entregas sugeridas
 
 1. Dados de relatório e séries compartilhadas pela web/PDF; geração autenticada de PDF.
 2. Layouts/macros Jinja2, HTMX local, Tailwind compilado e temas claro/escuro.
-3. Landing page e acesso; painel e etapas de unidade, leitura, conferência e resultado.
-4. Atual/simulado na mesma escala, quadro de reativos, economia em R$ e memória de cálculo.
+3. Landing page e acesso; painel e etapas de unidade, leitura, conferência e resultado. No cabeçalho da anexação/leitura, seletor de distribuidora/suporte e contato para layouts não suportados (§4.2), sem envio automático nem retenção de faturas.
+4. Atual/simulado na mesma escala, quadro de reativos, economia em R$ e memória de cálculo. Exibir fonte/formação do preço cheio, referência de maior tarifa e recorte ACL (§8.6), separando histórico observado da comparação reprecificada e indicando módulos indisponíveis.
 5. CRM essencial, notas internas, edição auditada e fluxo completo de simulação do admin.
 
 Separar leitura JSON dos fragmentos HTML, mantendo serviços compartilhados. Não enviar notas internas a rotas de cliente. Respostas antigas de prévia não podem substituir cenário mais recente.
