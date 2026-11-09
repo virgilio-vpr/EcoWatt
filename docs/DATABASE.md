@@ -54,7 +54,7 @@ Na raiz, depois de preparar `.venv` conforme SETUP:
 .\.venv\Scripts\python.exe -m alembic check
 ```
 
-Revisão atual `0005_invoice_admissions`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
+Revisão atual `0006_coordinator_lease`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
 
 O seed de SETUP foi executado duas vezes no banco local e preservou contas existentes. A suíte testa também rollback sem órfãos, restrições, FKs, seed em produção recusado e concorrência de cota/idempotência. Não há dados reais de clientes ou documentos no banco criado.
 
@@ -63,6 +63,12 @@ PostgreSQL, backup/restauração e transporte tipado dos dados serão preparados
 ## Segunda entrega da Fase 2 — reserva sintética
 
 `0005_invoice_admissions` adiciona metadados vinculados a tarefa, simulação e ator: hash do documento sintético, hashes de chave/pedido, bytes/páginas inteiros, versões layout/parser e tombstone de remoção. Não há bytes, nome do arquivo, texto ou resultado livre. Checks por arquivo e unicidade ator/chave complementam contagem transacional no serviço; capacidade e totais não são garantidos por SQL direto. Uma tarefa por reserva, CASCADE nos pais e RESTRICT no ator. Autor/dono são revalidados no serviço; não se admite escrita direta por clientes. Detalhes e limitações em [ADMISSION](ADMISSION.md). Exclusão lógica da simulação remove também as reservas na transação do cancelamento; não espera CASCADE de um pai que permanece como tombstone.
+
+## Terceira entrega da Fase 2 — liderança do coordenador
+
+`0006_coordinator_lease` cria singleton `coordinator_lease` (id=1, geração positiva, hash de token e vencimento UTC) e adiciona `invoice_admissions.coordinator_epoch` nullable. Sem vínculo com documento, conteúdo da fila ou resultado. A geração não usa FK para a geração mutável do singleton: valores antigos permanecem como metadados de recuperação. Reservas existentes ficam NULL, preservadas sem takeover automático. Aquisição/recuperação/renovação usam `BEGIN IMMEDIATE`; TASKS recusa operações de geração vencida/antiga. Nenhum coordenador é iniciado por migração ou startup. Ver [COORDINATOR](COORDINATOR.md).
+
+Downgrade para 0005 e novo upgrade com reserva preenchida preservam o registro e TASKS, removendo a geração na volta a 0005 e restaurando-a como NULL no novo upgrade; verificadas FKs e Alembic check. Essa perda de metadados é esperada somente em descartáveis: nunca fazer downgrade com coordenador em operação. Migração local aplicada, readiness exige 0006. PostgreSQL e contenção de processos pelo SO ainda não validados.
 
 ## Primeira entrega da Fase 2 — esquema faturável
 

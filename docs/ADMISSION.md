@@ -1,6 +1,6 @@
 # Admissão — contrato interno sintético da Fase 2
 
-Esta fatia implementa reserva transacional de metadados e consulta JSON de suporte. Não recebe arquivos, não executa parser/OCR e não constitui homologação de layout. Nenhum documento real pode ser recebido; `document_upload_enabled` permanece falso, inclusive para ENEL. O único par habilitado internamente é `SYNTHETIC / synthetic-v1`, com parser `synthetic-v1`; não faz parte do seed nem representa distribuidora comercial.
+Esta fatia implementa reserva transacional de metadados e consulta JSON de suporte. A extensão em [COORDINATOR](COORDINATOR.md) adiciona fila em memória, liderança e subprocesso exclusivamente sintético. Não recebe documentos nem executa parser/OCR e não constitui homologação de layout. `document_upload_enabled` permanece falso, inclusive para ENEL. O único par habilitado internamente é `SYNTHETIC / synthetic-v1`, com parser `synthetic-v1`; não faz parte do seed nem representa distribuidora comercial.
 
 ## Consulta e comando
 
@@ -16,7 +16,7 @@ MB significa 1.000.000 bytes nesta implementação. Máximos: 10 MB e 10 página
 
 Capacidade inicial interna: quatro reservas ativas globais, incluindo queued/running. A quinta retorna `admission_capacity_unavailable`/503, sem gravar tarefa nem consumir orçamento. TASKS mantém uma simulação ativa por dono, inclusive quando admin admite em nome dele. `claim` de uma admissão impede outro executor de admissão global e mantém a sequência por simulação. O limite é compartilhado pelo banco; não existem filas independentes por processo web.
 
-São limites da infraestrutura sintética, sem benchmark de RAM, CPU, pixels ou duração de lote. A fila efêmera de bytes e a reserva física de memória não estão implementadas. Não iniciar recebimento real usando apenas essas cotas.
+São limites da infraestrutura sintética, sem benchmark de RAM, CPU ou pixels. O coordenador retém até 40 MB de fixtures, mas esse contador não inclui todas as cópias/IPC e não impõe limite físico de RAM. Timeout e deadline do lote estão descritos em [COORDINATOR](COORDINATOR.md). Não iniciar recebimento real usando apenas essas cotas.
 
 ## Repetição, cancelamento e conclusão
 
@@ -29,6 +29,6 @@ A remoção aqui trata a **reserva sintética**, não uma extração faturável 
 
 ## Próxima fatia e barreira para PDFs
 
-Implementar coordenador único com fila efêmera limitada e protocolo versionado de resultado normalizado; verificar ausência de spool no framework/proxy, diretório RAM quando indispensável, isolamento sem rede, CPU/RAM/tempo/pixels, descarte em sucesso/erro/cancelamento/reinício e ausência de conteúdo na observabilidade (§5/§12). Definir recuperação de reservas queued cujo conteúdo efêmero foi perdido, sem invalidar executores vivos. Depois integrar adaptador específico homologado, extração/proveniência, revisão e UI de Ler fatura. O protocolo de inspeção sozinho não cobre extração ou prova descarte.
+O coordenador único/fila efêmera e a recuperação de queued coordenadas sem bytes já estão implementados para fixtures; não invalidam leases de tarefas ainda vivas. Seu retorno versionado é somente recibo técnico, não extração normalizada. Próximo passo: verificar e completar as barreiras de SO/framework/proxy (§5/§12) descritas em [COORDINATOR](COORDINATOR.md), depois integrar resultado normalizado, adaptador homologado, extração/proveniência, revisão e UI de Ler fatura. Nenhum teste sintético prova descarte seguro de PDF real.
 
 Testes usam exclusivamente metadados e dados sintéticos: limites nas fronteiras, concorrência da última vaga de orçamento/capacidade, retries, rollback, suporte exato, autorização/autoria, cancelamento, expiração, remoção e resultado tardio. Isso não demonstra segurança ou desempenho de PDF real.

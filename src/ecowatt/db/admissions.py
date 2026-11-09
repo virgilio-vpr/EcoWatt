@@ -24,3 +24,5 @@ class InvoiceAdmission(Base):
     layout_version: Mapped[str] = mapped_column(String(80))
     parser_version: Mapped[str] = mapped_column(String(80))
     removed: Mapped[bool] = mapped_column(Boolean, default=False)
+    # NULL preserva reservas de testes/contrato anteriores ao coordenador.
+    coordinator_epoch: Mapped[int | None] = mapped_column(Integer)

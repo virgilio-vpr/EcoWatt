@@ -1,6 +1,6 @@
 # Controle de tarefas da simulação — Fase 1
 
-Extensão da Fase 2: [ADMISSION](ADMISSION.md) define reservas sintéticas associadas a TASKS. `claim` de admissão limita a execução global a uma; reserva/capacidade, remoção e exclusão são transacionais. Nenhum worker, fila de bytes ou recebimento de PDF foi habilitado. O restante deste documento preserva o protocolo base e a evidência da primeira entrega.
+Extensão da Fase 2: [ADMISSION](ADMISSION.md) define reservas sintéticas associadas a TASKS. `claim` de admissão limita a execução global a uma; reserva/capacidade, remoção e exclusão são transacionais. [COORDINATOR](COORDINATOR.md) implementa liderança, fila efêmera e filho sintético, sem recebimento de PDF. `require_task` revalida também geração/validade do líder para reservas coordenadas, portanto claim, heartbeat e finish antigos são cercados após takeover. Reservas anteriores com geração NULL mantêm o protocolo base. O restante deste documento preserva o histórico da primeira entrega; suas referências a coordenador futuro não representam o estado desta extensão sintética.
 
 Fecha o critério de exclusão/cancelamento da base local. A tabela `simulation_tasks` guarda somente IDs, revisão, estado, executor, hash de lease, validade e motivo técnico. Não contém documento, imagem, texto extraído, resultado, senha ou payload JSON. Não há endpoint público de tarefas, coordenador automático ou executor de OCR/cálculo nesta entrega.
 

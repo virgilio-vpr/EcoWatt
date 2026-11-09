@@ -54,7 +54,8 @@ def reject(code, message, status=409):
     raise DomainError(code, message, status)
 
 
-def admit_synthetic(engine, actor_id, simulation_id, revision, key, inspection, *, action):
+def admit_synthetic(engine, actor_id, simulation_id, revision, key, inspection, *, action,
+        _coordinator=None, _on_reserved=None):
     """Reserva somente pela ação Ler fatura. Não aceita nem persiste bytes.
 
     Idempotência é por ator/chave; retry terminal devolve o mesmo ID, sem
@@ -74,6 +75,9 @@ def admit_synthetic(engine, actor_id, simulation_id, revision, key, inspection, 
     fingerprint = digest(json.dumps({"simulation_id": simulation_id, "revision": revision,
         **asdict(inspection)}, sort_keys=True))
     with transaction(engine, write=True) as db:
+        if _coordinator is not None:
+            from ecowatt.services.leadership import require_leader
+            require_leader(db, _coordinator)
         actor = db.get(User, actor_id, populate_existing=True)
         if not actor or actor.status != "active":
             reject("task_unavailable", "Operação indisponível.")
@@ -115,7 +119,11 @@ def admit_synthetic(engine, actor_id, simulation_id, revision, key, inspection, 
         db.add(InvoiceAdmission(task_id=task_id, simulation_id=sim.id, actor_id=actor.id,
             key_hash=digest(key), request_hash=fingerprint, source_hash=inspection.source_hash,
             byte_count=inspection.byte_count, page_count=inspection.page_count,
-            layout_version=inspection.layout_version, parser_version=inspection.parser_version))
+            layout_version=inspection.layout_version, parser_version=inspection.parser_version,
+            coordinator_epoch=_coordinator.epoch if _coordinator else None))
+        if _on_reserved is not None:
+            # Inserção efêmera curta; falha desfaz também a reserva SQL.
+            _on_reserved(task_id)
         return task_id
 
 

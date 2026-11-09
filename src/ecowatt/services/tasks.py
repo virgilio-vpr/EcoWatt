@@ -43,6 +43,11 @@ def require_task(db, task_id):
     if not actor or actor.status != "active":
         raise DomainError("task_unavailable", "Operação indisponível.", 409)
     simulation = require_simulation(db, actor, task.simulation_id, task.revision)
+    from ecowatt.db.admissions import InvoiceAdmission
+    admission = db.get(InvoiceAdmission, task.id)
+    if admission is not None and admission.coordinator_epoch is not None:
+        from ecowatt.services.leadership import require_epoch
+        require_epoch(db, admission.coordinator_epoch)
     return task, simulation
 
 
