@@ -1,5 +1,7 @@
 # Revisão versionada — quinta entrega sintética da Fase 2
 
+Este documento preserva o contrato e os limites da quinta entrega. A [sexta entrega](INVOICE-CONFIRMATION.md) acrescenta confirmação/seleção e prontidão estrutural, com política financeira observed-financial-v2. Referências abaixo à ausência de confirmação/prontidão descrevem o marco anterior.
+
 Escopo: revisão JSON de campos existentes em faturas `synthetic / invoice-v0.3`, invalidação de dependentes e conferência financeira observada. Não recebe arquivos, cria itens, altera postos/vínculos de medição, resolve refaturamentos, confirma a fatura inteira ou habilita cálculo. Faturas continuam `needs_review`. PDFs reais e layouts comerciais continuam desabilitados; catálogo tarifário não habilita parser nem fallback ENEL.
 
 ## Comando e versões

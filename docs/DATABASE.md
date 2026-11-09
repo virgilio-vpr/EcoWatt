@@ -54,7 +54,7 @@ Na raiz, depois de preparar `.venv` conforme SETUP:
 .\.venv\Scripts\python.exe -m alembic check
 ```
 
-Revisão atual `0007_invoice_publications`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
+Revisão atual `0008_invoice_confirmation`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
 
 O seed de SETUP foi executado duas vezes no banco local e preservou contas existentes. A suíte testa também rollback sem órfãos, restrições, FKs, seed em produção recusado e concorrência de cota/idempotência. Não há dados reais de clientes ou documentos no banco criado.
 
@@ -118,3 +118,9 @@ Verificações de 09/11/2026: 95 testes aprovados, incluindo Edge e 27 casos nov
 ## Quinta entrega — revisão sem mudança de esquema
 
 Correções acrescentam field_provenance e field_dependencies; valores antigos e vínculos concretos permanecem. Invoice.revision e Simulation.dataset_revision avançam uma vez por comando; Invoice.dataset_revision passa a representar a última alteração da fatura. Unidade/TASKS permanecem na revisão anterior. Auditoria guarda hashes/recibo estruturado para retry por ator/fatura; serialização de escrita SQLite protege concorrência. invoice_validations recebe memória append-only com política/revisão explícita. Nenhuma tabela ou migração nova, head 0007; PostgreSQL ainda não validado. Detalhes e limites em [INVOICE-REVIEW](INVOICE-REVIEW.md).
+
+## Sexta entrega — confirmação e escolha do conjunto
+
+Migração aditiva 0008_invoice_confirmation, após 0007: invoice_confirmations referencia fatura (CASCADE) e ator (RESTRICT), guarda revisões positivas de unidade/fatura/conjunto, hash, política, justificativa, IDs concretos da proveniência e limitações aceitas. invoice_selections referencia simulação (CASCADE) e ator (RESTRICT), guarda revisões/contexto do grupo em JSON estruturado mínimo, escolha, relação fechada e justificativa. IDs/versões de membros pertencentes à mesma simulação são conferidos pelo serviço; JSON não substitui as colunas tipadas faturáveis. Índices por fatura/revisões e simulação; instantes UTC.
+
+Não confirma retroativamente dados existentes. Comandos gravam registro/contador/status/auditoria juntos em BEGIN IMMEDIATE. Invoice.revision continua sendo de conteúdo; confirmação tem registro próprio e avança somente dataset_revision. Mudança da unidade invalida confirmação/escolhas e marca ready como needs_review. Exclusão individual apaga confirmações; escolhas históricas conservam somente IDs/revisões mínimos para impedir reinclusão silenciosa. Exclusão lógica da simulação remove explicitamente escolhas, pois o pai permanece tombstone. Downgrade de teste perde snapshots/escolhas e desmarca ready das faturas confirmadas; preserva o grafo anterior, nunca é backup. Detalhes em [INVOICE-CONFIRMATION](INVOICE-CONFIRMATION.md). PostgreSQL não validado.

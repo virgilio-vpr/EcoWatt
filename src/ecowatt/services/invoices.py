@@ -26,7 +26,7 @@ def scalar(value):
 
 
 def serialize_invoice(db, invoice):
-    from ecowatt.db.invoices import FieldDependency, FieldProvenance, InvoiceItem, InvoiceMeasurement
+    from ecowatt.db.invoices import FieldDependency, FieldProvenance, InvoiceItem, InvoiceMeasurement, InvoiceConfirmation
     from ecowatt.invoice_result import HEADER, ITEM, MEASUREMENT
     def values(record, specs):
         return {key: scalar(getattr(record, key)) for key in specs}
@@ -38,6 +38,10 @@ def serialize_invoice(db, invoice):
     return {**{name: getattr(invoice, name) for name in ("id", "simulation_id", "created_by", "revision",
         "dataset_revision", "contract_version", "source_kind", "status", "coverage")},
         "header": values(invoice, HEADER),
+        "confirmations": [{name: getattr(row, name) for name in ("id", "actor_id", "unit_revision",
+            "invoice_revision", "dataset_revision", "policy_version", "reason_code", "field_versions",
+            "accepted_limitations", "created_at")} for row in db.scalars(select(InvoiceConfirmation)
+                .where(InvoiceConfirmation.invoice_id == invoice.id).order_by(InvoiceConfirmation.dataset_revision))],
         "measurements": [{"id": m.id, "post": m.post, "fields": values(m, MEASUREMENT)} for m in
             db.scalars(select(InvoiceMeasurement).where(InvoiceMeasurement.invoice_id == invoice.id).order_by(InvoiceMeasurement.post))],
         "items": [{"id": i.id, "position": i.position, "measurement_id": i.measurement_id, "fields": values(i, ITEM)} for i in

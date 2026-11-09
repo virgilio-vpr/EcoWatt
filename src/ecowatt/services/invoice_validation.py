@@ -8,7 +8,7 @@ from ecowatt.db.invoices import Invoice, InvoiceItem, InvoiceValidation
 from ecowatt.db.models import SimulationTask
 from ecowatt.services.simulations import require_simulation
 
-POLICY = "observed-financial-v1"
+POLICY = "observed-financial-v2"
 
 
 def financial_checks(db, invoice):
@@ -19,7 +19,8 @@ def financial_checks(db, invoice):
         # Memória persistida é exata ou explicitamente indisponível; nunca arredonda.
         numbers = (observed, expected, difference)
         if any(n is not None and (abs(n) >= Decimal(10) ** 20 or n != n.quantize(Decimal("1e-18"))) for n in numbers):
-            code, result, observed, expected, difference = "validation_numeric_range", "blocking", None, None, None
+            informational = code == "payable_information"
+            code, result, observed, expected, difference = ("payable_numeric_range" if informational else "validation_numeric_range"), ("warning" if informational else "blocking"), None, None, None
         output.append(dict(code=code, field_path=path, result=result,
             observed=observed, expected=expected, difference=difference))
 
@@ -64,9 +65,24 @@ def record_validations(db, invoice):
 
 
 def dataset_readiness(db, actor, simulation_id):
+    from ecowatt.services.invoice_confirmation import (POLICY as CONFIRM_POLICY, confirmation_checks,
+        current_confirmation, selection_groups, group_selection)
     sim = require_simulation(db, actor, simulation_id)
     invoices = list(db.scalars(select(Invoice).where(Invoice.simulation_id == sim.id).order_by(Invoice.id)))
-    reasons = {"confirmation_workflow_pending", "duplicate_resolution_pending"}
+    reasons = set()
+    excluded = set()
+    groups = selection_groups(db, sim, invoices)
+    for group in groups:
+        choice = group_selection(db, sim, group)
+        group["selection_id"] = choice.id if choice else None
+        group["included_ids"] = choice.included_ids if choice else []
+        group["relationship"] = choice.relationship if choice else None
+        if choice is None:
+            reasons.add("duplicate_resolution_required")
+        elif choice.relationship == "complement":
+            reasons.add("complement_consolidation_required")
+        else:
+            excluded.update(set(group["member_versions"]) - set(choice.included_ids))
     if sim.unit_saved_at is None:
         reasons.add("unit_not_saved")
     if not invoices:
@@ -74,11 +90,21 @@ def dataset_readiness(db, actor, simulation_id):
     entries = []
     for invoice in invoices:
         checks = financial_checks(db, invoice)
-        if invoice.status != "ready":
-            reasons.add("invoice_review_required")
-        if any(check["result"] == "blocking" for check in checks):
-            reasons.add("financial_review_required")
-        entries.append({"invoice_id": invoice.id, "revision": invoice.revision, "status": invoice.status,
+        pending, limitations = confirmation_checks(db, sim, invoice)
+        confirmation = current_confirmation(db, sim, invoice)
+        confirmed = bool(confirmation and not pending and set(confirmation.accepted_limitations) == set(limitations))
+        included = invoice.id not in excluded
+        if included:
+            if not confirmed:
+                reasons.add("invoice_review_required")
+            if pending:
+                reasons.add("critical_fields_pending")
+            if any(check["result"] == "blocking" for check in checks):
+                reasons.add("financial_review_required")
+        entries.append({"invoice_id": invoice.id, "revision": invoice.revision,
+            "status": "ready" if confirmed else "needs_review", "included": included,
+            "confirmation_id": confirmation.id if confirmed else None,
+            "pending_fields": pending, "limitations": limitations,
             "checks": [{key: format(value, "f") if isinstance(value, Decimal) else value
                 for key, value in check.items()} for check in checks]})
     # Até tarefa finished sem publicação exige resolução; falha/expiração não some do conjunto.
@@ -90,6 +116,12 @@ def dataset_readiness(db, actor, simulation_id):
             reasons.add("processing_pending")
         elif db.get(InvoicePublication, row.task_id) is None:
             reasons.add("admission_unresolved")
+    # Lacunas são informativas; nunca exigem doze contas.
+    months = sorted({int(i.competence[:4]) * 12 + int(i.competence[5:]) - 1
+        for i in invoices if i.id not in excluded and i.competence})
+    missing = [f"{month // 12:04d}-{month % 12 + 1:02d}" for month in
+        range(months[0], months[-1] + 1) if month not in months] if months else []
     return {"dataset_revision": sim.dataset_revision, "unit_revision": sim.revision,
-        "ready_for_calculation": False, "policy_version": POLICY,
-        "reasons": sorted(reasons), "invoices": entries}
+        "ready_for_calculation": not reasons, "policy_version": POLICY,
+        "confirmation_policy_version": CONFIRM_POLICY, "duplicate_groups": groups,
+        "missing_competences": missing, "reasons": sorted(reasons), "invoices": entries}

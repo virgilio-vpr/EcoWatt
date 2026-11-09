@@ -183,7 +183,7 @@ def test_readiness_separates_residual_from_payable_and_monetary_only(environment
     assert Decimal(checks["billing_residual"]["difference"]) == 0
     assert checks["payable_information"]["result"] == checks["product_unavailable"]["result"] == "warning"
     assert "financial_review_required" not in data["reasons"]
-    assert "confirmation_workflow_pending" in data["reasons"]
+    assert "invoice_review_required" in data["reasons"]
 
 
 def test_auth_csrf_admin_authorship_and_removed_replay(environment):

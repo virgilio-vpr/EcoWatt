@@ -14,11 +14,37 @@ from ecowatt.schemas import InvoiceDeleteInput, StructuredInvoiceOutput, Invoice
 from ecowatt.services import simulations as service
 from ecowatt.invoice_review import ReviewInput
 from ecowatt.schemas import ReviewReceipt, DatasetReadiness
+from ecowatt.invoice_confirmation import ConfirmationInput, SelectionInput
+from ecowatt.schemas import ConfirmationReceipt, SelectionReceipt, SelectionsPage
 
 router = APIRouter(tags=["resources"])
 Key = Annotated[str, Header(alias="Idempotency-Key", min_length=8, max_length=128)]
 Page = Annotated[int, Query(ge=1)]
 PageSize = Annotated[int, Query(ge=1, le=100)]
+
+
+@router.get("/simulations/{simulation_id}/invoice-selections", response_model=SelectionsPage)
+def invoice_selections(simulation_id: UUID, page: Page = 1, page_size: PageSize = 20,
+        principal=Depends(authenticated, scope="function")):
+    from ecowatt.services.invoice_confirmation import list_selections
+    db, actor, _ = principal
+    return list_selections(db, actor, str(simulation_id), page, page_size)
+
+
+@router.post("/simulations/{simulation_id}/invoices/{invoice_id}/confirmations", response_model=ConfirmationReceipt)
+def invoice_confirm(simulation_id: UUID, invoice_id: UUID, payload: ConfirmationInput, idempotency_key: Key,
+        principal=Depends(authenticated, scope="function")):
+    from ecowatt.services.invoice_confirmation import confirm_invoice
+    db, actor, _ = principal
+    return confirm_invoice(db, actor, str(simulation_id), str(invoice_id), idempotency_key, payload)
+
+
+@router.post("/simulations/{simulation_id}/invoice-selections", response_model=SelectionReceipt)
+def invoice_select(simulation_id: UUID, payload: SelectionInput, idempotency_key: Key,
+        principal=Depends(authenticated, scope="function")):
+    from ecowatt.services.invoice_confirmation import select_invoices
+    db, actor, _ = principal
+    return select_invoices(db, actor, str(simulation_id), idempotency_key, payload)
 
 
 @router.get("/simulations/{simulation_id}/invoice-readiness", response_model=DatasetReadiness)

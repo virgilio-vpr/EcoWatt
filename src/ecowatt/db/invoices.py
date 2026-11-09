@@ -6,7 +6,7 @@ ficam nas tabelas de domínio. O futuro serviço de revisão deve gravá-los jun
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import Boolean, CheckConstraint, Date, ForeignKey, ForeignKeyConstraint, Index, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, CheckConstraint, Date, ForeignKey, ForeignKeyConstraint, Index, Integer, String, UniqueConstraint, JSON
 from sqlalchemy.orm import Mapped, mapped_column, validates
 
 from ecowatt.db.base import Base
@@ -258,4 +258,44 @@ class InvoiceMarketEvidence(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     invoice_id: Mapped[str] = mapped_column(ForeignKey("invoices.id", ondelete="CASCADE"))
     code: Mapped[str] = mapped_column(String(60))
+
+
+class InvoiceConfirmation(Base):
+    __tablename__ = "invoice_confirmations"
+    __table_args__ = (
+        CheckConstraint("unit_revision >= 1 AND invoice_revision >= 1 AND dataset_revision >= 1", name="revisions"),
+        CheckConstraint("length(content_hash) = 64", name="hash"),
+        Index("ix_invoice_confirmations_invoice_revision", "invoice_id", "invoice_revision", "unit_revision"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    invoice_id: Mapped[str] = mapped_column(ForeignKey("invoices.id", ondelete="CASCADE"))
+    actor_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    unit_revision: Mapped[int] = mapped_column(Integer)
+    invoice_revision: Mapped[int] = mapped_column(Integer)
+    dataset_revision: Mapped[int] = mapped_column(Integer)
+    content_hash: Mapped[str] = mapped_column(String(64))
+    policy_version: Mapped[str] = mapped_column(String(80))
+    reason_code: Mapped[str] = mapped_column(String(60))
+    field_versions: Mapped[dict] = mapped_column(JSON)
+    accepted_limitations: Mapped[list] = mapped_column(JSON)
+    created_at: Mapped[int] = mapped_column(Integer, default=now)
+
+
+class InvoiceSelection(Base):
+    __tablename__ = "invoice_selections"
+    __table_args__ = (
+        CheckConstraint("unit_revision >= 1 AND dataset_revision >= 1", name="revisions"),
+        CheckConstraint("relationship IN ('duplicate','replacement','distinct_periods','complement')", name="relationship"),
+        Index("ix_invoice_selections_simulation", "simulation_id"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    simulation_id: Mapped[str] = mapped_column(ForeignKey("simulations.id", ondelete="CASCADE"))
+    actor_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    unit_revision: Mapped[int] = mapped_column(Integer)
+    dataset_revision: Mapped[int] = mapped_column(Integer)
+    relationship: Mapped[str] = mapped_column(String(20))
+    reason_code: Mapped[str] = mapped_column(String(60))
+    member_versions: Mapped[dict] = mapped_column(JSON)
+    included_ids: Mapped[list] = mapped_column(JSON)
+    created_at: Mapped[int] = mapped_column(Integer, default=now)
 

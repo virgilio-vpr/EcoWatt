@@ -227,6 +227,19 @@ class InvoiceRecordOutput(BaseModel):
     fields: dict[str, str | int | bool | None]
 
 
+class ConfirmationOutput(BaseModel):
+    id: str
+    actor_id: str
+    unit_revision: int
+    invoice_revision: int
+    dataset_revision: int
+    policy_version: str
+    reason_code: str
+    field_versions: dict[str, str]
+    accepted_limitations: list[str]
+    created_at: int
+
+
 class StructuredInvoiceOutput(BaseModel):
     id: str
     simulation_id: str
@@ -241,6 +254,7 @@ class StructuredInvoiceOutput(BaseModel):
     measurements: list[InvoiceRecordOutput]
     items: list[InvoiceRecordOutput]
     provenance: list[ProvenanceOutput]
+    confirmations: list[ConfirmationOutput]
 
 
 class InvoiceSummary(BaseModel):
@@ -282,6 +296,18 @@ class InvoiceChecks(BaseModel):
     revision: int
     status: str
     checks: list[FinancialCheck]
+    included: bool
+    confirmation_id: str | None
+    pending_fields: list[str]
+    limitations: list[str]
+
+
+class DuplicateGroup(BaseModel):
+    member_versions: dict[str, int]
+    evidence: list[str]
+    selection_id: str | None
+    included_ids: list[str]
+    relationship: str | None
 
 
 class DatasetReadiness(BaseModel):
@@ -291,3 +317,38 @@ class DatasetReadiness(BaseModel):
     policy_version: str
     reasons: list[str]
     invoices: list[InvoiceChecks]
+    confirmation_policy_version: str
+    duplicate_groups: list[DuplicateGroup]
+    missing_competences: list[str]
+
+
+class ConfirmationReceipt(BaseModel):
+    confirmation_id: str
+    invoice_id: str
+    invoice_revision: int
+    dataset_revision: int
+
+
+class SelectionReceipt(BaseModel):
+    selection_id: str
+    dataset_revision: int
+    included_ids: list[str]
+
+
+class SelectionOutput(BaseModel):
+    id: str
+    actor_id: str
+    unit_revision: int
+    dataset_revision: int
+    relationship: str
+    reason_code: str
+    member_versions: dict[str, int]
+    included_ids: list[str]
+    created_at: int
+
+
+class SelectionsPage(BaseModel):
+    items: list[SelectionOutput]
+    total: int
+    page: int
+    page_size: int

@@ -75,6 +75,10 @@ def save_unit(db, actor, simulation_id, payload):
     simulation.revision += 1
     simulation.dataset_revision += 1
     cancel_tasks(db, simulation.id, "revision_changed")
+    from sqlalchemy import update
+    from ecowatt.db.invoices import Invoice
+    db.execute(update(Invoice).where(Invoice.simulation_id == simulation.id,
+        Invoice.status == "ready").values(status="needs_review"))
     db.add(AuditEvent(actor_id=actor.id, action="unit_saved", resource_id=simulation.id,
                       changes={"before": before, "after": values}))
     return simulation
@@ -93,6 +97,8 @@ def delete_simulation(db, actor, simulation_id, payload):
     # Itens primeiro: a referência à medição usa RESTRICT deliberadamente.
     from ecowatt.db.invoices import Invoice, InvoiceItem
     from ecowatt.db.admissions import InvoiceAdmission
+    from ecowatt.db.invoices import InvoiceSelection
+    db.execute(delete(InvoiceSelection).where(InvoiceSelection.simulation_id == simulation.id))
     db.execute(delete(InvoiceAdmission).where(InvoiceAdmission.simulation_id == simulation.id))
     invoice_ids = select(Invoice.id).where(Invoice.simulation_id == simulation.id)
     db.execute(delete(InvoiceItem).where(InvoiceItem.invoice_id.in_(invoice_ids)))
