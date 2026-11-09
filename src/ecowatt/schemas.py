@@ -259,3 +259,35 @@ class InvoicesPage(BaseModel):
     page: int
     page_size: int
     dataset_revision: int
+
+
+class ReviewReceipt(BaseModel):
+    invoice_id: str
+    invoice_revision: int
+    dataset_revision: int
+    invalidated_paths: list[str]
+
+
+class FinancialCheck(BaseModel):
+    code: str
+    field_path: str
+    result: Literal["pass", "warning", "blocking"]
+    observed: str | None
+    expected: str | None
+    difference: str | None
+
+
+class InvoiceChecks(BaseModel):
+    invoice_id: str
+    revision: int
+    status: str
+    checks: list[FinancialCheck]
+
+
+class DatasetReadiness(BaseModel):
+    dataset_revision: int
+    unit_revision: int
+    ready_for_calculation: bool
+    policy_version: str
+    reasons: list[str]
+    invoices: list[InvoiceChecks]

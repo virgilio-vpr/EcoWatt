@@ -23,3 +23,5 @@ Quarta entrega: [resultado normalizado/persistência sintética](../INVOICE-STOR
 Verificação: corpus textual/digitalizado/híbrido, arquivos inválidos, campos desconhecidos, rollback sem órfãos, retries, limites acumulados e resultados tardios após remoção. Auditar temporários e observabilidade antes de afirmar descarte. Aceite oficial na SPEC.
 
 Primeira entrega implementada em 09/11/2026: esquema `0004_invoices` e regressões sintéticas de persistência pelo protocolo TASKS. Detalhes do modelo, escalas, FKs e limites em [DATABASE](../DATABASE.md). O esquema não homologa layout nem implementa extração, revisão ou liberação de cálculo.
+
+Quinta entrega: [revisão JSON versionada](../INVOICE-REVIEW.md) de campos existentes, dependentes transitivos invalidados, memória financeira observada e consulta de pendências do conjunto. Somente synthetic/invoice-v0.3; sem nova migração, PDFs, cálculo ou interface completa. Confirmação integral, duplicidade lógica/refaturamento com escolha explícita e prontidão efetiva são a próxima fatia. Nenhum critério integral adicional da seção 15 foi marcado.

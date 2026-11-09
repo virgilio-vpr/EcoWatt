@@ -12,11 +12,28 @@ from ecowatt.schemas import ProfileOutput, DistributorsPage
 from ecowatt.schemas import InvoiceAdmissionContext
 from ecowatt.schemas import InvoiceDeleteInput, StructuredInvoiceOutput, InvoicesPage
 from ecowatt.services import simulations as service
+from ecowatt.invoice_review import ReviewInput
+from ecowatt.schemas import ReviewReceipt, DatasetReadiness
 
 router = APIRouter(tags=["resources"])
 Key = Annotated[str, Header(alias="Idempotency-Key", min_length=8, max_length=128)]
 Page = Annotated[int, Query(ge=1)]
 PageSize = Annotated[int, Query(ge=1, le=100)]
+
+
+@router.get("/simulations/{simulation_id}/invoice-readiness", response_model=DatasetReadiness)
+def invoice_readiness(simulation_id: UUID, principal=Depends(authenticated, scope="function")):
+    from ecowatt.services.invoice_validation import dataset_readiness
+    db, actor, _ = principal
+    return dataset_readiness(db, actor, str(simulation_id))
+
+
+@router.post("/simulations/{simulation_id}/invoices/{invoice_id}/reviews", response_model=ReviewReceipt)
+def invoice_review(simulation_id: UUID, invoice_id: UUID, payload: ReviewInput, idempotency_key: Key,
+        principal=Depends(authenticated, scope="function")):
+    from ecowatt.services.invoice_review import review_invoice
+    db, actor, _ = principal
+    return review_invoice(db, actor, str(simulation_id), str(invoice_id), idempotency_key, payload)
 
 
 @router.get("/simulations/{simulation_id}/invoices", response_model=InvoicesPage)

@@ -1,6 +1,6 @@
 # Resultado normalizado e persistência — fatia sintética da Fase 2
 
-Esta entrega liga tarefa e fatura, grava valores/proveniência atomicamente e permite consulta/remoção JSON. Usa somente gabarito inventado; não habilita PDFs, parser/OCR, revisão operacional ou cálculo. Todos os registros novos ficam `needs_review`, com validação blocking/review_required. Campo sintético confirmed não representa homologação comercial ou conferência de documento real.
+Esta entrega liga tarefa e fatura, grava valores/proveniência atomicamente e permite consulta/remoção JSON. Usa somente gabarito inventado; não habilita PDFs, parser/OCR ou cálculo. A quinta entrega acrescenta [revisão JSON versionada e validações observadas](INVOICE-REVIEW.md), ainda sem confirmação integral/ready. Todos os registros novos ficam `needs_review`, com validação blocking/review_required. Campo sintético confirmed não representa homologação comercial ou conferência de documento real.
 
 ## Contrato executável
 
@@ -26,14 +26,14 @@ Na mesma transação: cabeçalho, medições, itens, proveniência v1 de cada ca
 
 O vínculo tem uma tarefa por fatura, fingerprint do resultado e hash da lease de conclusão. Repetição idêntica, inclusive concorrente, retorna o mesmo ID somente com a lease original e autorização/ator/revisão ainda válidos. Resultado alterado gera idempotency_conflict; lease falsa é recusada. Publicação removida não é recriada por replay. O hash do resultado usa o JSON tipado com chaves ordenadas; mudar a representação original do resultado também é mudança de conteúdo para esse contrato.
 
-Não há normalização de correções posteriores, aprovação financeira ou alteração de histórico por esses serviços. Não há endpoint PATCH/ready. A estrutura não calcula reconciliação nem homologa o gabarito sintético, que pode conter pendências propositais. A futura revisão deve criar versões e atualizar valores/dependentes na mesma transação.
+Esses serviços continuam limitados à publicação inicial e seu replay, sem sobrescrever revisões posteriores. Correções usam exclusivamente o comando de [INVOICE-REVIEW](INVOICE-REVIEW.md): versões/proveniência/dependentes atômicos, conferência financeira observada e consulta das pendências. Não há PATCH/ready ou homologação comercial do gabarito sintético.
 
 ## Duas revisões
 
 - `Simulation.revision` continua sendo a revisão da unidade/tombstone, usada por TASKS e pelos comandos existentes. Salvar unidade cancela tarefas antigas; excluir simulação preserva o contrato anterior de confirmação/revisão e exclusão de todo o conjunto.
 - `Simulation.dataset_revision` começa em 1 e avança na publicação inicial, remoção de grafo, alteração de unidade e exclusão. Publicar uma fatura independente não cancela as outras já admitidas na mesma revisão da unidade. Não altera as duas vagas por dono.
 
-Novas faturas usam `contract_version=invoice-v0.3`; seu dataset_revision é a revisão do conjunto na publicação. Registros anteriores sem vínculo preservam sua versão e valor histórico, que antes representava revisão de admissão/unidade; não reinterpretar silenciosamente esse metadado. Não há cálculo antigo a migrar ou liberar automaticamente.
+Novas faturas usam `contract_version=invoice-v0.3`; seu dataset_revision é a revisão do conjunto na publicação e, após revisão operacional, na última alteração dessa fatura. Registros anteriores sem vínculo preservam sua versão e valor histórico, que antes representava revisão de admissão/unidade; não reinterpretar silenciosamente esse metadado. Não há cálculo antigo a migrar ou liberar automaticamente.
 
 ## API e remoção
 

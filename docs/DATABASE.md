@@ -82,7 +82,7 @@ Downgrade/upgrade descartável com publicação preenchida preserva fatura/filho
 
 ## Primeira entrega da Fase 2 — esquema faturável
 
-As descrições abaixo são o histórico da entrega 0004. A persistência inicial sintética, consulta/remoção JSON e sincronização de valores/proveniência v1 foram implementadas depois, conforme [INVOICE-STORAGE](INVOICE-STORAGE.md). Revisão operacional e prontidão continuam pendentes.
+As descrições abaixo são o histórico da entrega 0004. A persistência inicial sintética, consulta/remoção JSON e sincronização de valores/proveniência v1 foram implementadas depois, conforme [INVOICE-STORAGE](INVOICE-STORAGE.md). A quinta entrega usa o esquema existente para [revisão versionada e memória de validações](INVOICE-REVIEW.md); confirmação integral e prontidão efetiva continuam pendentes.
 
 `0004_invoices` cria, depois dos pais: invoices → invoice_measurements / invoice_market_evidence / invoice_validations → invoice_items → field_provenance → field_dependencies. Modelos em `src/ecowatt/db/invoices.py`, registrados explicitamente no metadata Alembic. Migração estática com precisões/escalas revisadas; não importa os modelos para criar tabelas.
 
@@ -114,3 +114,7 @@ Escala excedida é rejeitada, nunca truncada. Grandezas negativas/não finitas e
 Faturas/filhos usam CASCADE deliberado; autores e distribuidora usam RESTRICT. Item→medição usa RESTRICT: remover itens antes de medições/faturas, como faz delete_simulation. Tombstone, revisão, slot, cancelamento e remoção dos filhos confirmam/desfazem juntos. Exclusão física do pai também respeita essa ordem. Dependências seguem cascatas da proveniência. Expurgo de tombstones/auditoria continua na fase de retenção.
 
 Verificações de 09/11/2026: 95 testes aprovados, incluindo Edge e 27 casos novos. Upgrade limpo e preservando dados da Fase 1, downgrade/upgrade descartável com filhos, Alembic check, FKs sem órfãos, precisão, ausência versus zero, rollback do grafo/exclusão, autorização/admin e executor tardio após exclusão/revisão. Migração local aplicada; readiness exige 0004. PostgreSQL, parser/OCR, admissão, correção e processamento real seguem fora desta entrega.
+
+## Quinta entrega — revisão sem mudança de esquema
+
+Correções acrescentam field_provenance e field_dependencies; valores antigos e vínculos concretos permanecem. Invoice.revision e Simulation.dataset_revision avançam uma vez por comando; Invoice.dataset_revision passa a representar a última alteração da fatura. Unidade/TASKS permanecem na revisão anterior. Auditoria guarda hashes/recibo estruturado para retry por ator/fatura; serialização de escrita SQLite protege concorrência. invoice_validations recebe memória append-only com política/revisão explícita. Nenhuma tabela ou migração nova, head 0007; PostgreSQL ainda não validado. Detalhes e limites em [INVOICE-REVIEW](INVOICE-REVIEW.md).
