@@ -17,3 +17,5 @@ Na [SPEC](../../EcoWatt_PROJECT_SPEC.md): 4.2–4.4 (unidade, suporte ao layout 
 Saída para cálculo: conjunto estruturado confirmado e versionado, nunca PDF/texto bruto persistente. Não exigir 12 faturas para liberar uma primeira análise.
 
 Verificação: corpus textual/digitalizado/híbrido, arquivos inválidos, campos desconhecidos, rollback sem órfãos, retries, limites acumulados e resultados tardios após remoção. Auditar temporários e observabilidade antes de afirmar descarte. Aceite oficial na SPEC.
+
+Primeira entrega implementada em 09/11/2026: esquema `0004_invoices` e regressões sintéticas de persistência pelo protocolo TASKS. Detalhes do modelo, escalas, FKs e limites desta entrega em [DATABASE](../DATABASE.md). Próxima entrega: admissão após unidade salva e contrato do coordenador/adaptador, mantendo processamento fora da transação. O esquema não homologa layout nem implementa extração, revisão ou liberação de cálculo.

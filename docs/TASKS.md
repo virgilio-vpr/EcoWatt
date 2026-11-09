@@ -20,10 +20,12 @@ Trabalho pesado ocorre **antes** de finish, sem transação SQL aberta. O callba
 
 Uma conclusão que obtém o lock de escrita antes da exclusão pode terminar; a exclusão posterior torna a simulação inacessível normalmente. Se a exclusão confirma primeiro, o callback de persistência não é chamado. Falha no commit da exclusão desfaz tombstone, liberação da vaga e cancelamento em conjunto.
 
-O cancelamento é lógico e revoga a autorização de gravar. Não há processo de OCR para interromper nesta fase. Na Fase 2, o coordenador real deverá observar o estado cancelado, encerrar processos isolados, aplicar limites de recursos/admissão e integrar as tabelas de faturas/filhos à exclusão. Isso é a implementação do processamento, sem reabrir a garantia já testada de que resultado tardio não pode persistir pelo protocolo.
+O cancelamento é lógico e revoga a autorização de gravar. Não há processo de OCR para interromper nesta fase. Na Fase 2, o coordenador real deverá observar o estado cancelado, encerrar processos isolados e aplicar limites de recursos/admissão. A primeira entrega da Fase 2 já integra faturas/filhos à exclusão: itens antes das medições e cascatas dos demais dependentes, na transação do tombstone/cancelamento. Isso não implementa remoção individual de fatura ou coordenador.
 
 ## Evidência
 
 Testes sintéticos com thread de executor bloqueada fora do banco: excluir pela API, liberar o executor, tentar finish e verificar que o callback nunca gravou. Tarefa queued também não pode ser assumida depois. Verificados ainda rollback conjunto da exclusão, resultado/estado atômicos, lease falsa/repetida, cancelamento por revisão, isolamento por dono, dois claims concorrentes e recuperação somente de lease vencida.
 
 Migração `0003_simulation_tasks`, sem mudanças em dependências ou dados existentes. Upgrade limpo, upgrade preservando raízes, downgrade/upgrade em descartável e metadata Alembic check fazem parte da suíte. A validação executada é SQLite; PostgreSQL e operação de processos reais continuam nas fases correspondentes.
+
+Regressão com as tabelas reais de `0004_invoices`: `finish` grava grafo sintético de cabeçalho, medições, itens, proveniência, validação e evidência; falha após flush de todos os filhos desfaz o grafo e a conclusão. Exclusão desfaz filhos/tombstone/slot/lease em conjunto se houver rollback. Executor em thread liberado depois da exclusão ou nova revisão não grava qualquer filho; leitura interna também exige autorização e revisão da simulação. Esses testes não executam parser/OCR ou cálculos.

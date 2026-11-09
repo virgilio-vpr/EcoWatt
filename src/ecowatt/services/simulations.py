@@ -1,6 +1,6 @@
 import json
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 
 from ecowatt.db.models import AuditEvent, Distributor, IdempotencyKey, Simulation, User, now
 from ecowatt.errors import DomainError
@@ -87,6 +87,12 @@ def delete_simulation(db, actor, simulation_id, payload):
     simulation.revision += 1
     simulation.updated_by = actor.id
     cancel_tasks(db, simulation.id, "simulation_deleted")
+    # Filhos faturáveis são removidos na mesma transação do tombstone/lease.
+    # Itens primeiro: a referência à medição usa RESTRICT deliberadamente.
+    from ecowatt.db.invoices import Invoice, InvoiceItem
+    invoice_ids = select(Invoice.id).where(Invoice.simulation_id == simulation.id)
+    db.execute(delete(InvoiceItem).where(InvoiceItem.invoice_id.in_(invoice_ids)))
+    db.execute(delete(Invoice).where(Invoice.simulation_id == simulation.id))
     db.add(AuditEvent(actor_id=actor.id, action="simulation_deleted", resource_id=simulation.id))
 
 

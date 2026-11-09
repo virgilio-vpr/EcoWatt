@@ -1,4 +1,4 @@
-# Banco local — Fase 1
+# Banco local — Fases 1 e 2
 
 SQLAlchemy 2.0.57 e Alembic 1.20.1; SQLite local 3.50.4 verificado em 06/11/2026. A aplicação não executa `create_all`, migrações ou seed no import/startup. `alembic upgrade head` prepara explicitamente o diretório pai do arquivo configurado em DATABASE_URL. Arquivos SQLite/WAL/SHM ficam fora do Git.
 
@@ -26,7 +26,7 @@ erDiagram
 
 FKs habilitadas em toda conexão; WAL e busy_timeout de dez segundos. Escritas usam `BEGIN IMMEDIATE`, antes de ler estado/cota. Leituras autenticadas também atualizam last_seen e por isso usam transação de escrita curta. É uma escolha para o piloto SQLite, sem alegar escalabilidade de produção.
 
-Simulações guardam dono, empresa e autores separadamente. FK composta `(owner_id, company_id)` exige a empresa do dono. Empresa/catálogo/dono/autores usam RESTRICT; sessões e tokens dependentes usam CASCADE; ator da auditoria usa SET NULL. Não há exclusão de contas implementada. Faturas, tarifas, regras, cálculos e tabelas comerciais só entram nas fases correspondentes.
+Simulações guardam dono, empresa e autores separadamente. FK composta `(owner_id, company_id)` exige a empresa do dono. Empresa/catálogo/dono/autores usam RESTRICT; sessões e tokens dependentes usam CASCADE; ator da auditoria usa SET NULL. Não há exclusão de contas implementada. Faturas herdam dono/empresa da simulação e registram autor separadamente. Tarifas, regras, cálculos e tabelas comerciais entram nas fases correspondentes.
 
 ## Cota, revisões e exclusão
 
@@ -36,11 +36,11 @@ Criação grava simulação, chave de idempotência por ator e auditoria na mesm
 
 Salvar unidade exige distribuidora do catálogo, UC, titular e endereço próprio do ponto de conexão. Não copia nem altera o endereço da empresa automaticamente. Toda alteração usa expected_revision; UC/distribuidora já salvas não podem virar outra unidade dentro da mesma simulação. Autoria e valores anterior/novo ficam em auditoria estruturada.
 
-Excluir exige confirmação/revisão, marca tombstone, incrementa revisão, libera slot e cancela tarefas queued/running atomicamente, limpando leases. Guard/finish recusam o ID excluído, inclusive com objeto ORM em cache ou executor que termina depois. Nova revisão da unidade também cancela tarefas antigas. [TASKS](TASKS.md) define confirmação estruturada em transação nova/curta, heartbeat, expiração e resultado/estado atômicos. Coordenador/processos reais e exclusão dos futuros filhos entram na Fase 2; tombstones/auditoria ainda não têm expurgo de retenção. Não usar dados reais.
+Excluir exige confirmação/revisão, marca tombstone, incrementa revisão, libera slot e cancela tarefas queued/running atomicamente, limpando leases. Guard/finish recusam o ID excluído, inclusive com objeto ORM em cache ou executor que termina depois. Nova revisão da unidade também cancela tarefas antigas. [TASKS](TASKS.md) define confirmação estruturada em transação nova/curta, heartbeat, expiração e resultado/estado atômicos. Faturas/filhos já são removidos na transação da exclusão; coordenador/processos reais continuam nas próximas entregas da Fase 2; tombstones/auditoria ainda não têm expurgo de retenção. Não usar dados reais.
 
 ## Decimal
 
-`DecimalType(precision, scale)` aceita Decimal/string, rejeita float, não finitos, overflow e perda de escala. SQLite usa texto de escala fixa, sem notação exponencial; PostgreSQL usa Numeric(p,s). Nenhuma agregação ou ordenação lexical é tratada como cálculo numérico. Parâmetros finais por campo serão definidos com as tabelas faturáveis, sem uma escala universal inventada.
+`DecimalType(precision, scale)` aceita Decimal/string, rejeita float, não finitos, overflow e perda de escala. SQLite usa texto de escala fixa, sem notação exponencial; PostgreSQL usa Numeric(p,s). Nenhuma agregação ou ordenação lexical é tratada como cálculo numérico. Precisões/escalas faturáveis estão definidas abaixo; não há arredondamento implícito.
 
 Roundtrip local testado com valores de 30 dígitos e dez casas. O tipo PostgreSQL foi apenas inspecionado por compilação de dialeto; conexão, migrações e dados PostgreSQL não foram validados. Os contratos continuam exigindo Decimal como strings no JSON.
 
@@ -54,8 +54,41 @@ Na raiz, depois de preparar `.venv` conforme SETUP:
 .\.venv\Scripts\python.exe -m alembic check
 ```
 
-Revisão atual `0003_simulation_tasks`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
+Revisão atual `0004_invoices`. Upgrade limpo, upgrade preservando empresa criada em 0001, downgrade para 0001 e novo upgrade foram testados em bancos sintéticos descartáveis. Nunca usar downgrade como backup. Não executar migração concorrente com aplicação em uso. Migrações são arquivos estáticos revisados; autogenerate/check não substituem a revisão de FKs e operações. Alembic está configurado para batch nas próximas alterações SQLite, conforme [documentação](https://alembic.sqlalchemy.org/en/latest/batch.html).
 
 O seed de SETUP foi executado duas vezes no banco local e preservou contas existentes. A suíte testa também rollback sem órfãos, restrições, FKs, seed em produção recusado e concorrência de cota/idempotência. Não há dados reais de clientes ou documentos no banco criado.
 
 PostgreSQL, backup/restauração e transporte tipado dos dados serão preparados antes da produção, sem containers nesta entrega.
+
+## Primeira entrega da Fase 2 — esquema faturável
+
+`0004_invoices` cria, depois dos pais: invoices → invoice_measurements / invoice_market_evidence / invoice_validations → invoice_items → field_provenance → field_dependencies. Modelos em `src/ecowatt/db/invoices.py`, registrados explicitamente no metadata Alembic. Migração estática com precisões/escalas revisadas; não importa os modelos para criar tabelas.
+
+| Tabela | Dados e integridade |
+| --- | --- |
+| invoices | Simulação, autor, revisão do conjunto admitido, revisão própria, contrato, hash, origem synthetic/document, parser/layout, estado/erro/cobertura, identidade observada, endereço impresso separado, ciclo/classificação/mercado, datas e totais separados |
+| invoice_measurements | Registro por fatura/posto; contratação, demanda medida e faturada independentes, energia ativa/reativa, unidade reativa, FP e base de perdas nullable |
+| invoice_items | Ordem, tipo fechado, rótulo mínimo, posto, quantidade/unidade, preços regulado/efetivo/base tributária, valor com sinal, segmento/vigência e agrupamento TE/TUSD |
+| field_provenance | Caminho completo, versão, valor escalar normalizado, unidade/estado/origem, página/região, parser, cobertura, ator/data, motivo/hipótese/regra; correção cria outra versão |
+| field_dependencies | Versões concretas de entradas de derivados/estimativas, na mesma fatura; sem autorreferência direta |
+| invoice_validations | Código, caminho, pass/warning/blocking, política e valores observado/esperado/diferença opcionais |
+| invoice_market_evidence | Códigos fechados de evidência por ciclo; sugestão não confirma mercado nem permite inferência por ausência parcial |
+
+Estados de arquivo: uploaded/extracting/needs_review/ready/failed/expired, distintos dos estados da simulação e do campo. Não existe coluna para documento, imagem, texto integral ou payload livre. Falha registra código técnico. Desconhecidos são NULL, sem defaults numéricos. Cabeçalhos incompletos podem ser needs_review. Mesmo mês com hashes diferentes é permitido para futura resolução de complemento/refaturamento; unique(simulation_id, source_hash) impede duplicação física por hash. Duplicidade lógica, capacidade e idempotência de admissão dependem do serviço futuro.
+
+Medição e item têm unique(id, invoice_id); FKs compostas impedem vincular item/proveniência a filhos de outra fatura. Proveniência tem unique(invoice_id, field_path, version); caminhos incluem o ID do item/medição, por exemplo items.<id>.amount. Estado/proveniência ficam por campo nesta tabela; valores atuais ficam nas colunas tipadas. A futura persistência/revisão deve atualizar coluna e versão juntas, validar caminhos/valores, registrar os campos necessários e entradas de regras, impedir ciclos e edição do histórico. O esquema sozinho não garante essa sincronização nem autoriza declarar ready. Não há endpoint de fatura nesta entrega; require_invoice é consulta interna com guard de dono/admin, tombstone, revisão e vínculo à simulação.
+
+Checks exigem parser/página para origem extraída, ator para user, hipótese para estimated, regra para derived, valor nulo para missing/unreadable/not_applicable, motivo para not_applicable e zero explícito com cobertura completa para zero_confirmed. Correções exigem ator/motivo. Região opcional guarda coordenadas/unidade/referencial, nunca recorte. Fixtures synthetic usam user com ator sintético; não fingem leitura PDF/OCR. Normalização e confirmação financeira serão aplicadas pelo futuro serviço.
+
+| Valores | DecimalType(precisão, escala) | Motivo |
+| --- | --- | --- |
+| Quantidades/demandas/energia, valores observados e totais | (30, 10) | Até dez casas de origem, inclusive moeda ainda não fechada |
+| Preços e memória numérica de validação | (38, 18) | Tarifas além de cinco casas e precisão da comparação |
+| Fator de potência | (20, 16) | Grandeza adimensional; validação ORM entre 0 e 1 |
+| Coordenadas da região | (20, 10) | Metadado técnico com referencial explícito |
+
+Escala excedida é rejeitada, nunca truncada. Grandezas negativas/não finitas e float são recusados no ORM das medições; SQL direto não aplica toda validação de domínio. Créditos continuam negativos nos itens. JSON público futuro deve serializar Decimal como string, seguindo o contrato existente. Não somar/ordenar numericamente os textos no SQLite.
+
+Faturas/filhos usam CASCADE deliberado; autores e distribuidora usam RESTRICT. Item→medição usa RESTRICT: remover itens antes de medições/faturas, como faz delete_simulation. Tombstone, revisão, slot, cancelamento e remoção dos filhos confirmam/desfazem juntos. Exclusão física do pai também respeita essa ordem. Dependências seguem cascatas da proveniência. Expurgo de tombstones/auditoria continua na fase de retenção.
+
+Verificações de 09/11/2026: 95 testes aprovados, incluindo Edge e 27 casos novos. Upgrade limpo e preservando dados da Fase 1, downgrade/upgrade descartável com filhos, Alembic check, FKs sem órfãos, precisão, ausência versus zero, rollback do grafo/exclusão, autorização/admin e executor tardio após exclusão/revisão. Migração local aplicada; readiness exige 0004. PostgreSQL, parser/OCR, admissão, correção e processamento real seguem fora desta entrega.

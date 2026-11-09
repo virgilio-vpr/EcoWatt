@@ -737,7 +737,7 @@ Testar cada fronteira antes da seguinte: a fase de cálculo pode usar fixtures e
 - [ ] **Fase 2 — Coração 1/3: leitura e armazenamento de faturas**
 
   - [ ] Salvar dados da unidade e endereço da ligação antes de liberar faturas; oferecer cópia confirmada do endereço da empresa.
-  - [ ] Criar/revisar tabelas de faturas, itens, medições e proveniência antes da extração integrada, respeitando a ordem de FKs.
+  - [x] Criar/revisar tabelas de faturas, itens, medições e proveniência antes da extração integrada, respeitando a ordem de FKs.
   - [ ] Capturar demandas medidas por posto no quadro de medição Azul/Verde, separadas da contratação/faturamento; preservar mercado por ciclo e evidências de migração ACL, sem inferência por ausência em leitura incompleta.
   - [ ] Identificar distribuidora/layout no cabeçalho da etapa de anexação/leitura; tratar não suportados com bloqueio explícito e pedido de contato, sem fallback silencioso para ENEL.
   - [ ] Persistir cada extração em transação atômica, com retry idempotente e rollback sem órfãos.

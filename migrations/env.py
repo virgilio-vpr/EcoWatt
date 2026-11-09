@@ -3,6 +3,7 @@ from alembic import context
 from ecowatt.config import Settings
 from ecowatt.db.base import Base
 from ecowatt.db import models  # noqa: F401 — registrar metadata
+from ecowatt.db import invoices  # noqa: F401 — registrar metadata faturável
 from ecowatt.db.session import make_engine, prepare_directory
 
 config = context.config

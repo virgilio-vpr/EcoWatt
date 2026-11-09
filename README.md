@@ -20,6 +20,8 @@ Os documentos da Fase 0 estão no [dicionário de faturas](docs/contracts/invoic
 
 A continuação da Fase 0 inclui [conferência das planilhas](docs/corpus/workbook-review.md), [conferência inicial das faturas](docs/corpus/invoice-review.md) e [registro regulatório](docs/corpus/regulatory-review.md). Os relatórios preservam o histórico da análise; o aceite atual é limitado ao gabarito mínimo local. O [texto original de início da Fase 1](docs/phases/phase-01-start.md) é histórico; retome pelo STATUS atual.
 
+A primeira entrega da **Fase 2** acrescenta modelos e migração `0004_invoices` para faturas estruturadas, medições, itens, proveniência/estado, validações e evidências de mercado. São **95 testes aprovados** com navegador habilitado. Exclusão da simulação inclui os novos filhos atomicamente; parser/OCR, admissão, cálculo e interface completa seguem nas próximas entregas. Detalhes em [DATABASE](docs/DATABASE.md) e [STATUS](docs/STATUS.md). Execute o comando de migração abaixo antes de usar a nova readiness.
+
 ## Stack definida
 
 - Backend: Python, FastAPI, SQLAlchemy 2 e Alembic.
