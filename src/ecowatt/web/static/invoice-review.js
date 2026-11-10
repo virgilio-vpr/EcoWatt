@@ -1,12 +1,5 @@
 "use strict";
 (() => {
-  function scalar(value) {
-    if (value === "") return null;
-    if (value === "true") return true;
-    if (value === "false") return false;
-    return value;
-  }
-
   function basePayload(form) {
     return {
       expected_revision: Number(form.elements.expected_revision.value),
@@ -18,9 +11,11 @@
   function editValue(fieldset) {
     const raw = fieldset.querySelector("[data-field-value]").value;
     const kind = fieldset.dataset.kind;
-    let value = scalar(raw);
-    if (raw !== "" && kind === "integer") value = Number(raw);
-    if (raw !== "" && kind === "boolean") value = raw === "true";
+    const state = fieldset.querySelector("[data-field-state]").value;
+    let value = raw === "" ? null : raw;
+    if (["missing", "unreadable", "not_applicable"].includes(state)) value = null;
+    else if (raw !== "" && kind === "integer") value = Number(raw);
+    else if (raw !== "" && kind === "boolean") value = raw === "true";
     const inputs = fieldset.querySelector("[data-field-inputs]").value
       .split(",").map((item) => item.trim()).filter(Boolean);
     const text = (selector) => fieldset.querySelector(selector).value.trim() || null;
@@ -29,7 +24,7 @@
       expected_version: Number(fieldset.querySelector("[data-field-version]").value),
       field: {
         value,
-        state: fieldset.querySelector("[data-field-state]").value,
+        state,
         unit: text("[data-field-unit]"),
         origin: fieldset.querySelector("[data-field-origin]").value,
         coverage: fieldset.querySelector("[data-field-coverage]").value,
@@ -99,7 +94,7 @@
     const form = relationship.closest("form");
     const includeAll = ["distinct_periods", "complement"].includes(relationship.value);
     for (const checkbox of form.querySelectorAll("[data-included-invoice]")) {
-      if (includeAll) checkbox.checked = true;
+      checkbox.checked = includeAll;
       checkbox.disabled = includeAll;
     }
   });
