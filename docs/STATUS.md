@@ -1,6 +1,6 @@
 # Estado do EcoWatt
 
-Atualizado em 09/11/2026. Referência: SPEC versão 3.11; gabarito mínimo aceito v0.2, com extensão documental de escopo para as próximas fases.
+Atualizado em 10/11/2026. Referência: SPEC versão 3.11; gabarito mínimo aceito v0.2, com extensão documental de escopo para as próximas fases.
 
 ## Direção atual
 
@@ -63,9 +63,19 @@ Política financeira observed-financial-v2 preserva a v1 histórica e corrige ap
 - .env, docs/contracts/access.md e docs/corpus/regulatory-review.md preservados e fora do envio. Sem PDF, imagem, texto bruto, fatura/planilha real ou artefato do corpus processado/publicado. Edge verifica regressão de acesso web; não prova segurança PDF, correção financeira comercial ou produção.
 - Envio pela integração GitHub limitado aos 21 arquivos abaixo, sobre árvore remota preservada. SHA/CI finais informados na resposta após consulta remota; este status integra o próprio commit. Nenhum critério integral adicional da seção 15 foi marcado.
 
+## Entrega complementar: interface mínima de conferência e seleção
+
+Foi adicionado um slice inicial de apresentação em Jinja2/HTMX para a conferência das faturas da simulação, com lista, detalhe, pendências, verificações financeiras, limitações e histórico de confirmações. A página também expõe o grupo de conflitos/duplicatas para seleção explícita de inclusão no conjunto e usa as rotas JSON existentes sem acionar processamento real ou cálculo econômico. Isso mantém a separação entre API, serviços e camada visual, junto com a necessidade de revisar arquivos reais somente após a homologação de segurança e layout.
+
+## Entrega complementar — correção e conferência na interface
+
+Rotas HTML autenticadas em `/simulations/{id}/invoices` e `/simulations/{id}/invoices/{invoice_id}` apresentam a lista, campos pendentes, verificações financeiras, limitações e históricos de proveniência/confirmação/escolhas. O detalhe HTMX permite selecionar campos para correção com suas versões e metadados; confirmações exigem atestação explícita de cobertura e ciência das limitações; grupos oferecem seleção de documentos e relação. A interface chama os serviços somente pelas rotas JSON existentes, com CSRF/sessão do cliente HTTP, sem processamento automático. Conflitos e respostas antigas são mostrados ao usuário, sem retry automático.
+
+Verificações locais desta fatia: 77 testes de revisão, confirmação e interface aprovados (39,96 s); testes de navegador Edge existentes: 3 aprovados (8,74 s). Não foi criada migração; `0008_invoice_confirmation` permanece head. Sem nova CI remota ainda; após o commit, consultar a execução acionada no GitHub. Critérios integrais da seção 15 continuam abertos. Sem mudança nos limites de segurança: apenas fixtures sintéticas, sem upload ou leitura de documentos reais.
+
 ## Pendências e próximo passo
 
-Completar conferência/leitura na interface, com apresentação das limitações, grupos/escolhas, histórico e motivos de bloqueio; arquivos apenas selecionados devem ser lidos/removidos, sem processamento automático. Complementos que precisem de consolidação/segmentação financeira permanecem pendentes, sem soma automática. Validar suficiência por módulo no futuro motor da Fase 3, sempre consumindo revisão atual e somente os IDs incluídos pelo guard.
+Validar a experiência completa de correção/seleção no navegador e evoluir os fluxos de leitura/remoção quando estiverem autorizados; arquivos apenas selecionados devem ser lidos/removidos, sem processamento automático. Complementos que precisem de consolidação/segmentação financeira permanecem pendentes, sem soma automática. Validar suficiência por módulo no futuro motor da Fase 3, sempre consumindo revisão atual e somente os IDs incluídos pelo guard.
 
 PDFs/layouts documentais permanecem desabilitados, inclusive ENEL. Antes de recebimento real: verificar integralmente §5/§12 — confinamento sem rede/privilégios, CPU/RAM/pixels, descendentes órfãos, watchdog rígido, swap/dumps, diretório RAM quando necessário e ausência de spool no framework/proxy — e homologar adaptador específico. Spawn sintético não é sandbox homologado; catálogo tarifário não habilita parser ou fallback ENEL. Não antecipar motor econômico ou declarar Fase 2 concluída por esta fatia.
 
@@ -78,3 +88,5 @@ Novos: docs/INVOICE-CONFIRMATION.md; migrations/versions/0008_invoice_confirmati
 Alterados: EcoWatt_PROJECT_SPEC.md; README.md; docs/API.md; docs/DATABASE.md; docs/INVOICE-REVIEW.md; docs/INVOICE-STORAGE.md; docs/STATUS.md; docs/phases/phase-02-invoices.md; src/ecowatt/api/health.py; src/ecowatt/api/resources.py; src/ecowatt/db/invoices.py; src/ecowatt/schemas.py; src/ecowatt/services/invoice_validation.py; src/ecowatt/services/invoices.py; src/ecowatt/services/simulations.py; tests/test_invoice_review.py. Removidos: nenhum.
 
 Commit desta entrega na fase-2: feat: confirm synthetic invoices and resolve dataset selections. SHA/CI finais informados na resposta após envio. Nenhum merge. Arquivos auxiliares locais, .env, corpus, bancos, ambientes e caches ficam fora do envio.
+
+Fatia de interface enviada em commit direto na `fase-2`: alterados `docs/STATUS.md`, `src/ecowatt/web/routes.py`, `src/ecowatt/web/templates/simulation.html`; novos `src/ecowatt/web/templates/invoices.html`, `src/ecowatt/web/templates/invoice_detail.html`, `src/ecowatt/web/templates/invoice_detail_fragment.html`, `src/ecowatt/web/static/invoice-review.js`, `tests/test_invoice_web.py`. Nenhuma migração. `.env`, `.mcp.json`, `docs/contracts/access.md` e `docs/corpus/regulatory-review.md` ficam fora do commit. A Fase 2 continua aberta; não fazer merge com `main`.

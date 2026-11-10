@@ -1,0 +1,7 @@
+{% extends 'layouts/base.html' %}
+{% block scripts %}<script src="/static/api-client.js" defer></script><script src="/static/invoice-review.js" defer></script>{% endblock %}
+{% block content %}
+<h1>Conferência da fatura</h1>
+<nav><a href="/simulations/{{ simulation.id }}/invoices">Voltar para as faturas</a> · <a href="/simulations/{{ simulation.id }}">Simulação</a></nav>
+{% include 'invoice_detail_fragment.html' %}
+{% endblock %}

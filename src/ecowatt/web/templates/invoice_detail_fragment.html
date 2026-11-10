@@ -1,0 +1,212 @@
+<article>
+  <h2>Detalhe da fatura</h2>
+  <p><strong>Status:</strong> {{ detail.status }} · <strong>Revisão:</strong> {{ detail.revision }} · <strong>Dataset:</strong> {{ detail.dataset_revision }}</p>
+  <dl>
+    <div><dt>UC</dt><dd>{{ detail.header.consumer_unit_id or 'Indefinida' }}</dd></div>
+    <div><dt>Titular</dt><dd>{{ detail.header.holder_name or 'Indefinido' }}</dd></div>
+    <div><dt>Competência</dt><dd>{{ detail.header.competence or 'Indefinida' }}</dd></div>
+    <div><dt>Ciclo</dt><dd>{{ detail.header.cycle_start or '—' }} a {{ detail.header.cycle_end or '—' }}</dd></div>
+    <div><dt>Endereço</dt><dd>{{ detail.header.printed_address_line or '—' }}, {{ detail.header.printed_city or '—' }} - {{ detail.header.printed_state or '—' }}</dd></div>
+    <div><dt>Total do quadro</dt><dd>{{ detail.header.invoice_total or '—' }}</dd></div>
+  </dl>
+
+  {% if entry %}
+    <section>
+      <h3>Campos pendentes</h3>
+      {% if entry.pending_fields %}
+        <ul>{% for field in entry.pending_fields %}<li>{{ field }}</li>{% endfor %}</ul>
+      {% else %}
+        <p>Nenhum campo crítico pendente.</p>
+      {% endif %}
+    </section>
+
+    <section>
+      <h3>Verificações financeiras</h3>
+      {% if entry.checks %}
+        <ul>
+          {% for check in entry.checks %}
+            <li><strong>{{ check.code }}</strong> · {{ check.result }} · {{ check.field_path }}
+              {% if check.observed is not none %}observado {{ check.observed }}{% endif %}
+              {% if check.expected is not none %} · esperado {{ check.expected }}{% endif %}
+              {% if check.difference is not none %} · diferença {{ check.difference }}{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>Sem verificações financeiras registradas.</p>
+      {% endif %}
+    </section>
+
+    <section>
+      <h3>Limitações atuais</h3>
+      {% if entry.limitations %}
+        <ul>{% for limitation in entry.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
+      {% else %}
+        <p>Sem limitações ativas.</p>
+      {% endif %}
+    </section>
+
+    <details>
+      <summary>Corrigir campos</summary>
+      <form data-json-api-form data-api-kind="review"
+            data-endpoint="/api/v1/simulations/{{ simulation.id }}/invoices/{{ detail.id }}/reviews" method="post">
+        <input type="hidden" name="expected_revision" value="{{ simulation.revision }}">
+        <input type="hidden" name="expected_dataset_revision" value="{{ readiness.dataset_revision }}">
+        <input type="hidden" name="expected_invoice_revision" value="{{ detail.revision }}">
+        <label>Justificativa da correção
+          <input name="reason_code" pattern="[a-zA-Z0-9_.:-]{1,60}" maxlength="60" required>
+        </label>
+        {% for field in editable_fields %}
+          <fieldset data-kind="{{ field.kind }}">
+            <legend>{{ field.path }} · versão {{ field.version }}</legend>
+            <label><input type="checkbox" data-field-edit> Corrigir este campo</label>
+            <input type="hidden" data-field-path value="{{ field.path }}">
+            <input type="hidden" data-field-version value="{{ field.version }}">
+            <label>Valor
+              {% if field.kind == 'boolean' %}
+                <select data-field-value>
+                  <option value="">Não informado</option>
+                  <option value="true" {% if field.value is sameas true %}selected{% endif %}>Sim</option>
+                  <option value="false" {% if field.value is sameas false %}selected{% endif %}>Não</option>
+                </select>
+              {% else %}
+                <input data-field-value value="{{ field.value if field.value is not none else '' }}"
+                       {% if field.kind == 'decimal' or field.kind == 'factor' %}inputmode="decimal"{% endif %}>
+              {% endif %}
+            </label>
+            <label>Estado
+              <select data-field-state>
+                {% for state in ['confirmed', 'zero_confirmed', 'missing', 'unreadable', 'not_applicable', 'estimated'] %}
+                  <option value="{{ state }}" {% if field.state == state %}selected{% endif %}>{{ state }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>Unidade <input data-field-unit value="{{ field.unit or '' }}"></label>
+            <label>Origem
+              <select data-field-origin>
+                <option value="user" {% if field.origin == 'user' %}selected{% endif %}>user</option>
+                <option value="derived" {% if field.origin == 'derived' %}selected{% endif %}>derived</option>
+              </select>
+            </label>
+            <label>Cobertura
+              <select data-field-coverage>
+                {% for coverage in ['complete', 'partial', 'unknown'] %}
+                  <option value="{{ coverage }}" {% if field.coverage == coverage %}selected{% endif %}>{{ coverage }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>Motivo do campo <input data-field-reason value="{{ field.reason_code or '' }}"></label>
+            <label>Hipótese <input data-field-hypothesis value="{{ field.hypothesis_code or '' }}"></label>
+            <label>Versão da regra <input data-field-rule value="{{ field.rule_version or '' }}"></label>
+            <label>IDs das entradas (separados por vírgula)
+              <input data-field-inputs value="{{ field.inputs|join(',') }}">
+            </label>
+          </fieldset>
+        {% endfor %}
+        <button type="submit">Salvar correções selecionadas</button>
+        <span data-status aria-live="polite"></span>
+      </form>
+    </details>
+
+    <section>
+      <h3>Confirmação explícita</h3>
+      <form data-json-api-form data-api-kind="confirmation"
+            data-endpoint="/api/v1/simulations/{{ simulation.id }}/invoices/{{ detail.id }}/confirmations" method="post">
+        <input type="hidden" name="expected_revision" value="{{ simulation.revision }}">
+        <input type="hidden" name="expected_dataset_revision" value="{{ readiness.dataset_revision }}">
+        <input type="hidden" name="expected_invoice_revision" value="{{ detail.revision }}">
+        <label>Justificativa
+          <input name="reason_code" value="synthetic_review_complete" pattern="[a-zA-Z0-9_.:-]{1,60}" maxlength="60" required>
+        </label>
+        <label><input type="checkbox" name="billing_coverage_confirmed" value="true" required>
+          Conferi todas as linhas do quadro de faturamento, inclusive parcelas apenas monetárias.
+        </label>
+        {% if entry.limitations %}
+          <fieldset><legend>Reconheço as limitações atuais</legend>
+            {% for limitation in entry.limitations %}
+              <label><input type="checkbox" data-accepted-limitation value="{{ limitation }}" required>
+                {{ limitation }}
+              </label>
+            {% endfor %}
+          </fieldset>
+        {% endif %}
+        <button type="submit">Confirmar fatura</button>
+        <span data-status aria-live="polite"></span>
+      </form>
+    </section>
+  {% endif %}
+
+  {% if duplicate_group %}
+    <section>
+      <h3>Possíveis duplicatas ou refaturamentos</h3>
+      <p>Evidência: {{ duplicate_group.evidence|join(', ') if duplicate_group.evidence else 'Relação previamente selecionada.' }}</p>
+      <form data-json-api-form data-api-kind="selection"
+            data-endpoint="/api/v1/simulations/{{ simulation.id }}/invoice-selections" method="post">
+        <input type="hidden" name="expected_revision" value="{{ simulation.revision }}">
+        <input type="hidden" name="expected_dataset_revision" value="{{ readiness.dataset_revision }}">
+        <input type="hidden" data-member-versions value='{{ duplicate_group.member_versions|tojson }}'>
+        <label>Relação
+          <select name="relationship" data-selection-relationship>
+            {% for relationship in ['duplicate', 'replacement', 'distinct_periods', 'complement'] %}
+              <option value="{{ relationship }}" {% if duplicate_group.relationship == relationship %}selected{% endif %}>{{ relationship }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Justificativa
+          <input name="reason_code" value="synthetic_choice" pattern="[a-zA-Z0-9_.:-]{1,60}" maxlength="60" required>
+        </label>
+        <fieldset><legend>Documentos incluídos</legend>
+          {% for invoice_id, version in duplicate_group.member_versions.items() %}
+            {% set invoice = group_invoices.get(invoice_id, {}) %}
+            <label>
+              <input type="checkbox" data-included-invoice value="{{ invoice_id }}"
+                     {% if invoice_id in duplicate_group.included_ids %}checked{% endif %}>
+              {{ invoice.get('competence') or 'Competência indefinida' }} · {{ invoice.get('cycle_start') or '—' }} a {{ invoice.get('cycle_end') or '—' }} · rev {{ version }}
+            </label>
+          {% endfor %}
+        </fieldset>
+        <button type="submit">Salvar escolha do conjunto</button>
+        <span data-status aria-live="polite"></span>
+      </form>
+    </section>
+  {% endif %}
+
+  <section>
+    <h3>Histórico de confirmações</h3>
+    {% if detail.confirmations %}
+      <ul>
+        {% for confirmation in detail.confirmations %}
+          <li>Rev {{ confirmation.invoice_revision }} · Dataset {{ confirmation.dataset_revision }} · {{ confirmation.reason_code }} · autor {{ confirmation.actor_id }} · limitações: {{ confirmation.accepted_limitations|join(', ') if confirmation.accepted_limitations else 'nenhuma' }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Nenhuma confirmação registrada.</p>
+    {% endif %}
+  </section>
+
+  <details>
+    <summary>Histórico de campos e proveniência</summary>
+    {% if detail.provenance %}
+      <ul>
+        {% for record in detail.provenance %}
+          <li>{{ record.field_path }} · v{{ record.version }} · {{ record.value if record.value is not none else 'sem valor' }} · {{ record.state }} · {{ record.reason_code or 'sem justificativa' }} · autor {{ record.actor_id or 'sistema' }} · {{ record.recorded_at }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Nenhum histórico de proveniência.</p>
+    {% endif %}
+  </details>
+
+  <section>
+    <h3>Histórico de escolhas do conjunto</h3>
+    {% if selection_history['items'] %}
+      <ul>
+        {% for selection in selection_history['items'] %}
+          <li>{{ selection.relationship }} · {{ selection.reason_code }} · autor {{ selection.actor_id }} · dataset {{ selection.dataset_revision }} · incluídas: {{ selection.included_ids|join(', ') }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Nenhuma escolha registrada.</p>
+    {% endif %}
+  </section>
+</article>

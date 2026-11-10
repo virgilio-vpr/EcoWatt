@@ -1,0 +1,27 @@
+{% extends 'layouts/base.html' %}
+{% block scripts %}<script src="/static/api-client.js" defer></script><script src="/static/invoice-review.js" defer></script>{% endblock %}
+{% block content %}
+<h1>Faturas da simulação</h1>
+<p>Unidade: {{ simulation.unit_identifier or 'A informar' }} · Revisão {{ simulation.revision }} · Dataset {{ readiness.dataset_revision }}</p>
+{% if readiness.ready_for_calculation %}
+<p>Conjunto pronto para cálculo. Nenhuma razão de bloqueio foi registrada.</p>
+{% else %}
+<p>Conjunto pendente: {{ readiness.reasons|join(', ') if readiness.reasons else 'Sem bloqueios imediatos.' }}</p>
+{% endif %}
+<nav><a href="/simulations/{{ simulation.id }}">Voltar para a simulação</a></nav>
+<section>
+  <h2>Lista de faturas</h2>
+  <ul>
+    {% for item in listing['items'] %}
+      <li><a href="/simulations/{{ simulation.id }}/invoices/{{ item.id }}"
+          hx-get="/simulations/{{ simulation.id }}/invoices/{{ item.id }}/fragment"
+          hx-target="#invoice-detail" hx-swap="innerHTML">
+          {{ item.competence or 'Competência indefinida' }} · {{ item.status }} · rev {{ item.revision }}
+      </a></li>
+    {% endfor %}
+  </ul>
+</section>
+<section id="invoice-detail" aria-live="polite">
+  <p>Selecione uma fatura para conferir pendências, limitações e histórico.</p>
+</section>
+{% endblock %}

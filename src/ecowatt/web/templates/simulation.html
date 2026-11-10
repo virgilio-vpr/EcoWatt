@@ -3,4 +3,5 @@
 <p>Unidade: {{ simulation.unit_identifier or 'A informar' }}</p>
 <p>{{ simulation.address_line or 'Informe o endereço do ponto de conexão' }}</p>
 <p>{{ simulation.status }} · Revisão {{ simulation.revision }}</p>
+<nav><a href="/simulations/{{ simulation.id }}/invoices">Conferir faturas</a></nav>
 {% endblock %}
