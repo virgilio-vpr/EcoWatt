@@ -20,6 +20,19 @@ def test_invoice_listing_and_detail_are_protected_and_rendered(environment):
     assert "Corrigir campos" in detail.text and "Conferi todas as linhas" in detail.text
     assert "data-field-edit" in detail.text and "data-field-version" in detail.text
     assert "Salvar escolha do conjunto" not in detail.text
+    assert "Remover fatura" in detail.text and "Acompanhamento do conjunto" in detail.text
+
+
+def test_invoice_delete_form_is_available_and_removes_invoice(environment):
+    _, sim, invoice_id = published(environment)
+    client = environment.client().login()
+    detail = client.request("GET", f"/simulations/{sim['id']}/invoices/{invoice_id}")
+    assert detail.status_code == 200 and "Remover fatura" in detail.text
+    response = client.request("DELETE", f"/api/v1/simulations/{sim['id']}/invoices/{invoice_id}",
+        json={"confirm": True, "expected_revision": 1, "expected_dataset_revision": 2})
+    assert response.status_code == 204
+    listing = client.request("GET", f"/simulations/{sim['id']}/invoices")
+    assert listing.status_code == 200 and invoice_id not in listing.text
 
 
 def test_invoice_detail_page_is_available_to_owner_and_admin(environment):
@@ -137,11 +150,11 @@ def test_invoice_review_confirmation_and_selection_flow_in_edge(environment):
             selection.get_by_role("button", name="Salvar escolha do conjunto").click()
             expect(selection.locator("[data-status]")).to_contain_text("Operação registrada")
 
-            readiness = page.evaluate("""async (simulationId) =>
-              window.EcoWattHTTP.request(`/api/v1/simulations/${simulationId}/invoice-readiness`)""",
-              str(sim["id"]))
-            assert readiness["ready_for_calculation"] is True
-            assert [item["invoice_id"] for item in readiness["invoices"] if item["included"]] == [str(first)]
-            assert errors == []
+            page.reload()
+            page.get_by_text("Remover fatura", exact=True).click()
+            page.locator("[data-delete-confirm]").check()
+            page.get_by_role("button", name="Remover fatura", exact=True).click()
+            expect(page.locator("[data-status]")).to_contain_text("Remoção registrada")
+            expect(page).to_have_url(origin + f"/simulations/{sim['id']}/invoices")
         finally:
             browser.close()

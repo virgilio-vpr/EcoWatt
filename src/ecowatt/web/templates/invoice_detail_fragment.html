@@ -172,6 +172,31 @@
   {% endif %}
 
   <section>
+    <h3>Acompanhamento do conjunto</h3>
+    <p><strong>Pronto para cálculo:</strong> {{ 'sim' if readiness.ready_for_calculation else 'não' }}</p>
+    {% if readiness.reasons %}
+      <ul>{% for reason in readiness.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+    {% else %}
+      <p>Sem bloqueios registrados no estado atual.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h3>Remover fatura</h3>
+    <form data-json-api-form data-api-kind="delete"
+          data-endpoint="/api/v1/simulations/{{ simulation.id }}/invoices/{{ detail.id }}"
+          data-success-url="/simulations/{{ simulation.id }}/invoices" method="post">
+      <input type="hidden" name="expected_revision" value="{{ simulation.revision }}">
+      <input type="hidden" name="expected_dataset_revision" value="{{ readiness.dataset_revision }}">
+      <label><input type="checkbox" data-delete-confirm required>
+        Confirmo a remoção desta fatura e do seu histórico associado.
+      </label>
+      <button type="submit">Remover fatura</button>
+      <span data-status aria-live="polite"></span>
+    </form>
+  </section>
+
+  <section>
     <h3>Histórico de confirmações</h3>
     {% if detail.confirmations %}
       <ul>
