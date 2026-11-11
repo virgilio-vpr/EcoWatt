@@ -28,8 +28,11 @@ Em `/simulations/{id}/invoices`, o cabeçalho permite consultar suporte à vers�
 
 A preparação de segurança documental está em
 [docs/DOCUMENT-SECURITY.md](docs/DOCUMENT-SECURITY.md): orçamento de pixels/bytes
-testado com buffers sintéticos, ainda sem renderer ou sandbox homologado. WSL
-está fora da solução por decisão do usuário. Upload/leitura real seguem bloqueados.
+testado com buffers sintéticos e backend experimental Windows AppContainer/Job,
+sem integração documental ou homologação. WSL e containers estão fora deste
+ambiente; nenhuma instalação. Upload/leitura real seguem bloqueados. Probes de
+SO: `.\tests\run_windows_isolation.ps1`, na raiz em Windows autorizado; usa
+cópias locais do Python já instalado e remove o perfil sintético ao final.
 
 - Backend: Python, FastAPI, SQLAlchemy 2 e Alembic.
 - Banco atual: SQLite local, com WAL e chaves estrangeiras habilitadas.

@@ -2,43 +2,50 @@
 
 Atualizado em 11/11/2026. Referência: SPEC versão 3.11; gabarito mínimo aceito v0.2.
 
-## Entrega corrente — orçamento de rasterização e barreiras documentais
+## Entrega corrente — backend experimental de isolamento Windows
 
-Base `fase-2` conferida por conteúdo em `b55512e0e122751c15d84234baccfcad8c993946`.
-A [CI anterior 43044933052](https://github.com/virgilio-vpr/EcoWatt/actions/runs/43044933052)
-está concluída com sucesso. `main` permanece `75d32b01671188c263e9b054587546d190cbe40b`.
-Sem Git local, branch nova ou merge. As únicas diferenças locais anteriores
-contra os blobs remotos, normalizando CRLF, eram `docs/contracts/access.md`
-e `docs/corpus/regulatory-review.md`; ambas preservadas fora do envio, assim como `.env`.
+Base `fase-2` conferida em `8bc11324ed87803a49570efab11b684403f2909f`.
+Os seis arquivos existentes desta entrega coincidiam com os blobs remotos,
+normalizando CRLF. Integração GitHub acessível, sem nova autenticação; envio
+limitado aos arquivos abaixo, preservando árvore remota e alterações locais
+anteriores, inclusive contratos/corpus e `.env`. Sem Git local, branch nova
+ou merge; `main` não é alvo desta entrega.
 
-Implementado `RasterBudget`: reserva antes de alocação, limites inclusivos de
-lado/pixels/bytes/operações, acumulação por página/documento incluindo regiões,
-retries e falhas, contagem de stride/padding e confronto do buffer retornado
-sem cópia. O contrato não está integrado a renderer e não limita RAM física.
-[DOCUMENT-SECURITY](DOCUMENT-SECURITY.md) descreve uso, tetos conservadores ainda
-sem benchmark e evidências faltantes por garantia de §5/§12.
+Implementado `windows_isolation.py`: AppContainer sem capacidades, criação
+suspensa, conferência do token efetivo antes de executar, ambiente mínimo e
+handles não herdados. Job Object atribuído atomicamente na criação limita memória comprometida/CPU/processos,
+nega breakaway e encerra árvore ao perder o pai. Watchdog de thread independe
+do polling, mas falta supervisor externo para host suspenso/GIL travado.
+O backend não está conectado ao coordenador e não recebe bytes documentais.
+RasterBudget anterior permanece preservado e sem renderer integrado.
 
-Windows/Python/ambiente virtual conferidos somente por leitura; faltam as
-bibliotecas PDF/OCR previstas e um backend de isolamento integrado/verificado.
-**WSL está fora da solução por decisão explícita do usuário.** Nenhuma instalação,
-container ou mudança de política organizacional. Falta de administrador não é
-prova de impossibilidade de confinamento no Windows; não há homologação atual.
+Verificação autorizada no Windows 11/Python 3.13.14: **26 testes nativos
+aprovados em 50,48 s**, após atribuição atômica do Job. Rede local TCP/UDP IPv4/IPv6 com controles positivos e
+receptores sem entrega; token sem capacidades/elevação, canário/memória do pai
+negados, CPU/memória, prazo, quota/breakaway, falha de configuração sem resume
+e morte abrupta do pai com handles da árvore. Não foram testados Internet,
+DNS, LAN externa ou IPC/COM/brokers. **Suíte geral: 356 aprovados e 15 omitidos
+em 122,05 s**: quatro omissões anteriores e onze probes Win32 habilitados
+separadamente pelo runner. Compilação de src/tests aprovada. Sem alteração de
+esquema, dependências, rotas ou interface; migrações/Edge não repetidos nesta
+fatia. CI recebe etapa própria de probes; resultado remoto será consultado
+após envio, sem antecipar aprovação.
 
-Verificações: 65 testes novos de limites passaram com números/buffers sintéticos.
-Suíte geral: **341 aprovados e 4 omitidos**, em 195,34 s, incluindo os 65 novos.
-Head/current `0008_invoice_confirmation`; `alembic check` sem divergências.
-Compilação de src/migrations/tests aprovada; 41 pacotes compatíveis e lock offline
-conferidos. Sem migração ou dependência nova. A primeira tentativa da suíte no
-sandbox falhou por acesso aos temporários do pytest; a verificação válida usa
-execução autorizada pela revisão automática fora do sandbox. Cache uv também
-conferido fora do sandbox, sem instalação. Não houve mudança de interface;
-Edge não foi repetido localmente nesta fatia. A CI do novo commit deve ser
-consultada após envio e seu resultado informado na resposta, sem antecipar sucesso.
+Python Store introduziu capacidade implícita de pacote nos primeiros probes;
+backend agora a rejeita antes de executar. Runner usa perfil criado diretamente
+no PowerShell nativo e cópias locais do Python/bibliotecas já instalados, sem
+downloads/instalação ou alteração das ACLs originais/ExecutionPolicy/firewall.
+Tentativas iniciais falharam antes da execução final aprovada; perfis sintéticos
+remanescentes foram removidos pela API e ausência conferida. Artefatos locais
+sintéticos ficam ignorados em `.local-analysis/`, fora do envio.
+**WSL e containers estão fora deste ambiente por decisão/restrição do usuário.**
 
-Somente fixtures sintéticas; nenhum PDF, imagem, planilha real, corpus ou texto
-bruto acessado/processado/publicado. Upload/leitura real permanecem desabilitados,
-inclusive ENEL. Nenhum item integral adicional de §15 foi marcado. Fase 2 aberta;
-sem motor ou endpoint econômico e sem antecipar Fase 3.
+Upload/leitura real continuam bloqueados, inclusive ENEL. Nenhum documento,
+corpus, imagem ou texto bruto real foi acessado/processado/publicado. Falta
+integração ao coordenador, revisão ampliada de superfícies, supervisor externo,
+swap/dumps, temporários RAM, ingresso sem spool e adaptador homologado.
+Alcance em [DOCUMENT-SECURITY](DOCUMENT-SECURITY.md). Nenhum item integral de
+§15 foi marcado. Fase 2 permanece aberta, sem antecipar Fase 3.
 
 ## Direção atual
 
@@ -102,12 +109,12 @@ e escolhas pertinentes; retry histórico não restaura prontidão antiga.
 
 ## Pendências e próximo passo
 
-Priorizar confinamento documental verificável em ambiente autorizado, sem WSL:
-rede/privilégios, CPU/RAM/tempo, árvore de processos após morte do pai, watchdog,
-swap/dumps, temporários RAM e ingresso sem spool no framework/proxy. Primeiro
-usar programas/documentos sintéticos, depois integrar renderer ao orçamento e
-contrato versionado de proveniência documental, com homologação específica do
-layout. O orçamento isolado não libera essa integração para documentos reais.
+Completar supervisor externo, revisão ampliada de superfícies, swap/dumps,
+temporários RAM e ingresso sem spool; integrar backend Windows/IPC limitado
+ao coordenador. WSL/containers não fazem parte deste ambiente. Depois das
+garantias integrais de §5/§12, integrar renderer ao orçamento e proveniência
+documental versionada, com homologação específica do layout. As provas
+sintéticas desta entrega não liberam upload/leitura real.
 
 Depois das garantias, completar adaptador textual/OCR seletivo e validações
 críticas, cadastro visual da unidade, seleção local, ação “Ler fatura”, envio
@@ -118,11 +125,12 @@ interface enquanto processamento e segurança estiverem pendentes.
 
 ## Arquivos desta entrega
 
-Novos: `src/ecowatt/document_limits.py`, `tests/test_document_limits.py`,
-`docs/DOCUMENT-SECURITY.md`.
-Alterados: `README.md`, `docs/ADMISSION.md`, `docs/COORDINATOR.md`,
-`docs/STATUS.md`, `docs/phases/phase-02-invoices.md`.
-Removidos: nenhum. Envio restrito a esses oito arquivos, sobre a árvore remota
+Novos: `src/ecowatt/windows_isolation.py`, `tests/test_windows_isolation.py`,
+`tests/windows_profile.ps1`, `tests/run_windows_isolation.ps1`.
+Alterados: `.github/workflows/backend.yml`, `README.md`,
+`docs/DOCUMENT-SECURITY.md`, `docs/COORDINATOR.md`, `docs/STATUS.md`,
+`docs/phases/phase-02-invoices.md`.
+Removidos: nenhum. Envio restrito a esses dez arquivos, sobre a árvore remota
 preservada e com proteção de head esperado. `.env`, contratos/corpus locais,
 bancos, caches, temporários e scripts auxiliares ficam fora. SHA e CI finais
 serão informados após consulta remota; nenhum merge.

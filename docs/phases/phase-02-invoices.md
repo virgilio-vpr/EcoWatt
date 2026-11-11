@@ -32,13 +32,14 @@ Sétima entrega: interface HTML/HTMX de lista, detalhe, correção, confirmaçã
 
 Entrega de 11/11/2026: cabeçalho autenticado de consulta de suporte ao layout, compartilhado com a API de [ADMISSION](../ADMISSION.md), com fragmento HTMX e fallback GET sem JavaScript. Não recebe arquivos nem inicia processamento; suporte sintético não libera documento real. Pedido/canal de contato permanece pendente e é indicado como indisponível.
 
-Prioridade atual: segurança documental e preparação do adaptador, conforme
-[DOCUMENT-SECURITY](../DOCUMENT-SECURITY.md). Orçamento prévio de pixels/bytes
-por página/documento e confronto de buffers já têm testes sintéticos; não estão
-integrados a renderer nem constituem sandbox. WSL está fora da solução por
-decisão do usuário. Próximo passo: implementar/verificar confinamento em ambiente
-autorizado, sem instalar dependências ou iniciar containers nesta entrega, antes
-de integrar renderer e proveniência documental. Upload/leitura real dependem
-das garantias integrais de §5/§12, ingresso sem spool e adaptador homologado.
-Não priorizar novas melhorias pequenas de interface nem antecipar Fase 3.
-Critérios completos da seção 15 continuam abertos na SPEC.
+Prioridade atual: segurança documental, conforme
+[DOCUMENT-SECURITY](../DOCUMENT-SECURITY.md). Orçamento prévio de raster e
+backend experimental Win32 (AppContainer/Job, token efetivo, limites e morte
+da árvore) têm provas sintéticas; nenhum está integrado ao renderer/coordenador.
+A solução local usa Windows nativo: WSL e containers estão fora deste ambiente
+por restrição informada pelo usuário, sem instalações. Próximo passo: completar
+supervisor externo, swap/dumps, temporários RAM e revisão ampliada de superfícies;
+integrar backend/IPC limitado antes do adaptador documental. Upload/leitura real
+continuam bloqueados até garantias integrais de §5/§12, ingresso sem spool e
+adaptador homologado. Não antecipar Fase 3. Fase 2 e critérios integrais de §15
+permanecem abertos.

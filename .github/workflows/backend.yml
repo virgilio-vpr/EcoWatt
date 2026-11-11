@@ -30,6 +30,9 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           .\.venv\Scripts\python.exe -m compileall -q src migrations
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Isolamento Windows com programas sintéticos
+        shell: pwsh
+        run: .\tests\run_windows_isolation.ps1
       - name: Ciclo de acesso no Edge instalado
         shell: pwsh
         env:
