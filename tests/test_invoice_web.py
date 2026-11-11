@@ -150,11 +150,19 @@ def test_invoice_review_confirmation_and_selection_flow_in_edge(environment):
             selection.get_by_role("button", name="Salvar escolha do conjunto").click()
             expect(selection.locator("[data-status]")).to_contain_text("Operação registrada")
 
+            readiness = page.evaluate("""async (simulationId) =>
+              window.EcoWattHTTP.request(`/api/v1/simulations/${simulationId}/invoice-readiness`)""",
+              str(sim["id"]))
+            assert readiness["ready_for_calculation"] is True
+            assert [item["invoice_id"] for item in readiness["invoices"] if item["included"]] == [str(first)]
+
             page.reload()
-            page.get_by_text("Remover fatura", exact=True).click()
-            page.locator("[data-delete-confirm]").check()
-            page.get_by_role("button", name="Remover fatura", exact=True).click()
-            expect(page.locator("[data-status]")).to_contain_text("Remoção registrada")
+            removal = page.locator('form[data-api-kind="delete"]')
+            removal.locator("[data-delete-confirm]").check()
+            removal.get_by_role("button", name="Remover fatura", exact=True).click()
+            expect(removal.locator("[data-status]")).to_contain_text("Remoção registrada")
             expect(page).to_have_url(origin + f"/simulations/{sim['id']}/invoices")
+            assert page.locator(f'a[href="/simulations/{sim["id"]}/invoices/{first}"]').count() == 0
+            assert errors == []
         finally:
             browser.close()
