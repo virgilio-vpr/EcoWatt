@@ -2,7 +2,35 @@
 
 Atualizado em 11/11/2026. Referência: SPEC versão 3.11; gabarito mínimo aceito v0.2.
 
-## Entrega corrente — backend experimental de isolamento Windows
+## Entrega corrente — organização dos temporários de testes
+
+Removidos 31 diretórios locais de resíduos `.pytest-tmp-*`, `.pytest-support-*`,
+`pytest-cache-files-*`, `.local-isolation-tests` e `.pytest_cache` na raiz:
+570.164.307 bytes. Antes da exclusão, conferidos processos Python/pytest
+(nenhum ativo), caminhos absolutos dentro do projeto e ausência de links/junções.
+Materiais de `.local-analysis/`, `.local-tools/`, dados e documentos preservados.
+
+`pyproject.toml` agora define `.local-analysis/pytest/default/` para temporários
+e `.local-analysis/pytest/cache/` para cache. `tests/conftest.py` cria o diretório
+pai automaticamente, necessário para a primeira execução/clone limpo. O runner
+Win32 usa `.local-analysis/pytest/isolation/`. Execuções simultâneas precisam de
+nomes distintos via `--basetemp`; o pytest recria a pasta escolhida a cada uso.
+`.gitignore` também protege os nomes legados contra envio acidental.
+
+Verificação: cinco testes de banco aprovados (1,22 s), com a pasta central
+inicialmente ausente; teste de migrações aprovado novamente com override do
+runner (0,34 s). Compilação de conftest aprovada; nenhum resíduo desses padrões
+restou na raiz. Primeira tentativa revelou pai ausente; corrigido antes das
+execuções aprovadas. Sem instalação, alteração de aplicação/SPEC ou repetição
+da suíte completa/probes de SO. Upload/leitura real bloqueados; Fase 2 aberta.
+
+Alterados: `.gitignore`, `pyproject.toml`, `tests/conftest.py`,
+`tests/run_windows_isolation.ps1`, `README.md`, `docs/STATUS.md`.
+Nenhum arquivo versionado novo ou removido. Base remota conferida:
+`62eebd326b6eac90d88e74a0aca0af0e4ab8f7af`; diferenças nos seis arquivos
+limitadas a esta entrega. Envio na `fase-2`, sem merge ou artefatos locais.
+
+## Entrega anterior — backend experimental de isolamento Windows
 
 Base `fase-2` conferida em `8bc11324ed87803a49570efab11b684403f2909f`.
 Implementação publicada em [`00b2daa1aebcbbf5f80be90a246b591a2b2fe187`](https://github.com/virgilio-vpr/EcoWatt/commit/00b2daa1aebcbbf5f80be90a246b591a2b2fe187),
@@ -125,7 +153,7 @@ documentos sintéticos textuais/digitalizados/híbridos/protegidos/inválidos e 
 misto, com descarte verificado. Não continuar apenas com melhorias pequenas de
 interface enquanto processamento e segurança estiverem pendentes.
 
-## Arquivos desta entrega
+## Arquivos da entrega anterior de isolamento
 
 Novos: `src/ecowatt/windows_isolation.py`, `tests/test_windows_isolation.py`,
 `tests/windows_profile.ps1`, `tests/run_windows_isolation.ps1`.

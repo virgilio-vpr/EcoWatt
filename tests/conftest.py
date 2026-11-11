@@ -14,6 +14,14 @@ from ecowatt.services.mail import MemoryMailer
 PASSWORD = "EcoWatt!123"
 
 
+def pytest_configure(config):
+    # O pytest exige que o pai de --basetemp exista, inclusive no clone limpo.
+    temporary_root = config.rootpath / ".local-analysis" / "pytest"
+    temporary_root.mkdir(parents=True, exist_ok=True)
+    if config.option.basetemp == ".local-analysis/pytest/default":
+        config.option.basetemp = str(temporary_root / "default")
+
+
 class Client:
     def __init__(self, app):
         self.app = app

@@ -35,7 +35,7 @@ try {
         $controller, (Join-Path $workspace '.venv/Lib/site-packages'),
         (Join-Path $workspace 'src'), $workspace)
     [IO.File]::WriteAllLines((Join-Path $controller 'python313._pth'), $runtimePaths, [Text.UTF8Encoding]::new($false))
-    & (Join-Path $controller 'python.exe') -m pytest tests/test_windows_isolation.py -q -p no:cacheprovider --basetemp=.local-analysis/isolation-verification -k $TestFilter
+    & (Join-Path $controller 'python.exe') -m pytest tests/test_windows_isolation.py -q -p no:cacheprovider --basetemp=.local-analysis/pytest/isolation -k $TestFilter
     $testExit = $LASTEXITCODE
 } finally {
     $env:ECOWATT_SYNTHETIC_PROFILE_SID = $previousSid

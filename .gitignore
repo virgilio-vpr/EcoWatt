@@ -18,6 +18,11 @@ __pycache__/
 *.sqlite3-wal
 *.sqlite3-shm
 .pytest_cache/
+# Defesa contra comandos antigos que geravam temporários na raiz
+/.pytest-tmp-*/
+/.pytest-support-*/
+/pytest-cache-files-*/
+/.local-isolation-tests/
 .uv-cache/
 dist/
 *.egg-info/

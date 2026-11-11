@@ -115,6 +115,22 @@ Antes da migração:
 
 Mudar `DATABASE_URL` não transfere dados entre bancos. Modelo e comandos locais estão em [docs/DATABASE.md](docs/DATABASE.md); transporte de dados e implantação/restauração continuam pendentes para produção.
 
+## Testes e arquivos temporários
+
+Execute os testes a partir da raiz, por exemplo:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/test_database.py -q
+```
+
+A configuração centraliza temporários em `.local-analysis/pytest/default/`
+e cache em `.local-analysis/pytest/cache/`, fora do Git. A pasta de temporários
+é recriada pelo pytest a cada execução; não guarde materiais nela. O runner
+Windows usa `.local-analysis/pytest/isolation/`. Para execuções simultâneas,
+use nomes diferentes, como `--basetemp=.local-analysis/pytest/run-02`,
+sem reutilizar a pasta de outra execução ativa. Não crie novas pastas
+`.pytest-tmp-*` ou `.pytest-support-*` na raiz.
+
 ## Documentação a manter
 
 | Arquivo | Conteúdo |
