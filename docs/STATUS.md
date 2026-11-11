@@ -5,6 +5,9 @@ Atualizado em 11/11/2026. Referência: SPEC versão 3.11; gabarito mínimo aceit
 ## Entrega corrente — backend experimental de isolamento Windows
 
 Base `fase-2` conferida em `8bc11324ed87803a49570efab11b684403f2909f`.
+Implementação publicada em [`00b2daa1aebcbbf5f80be90a246b591a2b2fe187`](https://github.com/virgilio-vpr/EcoWatt/commit/00b2daa1aebcbbf5f80be90a246b591a2b2fe187),
+com escrita e head remoto confirmados. Consulta pós-envio pela integração
+não retornou execução de CI para esse SHA; sem aprovação remota atribuída.
 Os seis arquivos existentes desta entrega coincidiam com os blobs remotos,
 normalizando CRLF. Integração GitHub acessível, sem nova autenticação; envio
 limitado aos arquivos abaixo, preservando árvore remota e alterações locais
@@ -28,8 +31,7 @@ DNS, LAN externa ou IPC/COM/brokers. **Suíte geral: 356 aprovados e 15 omitidos
 em 122,05 s**: quatro omissões anteriores e onze probes Win32 habilitados
 separadamente pelo runner. Compilação de src/tests aprovada. Sem alteração de
 esquema, dependências, rotas ou interface; migrações/Edge não repetidos nesta
-fatia. CI recebe etapa própria de probes; resultado remoto será consultado
-após envio, sem antecipar aprovação.
+fatia. CI recebe etapa própria de probes; consulta pós-envio ainda sem execução.
 
 Python Store introduziu capacidade implícita de pacote nos primeiros probes;
 backend agora a rejeita antes de executar. Runner usa perfil criado diretamente
