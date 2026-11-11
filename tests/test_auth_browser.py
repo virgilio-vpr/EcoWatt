@@ -22,7 +22,9 @@ def running_app(settings, mailer=None):
         listener.bind(("127.0.0.1", 0))
         origin = f"http://127.0.0.1:{listener.getsockname()[1]}"
         app = create_app(settings.model_copy(update={"public_origin": origin}), mailer=mailer)
-        server = uvicorn.Server(uvicorn.Config(app, access_log=False, log_level="error"))
+        # Limitar espera por conexões do navegador no encerramento dos testes.
+        server = uvicorn.Server(uvicorn.Config(app, access_log=False, log_level="error",
+            timeout_keep_alive=1, timeout_graceful_shutdown=3))
         worker = Thread(target=server.run, kwargs={"sockets": [listener]}, daemon=True)
         worker.start()
         try:
