@@ -34,4 +34,4 @@ jobs:
         shell: pwsh
         env:
           ECOWATT_BROWSER_TESTS: '1'
-        run: .\.venv\Scripts\python.exe -m pytest tests/test_auth_browser.py -q
+        run: .\.venv\Scripts\python.exe -m pytest tests/test_auth_browser.py tests/test_invoice_web.py tests/test_invoice_admission_web.py -q

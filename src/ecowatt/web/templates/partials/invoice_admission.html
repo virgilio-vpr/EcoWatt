@@ -1,0 +1,27 @@
+<section id="invoice-admission" aria-live="polite" aria-labelledby="invoice-admission-title">
+  <h2 id="invoice-admission-title">Suporte à leitura de faturas</h2>
+  <p>Distribuidora cadastrada: {{ admission.distributor_code or 'Não informada' }}.</p>
+  {% if not admission.unit_saved %}
+    <p>Salve os dados da unidade antes de anexar e ler faturas.</p>
+  {% endif %}
+  <form method="get" action="/simulations/{{ simulation.id }}/invoices"
+        hx-get="/simulations/{{ simulation.id }}/invoice-admission"
+        hx-target="#invoice-admission" hx-swap="outerHTML">
+    <label>Versão do layout a consultar
+      <input name="layout_version" value="{{ admission.layout_version }}" required maxlength="80">
+    </label>
+    <button type="submit">Consultar suporte</button>
+  </form>
+  {% if admission.reason == 'unit_not_saved' %}
+    <p>Suporte indisponível até salvar a unidade.</p>
+  {% elif admission.supported %}
+    <p>Suporte interno exclusivamente sintético. Não representa um layout documental homologado.</p>
+  {% else %}
+    <p>Layout não suportado para esta distribuidora.</p>
+  {% endif %}
+  {% if admission.contact_required %}
+    <p>Este layout precisa de avaliação de suporte. O canal de solicitação de contato ainda não está disponível.</p>
+  {% endif %}
+  <p>Upload e leitura de documentos reais estão desabilitados, inclusive ENEL.</p>
+  <p>Consultar suporte não envia arquivos nem inicia leitura. Quando disponível, a leitura exigirá a ação explícita “Ler fatura”.</p>
+</section>

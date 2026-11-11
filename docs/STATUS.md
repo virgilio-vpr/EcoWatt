@@ -1,6 +1,18 @@
 # Estado do EcoWatt
 
-Atualizado em 10/11/2026. Referência: SPEC versão 3.11; gabarito mínimo aceito v0.2, com extensão documental de escopo para as próximas fases.
+Atualizado em 11/11/2026. Referência: SPEC versão 3.11; gabarito mínimo aceito v0.2, com extensão documental de escopo para as próximas fases.
+
+## Entrega corrente — consulta visual de suporte ao layout
+
+Base remota conferida: `a5a9ded0ca799bbcec87b00a16dcffec38a39e86`, posterior ao handoff `9390d53`, já contém remoção autenticada e acompanhamento do conjunto. Sua CI terminou com sucesso em [42887035573](https://github.com/virgilio-vpr/EcoWatt/actions/runs/42887035573). Preservados esse commit e as alterações locais anteriores; `main` permanece `75d32b01671188c263e9b054587546d190cbe40b`. Sem Git local, branch nova ou merge.
+
+Cabeçalho de `/simulations/{id}/invoices` consulta distribuidora/unidade/layout pelo mesmo serviço da API JSON. GET autenticado de fragmento atualiza somente o cabeçalho via HTMX; sem JavaScript, o formulário GET recarrega a lista. Informa unidade não salva, layout sem suporte, caráter exclusivamente sintético do suporte interno e indisponibilidade do canal de contato. Não cria tarefa/reserva, altera revisão ou recebe arquivos. Suporte sintético não habilita upload/leitura real; ENEL permanece desabilitada.
+
+Verificações reais: 36 testes focados de admissão/interface aprovados (33,71 s), incluindo os dois fluxos Edge de conferência e suporte, mais 9 testes de autenticação/contrato API (12,17 s), com três casos de autenticação no Edge. Cobertos fallback sem JavaScript, autorização dono/admin/acesso cruzado/exclusão, escape e limites de layout, paridade JSON/HTML e ausência de tarefas/reservas/revisões novas. Primeiras tentativas pararam nos temporários; a execução válida ocorreu fora do sandbox após revisão automática. Head/current `0008_invoice_confirmation`; `alembic check` sem divergências. Nenhuma migração ou dependência nova. CI passa a executar também os fluxos web de fatura e suporte no Edge; resultado deste commit será consultado após envio, sem antecipar aprovação.
+
+Novos: `src/ecowatt/web/templates/partials/invoice_admission.html`, `tests/test_invoice_admission_web.py`. Alterados: `.github/workflows/backend.yml`, `README.md`, `docs/ADMISSION.md`, `docs/STATUS.md`, `docs/phases/phase-02-invoices.md`, `src/ecowatt/api/resources.py`, `src/ecowatt/services/admission.py`, `src/ecowatt/web/routes.py`, `src/ecowatt/web/templates/invoices.html`. Removidos: nenhum. Envio limitado a esses 11 arquivos; `.env`, `docs/contracts/access.md`, `docs/corpus/regulatory-review.md`, demais mudanças locais, bancos e temporários ficam fora.
+
+A Fase 2 permanece aberta; nenhum critério integral adicional da seção 15 foi marcado. Próximo passo: avaliar lacunas de revisão/recuperação compatíveis com os serviços existentes. Pedido/canal de contato, processamento documental e garantias §5/§12 continuam pendentes; não antecipar Fase 3. As seções seguintes preservam decisões e verificações das entregas anteriores.
 
 ## Direção atual
 
@@ -32,27 +44,50 @@ Escopo aceito: concentrar somente em **faturamento, informações do cliente/UC,
 
 Verificados por projeção e asserções: doze bases do quadro fecham; diferença de setembro preservada como informação; quatro itens monetários sem dados inventados; consumos, datas e demandas originais preservados. S01 deixa de bloquear por CNPJ opcional; S26 distingue residual do quadro e diferença de total a pagar, sem bloqueio artificial. São 26 casos sintéticos documentais; sem testes da aplicação, nova leitura de PDF ou instalação nesta alteração. Encerramento: metadados de aceite, preservação das entradas locais, links e checklist da SPEC conferidos. Somente a Fase 0 foi marcada; nenhuma funcionalidade foi declarada implementada.
 
+
+
 Hipótese de setembro conferida a pedido do usuário: forte compatibilidade numérica da diferença para o total a pagar com bandeira vermelha patamar 2 não discriminada. Fonte Enel para o mês e MME para BRL 78.77/MWh; memória Decimal local em `.local-analysis/september-flag-check.json`, com desvio de poucos centavos na estimativa de preço cheio por proporção da própria conta. Não adicionar item observado ou converter a hipótese em gabarito aprovado. Fontes e método em [referências do corpus](corpus/regulatory-review.md).
 
 ## Fluxo de branches
 
 Fase 0 integrada à `main`; Fase 1 integrada pelo [PR #2](https://github.com/virgilio-vpr/EcoWatt/pull/2) no commit `75d32b01671188c263e9b054587546d190cbe40b`. A branch `fase-2` foi criada desse merge e seu estado foi conferido no GitHub nesta entrega. Novos commits seguem nela, com integração por PR; nenhum novo merge foi solicitado nesta atualização documental. Operações pela integração GitHub, sem Git local.
 
-## Entrega atual — Fase 2, confirmação e escolha do conjunto
+## Histórico — Fase 2, confirmação e escolha do conjunto
 
 Sexta entrega em 09/11/2026 sobre `51abba5c23afb87a3422008c8ec94b8c57225caf`, remoto fase-2 conferido. A quinta entrega teve 230 testes/CI aprovados ([execução 42650424221](https://github.com/virgilio-vpr/EcoWatt/actions/runs/42650424221)). Nenhum merge. Admissão, coordenador e publicação permanecem exclusivamente sintéticos, com os contratos de [ADMISSION](ADMISSION.md), [COORDINATOR](COORDINATOR.md), [TASKS](TASKS.md), [INVOICE-STORAGE](INVOICE-STORAGE.md) e [INVOICE-REVIEW](INVOICE-REVIEW.md).
 
-Implementados POST de confirmação por fatura, POST de escolha do conjunto e GET paginado do histórico de escolhas; GET da fatura inclui confirmações e autoria. Confirmar exige mínimo crítico, identidade/proveniência, financeiro consistente, atestação humana explícita de cobertura do quadro e ciência exata das limitações atuais. Guarda IDs concretos de proveniência, hash do conteúdo, revisões, autor/data/justificativa, sem alterar a cobertura original da extração ou inventar ausentes. Invoice.revision é de conteúdo; confirmações têm registros imutáveis próprios e avançam dataset_revision uma vez.
+Implementados POST de confirmação por fatura, POST de escolha do conjunto e GET paginado do histórico de escolhas; GET da fatura inclui confirmações e autoria. Confirmar exige mínimo crítico, identidade/proveniência, financeiro consistente, atestação humana explícita de cobertura do quadro e ciência exata das limitações atuais. Guarda IDs concretos de proveniência, hash do conteúdo, revisões, autor/data/justificativa, sem alterar a cobertura original da extração ou inventar ausentes. Invoice.revision é de conteúdo; confirmações têm registros imutáveis próprios e avançam dataset_revision uma vez. Correção invalida confirmação; mudança da unidade invalida confirmações/escolhas e desmarca ready. Retry histórico não restaura estado antigo.
 
-## Entrega complementar: interface mínima de remoção e acompanhamento
+Possíveis duplicatas/refaturamentos formam grupos por competência, ciclos sobrepostos ou número/distribuidora quando disponível. Escolha duplicate/replacement mantém um documento na análise, conservando as alternativas consultáveis; distinct_periods permite períodos conhecidos sem sobreposição. Complement registra a classificação, mas mantém bloqueio para consolidação/segmentação futura. Chegada de terceiro membro, edição, mudança da unidade ou remoção do preferido exige nova escolha; alternativa antiga não entra silenciosamente.
 
-Foi adicionado um slice autenticado de apresentação para remoção e acompanhamento do estado do conjunto, usando apenas os serviços e rotas existentes: a página de detalhe expõe o estado geral do conjunto (`invoice-readiness`), o formulário de remoção usa `DELETE /api/v1/simulations/{id}/invoices/{invoice_id}` com confirmação explícita e CSRF, e o acompanhamento informa a prontidão e bloqueios do dataset sem inventar processamento real. Nenhuma nova fila, parser, upload ou cálculo foi habilitado; a ação de leitura real continua bloqueada até a homologação de §5/§12, com layout/documento e ENEL desabilitados.
+GET invoice-readiness agora pode indicar ready_for_calculation=true com uma única fatura sintética incluída, válida e confirmada, escolhas atuais e nenhuma admissão pendente/sem publicação. Lacunas de competências são informativas; não exige doze faturas. Guard interno require_ready_dataset revalida revisões/política/conteúdo/pendências e retorna somente IDs incluídos. Limitações por módulo permanecem explícitas (demanda ausente, estimativa, mercado incerto/livre, dias de ciclo); não equivalem a parâmetros disponíveis nem garantem suficiência de todos os módulos. Não há motor ou endpoint de cálculo.
 
-Verificações locais desta fatia: 4 testes focados da interface web aprovados, incluindo a UI autenticada de remoção e acompanhamento, em 2,48 s. A suíte de leitura/confirmação/seleção do fluxo web segue com 1 caso Edge omitido por configuração local. A CI remota do commit base `9390d53` está concluída com sucesso em [42876453208](https://github.com/virgilio-vpr/EcoWatt/actions/runs/42876453208). O commit desta entrega será enviado diretamente na branch `fase-2` sem merge.
+Migração aditiva 0008_invoice_confirmation: confirmações por fatura e escolhas por simulação, após os pais. Não confirma dados retroativamente. Exclusão da fatura remove confirmações; escolhas históricas conservam somente IDs/revisões mínimos e exigem reescolha de sobreviventes. Exclusão da simulação remove ambos na transação do tombstone/cancelamento. Downgrade descartável perde esses snapshots/escolhas e desmarca faturas confirmadas, preservando o grafo anterior. Contrato em [INVOICE-CONFIRMATION](INVOICE-CONFIRMATION.md).
+
+Política financeira observed-financial-v2 preserva a v1 histórica e corrige apenas um limite da memória informativa: diferença do total a pagar fora de Numeric(38,18) gera payable_numeric_range/warning, mantendo a separação do quadro. Produto, tolerância inclusiva BRL 0.99, soma assinada e residual não zero bloqueante permanecem. Preço cheio não recebe impostos novamente; quantidade/preço ausentes não viram zero.
+
+## Verificações reais
+
+- **269 testes aprovados, incluindo Edge** (179,97 s), com **39 casos novos**. Antes, 29 novos iniciais e 79 casos focados de confirmação/revisão/OpenAPI passaram. Um teste anterior foi atualizado para a pendência efetiva de confirmação, removendo expectativa do bloqueio provisório da quinta entrega.
+- Cobertos mínimo crítico/ausência versus zero, booleano estrito/cobertura explícita, limitações e estimativas preservadas, memória financeira, prontidão com uma conta e lacunas, snapshots/históricos/autoria admin, acesso cruzado/CSRF, retry/conflito, correção/unidade/novo membro, alternativas descartadas, períodos distintos/sobrepostos, complemento bloqueado, admissão queued/running/expired/cancelled, concorrência com remoção e rollback de snapshot/status/revisão/recibo.
+- SQLite local atualizado: alembic current = 0008_invoice_confirmation (head), alembic check sem divergências. Upgrade limpo pela suíte, downgrade/upgrade descartável com fatura/confirmação preenchida, preservação dos dados anteriores e FKs sem órfãos verificados. PostgreSQL não validado; não usar downgrade como backup.
+- compileall aprovado em src/migrations/tests; uv pip check: 41 pacotes compatíveis; uv lock --check --offline aprovado com cache local. Nenhuma dependência instalada ou alterada. Ambiente virtual existente, sem global/admin/containers ou mudança de política. Testes locais autorizados pela revisão automática.
+- .env, docs/contracts/access.md e docs/corpus/regulatory-review.md preservados e fora do envio. Sem PDF, imagem, texto bruto, fatura/planilha real ou artefato do corpus processado/publicado. Edge verifica regressão de acesso web; não prova segurança PDF, correção financeira comercial ou produção.
+- Envio pela integração GitHub limitado aos 21 arquivos abaixo, sobre árvore remota preservada. SHA/CI finais informados na resposta após consulta remota; este status integra o próprio commit. Nenhum critério integral adicional da seção 15 foi marcado.
+
+## Entrega complementar: interface mínima de conferência e seleção
+
+Foi adicionado um slice inicial de apresentação em Jinja2/HTMX para a conferência das faturas da simulação, com lista, detalhe, pendências, verificações financeiras, limitações e histórico de confirmações. A página também expõe o grupo de conflitos/duplicatas para seleção explícita de inclusão no conjunto e usa as rotas JSON existentes sem acionar processamento real ou cálculo econômico. Isso mantém a separação entre API, serviços e camada visual, junto com a necessidade de revisar arquivos reais somente após a homologação de segurança e layout.
+
+## Entrega complementar — correção e conferência na interface
+
+Rotas HTML autenticadas em `/simulations/{id}/invoices` e `/simulations/{id}/invoices/{invoice_id}` apresentam a lista, campos pendentes, verificações financeiras, limitações e históricos de proveniência/confirmação/escolhas. O detalhe HTMX permite selecionar campos para correção com suas versões e metadados; confirmações exigem atestação explícita de cobertura e ciência das limitações; grupos oferecem seleção de documentos e relação. A interface chama os serviços somente pelas rotas JSON existentes, com CSRF/sessão do cliente HTTP, sem processamento automático. Conflitos e respostas antigas são mostrados ao usuário, sem retry automático.
+
+Verificações locais desta fatia: 78 testes de revisão, confirmação, seleção e interface aprovados em Edge (48,54 s); os 3 testes de navegador de autenticação/API também passaram (9,32 s). O fluxo de navegador cobre correção textual, estado missing, conflito de revisão, confirmação explícita, CSRF e escolha inclusiva de uma alternativa. Não foi criada migração; `0008_invoice_confirmation` permanece head. A CI do commit remoto anterior passou na execução [42853289760](https://github.com/virgilio-vpr/EcoWatt/actions/runs/42853289760); a execução desta fatia deve ser conferida após o envio. Critérios integrais da seção 15 continuam abertos. Apenas fixtures sintéticas: sem upload, parser ou leitura de documentos reais.
 
 ## Pendências e próximo passo
 
-Próxima fatia coerente: interface autenticada para remoção e acompanhamento somente onde os serviços existentes permitem, sem inventar progresso de processamento. A ação de remoção usa `DELETE /api/v1/simulations/{id}/invoices/{invoice_id}` com CSRF e confirmação explícita, e o acompanhamento repassa o estado atual do conjunto via `invoice-readiness`; não se criam filas nem processamento real sem os serviços compatíveis. Ação de leitura/upload real continua bloqueada até as garantias de §5/§12 e homologação de adaptador; seleção local nunca inicia processamento. Complementos que precisem de consolidação/segmentação financeira permanecem pendentes, sem soma automática. O futuro motor da Fase 3 deverá consumir a revisão atual e somente os IDs incluídos pelo guard.
+Remoção autenticada e acompanhamento pelo `invoice-readiness` já existem no commit remoto `a5a9ded`; a consulta visual de suporte está descrita na entrega corrente acima. Próxima fatia: avaliar lacunas de revisão/recuperação compatíveis com os serviços existentes, sem inventar progresso ou expor tarefas sem contrato. Ação de leitura/upload real continua bloqueada até as garantias de §5/§12 e homologação de adaptador; seleção local nunca inicia processamento. Complementos que precisem de consolidação/segmentação financeira permanecem pendentes, sem soma automática. O futuro motor da Fase 3 deverá consumir a revisão atual e somente os IDs incluídos pelo guard.
 
 PDFs/layouts documentais permanecem desabilitados, inclusive ENEL. Antes de recebimento real: verificar integralmente §5/§12 — confinamento sem rede/privilégios, CPU/RAM/pixels, descendentes órfãos, watchdog rígido, swap/dumps, diretório RAM quando necessário e ausência de spool no framework/proxy — e homologar adaptador específico. Spawn sintético não é sandbox homologado; catálogo tarifário não habilita parser ou fallback ENEL. Não antecipar motor econômico ou declarar Fase 2 concluída por esta fatia.
 
@@ -60,8 +95,10 @@ Ressalvas da Fase 0 intactas: desconhecido não equivale a zero, hipóteses não
 
 ## Arquivos e commit
 
-Alterados: `docs/STATUS.md`; `src/ecowatt/web/templates/invoice_detail_fragment.html`; `src/ecowatt/web/static/invoice-review.js`; `tests/test_invoice_web.py`.
+Novos: docs/INVOICE-CONFIRMATION.md; migrations/versions/0008_invoice_confirmation.py; src/ecowatt/invoice_confirmation.py; src/ecowatt/services/invoice_confirmation.py; tests/test_invoice_confirmation.py.
 
-Commit enviado na branch `fase-2` pela integração GitHub, sem merge com `main`. Arquivos locais, `.env`, corpus, bancos, ambientes e caches ficam fora do envio.
+Alterados: EcoWatt_PROJECT_SPEC.md; README.md; docs/API.md; docs/DATABASE.md; docs/INVOICE-REVIEW.md; docs/INVOICE-STORAGE.md; docs/STATUS.md; docs/phases/phase-02-invoices.md; src/ecowatt/api/health.py; src/ecowatt/api/resources.py; src/ecowatt/db/invoices.py; src/ecowatt/schemas.py; src/ecowatt/services/invoice_validation.py; src/ecowatt/services/invoices.py; src/ecowatt/services/simulations.py; tests/test_invoice_review.py. Removidos: nenhum.
 
-Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+Commit desta entrega na fase-2: feat: confirm synthetic invoices and resolve dataset selections. SHA/CI finais informados na resposta após envio. Nenhum merge. Arquivos auxiliares locais, .env, corpus, bancos, ambientes e caches ficam fora do envio.
+
+Fatia de interface enviada em commit direto na `fase-2`: alterados `docs/STATUS.md`, `src/ecowatt/web/routes.py`, `src/ecowatt/web/templates/simulation.html`; novos `src/ecowatt/web/templates/invoices.html`, `src/ecowatt/web/templates/invoice_detail.html`, `src/ecowatt/web/templates/invoice_detail_fragment.html`, `src/ecowatt/web/static/invoice-review.js`, `tests/test_invoice_web.py`. Nenhuma migração. `.env`, `.mcp.json`, `docs/contracts/access.md` e `docs/corpus/regulatory-review.md` ficam fora do commit. A Fase 2 continua aberta; não fazer merge com `main`.

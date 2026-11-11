@@ -4,7 +4,9 @@ Esta fatia implementa reserva transacional de metadados e consulta JSON de supor
 
 ## Consulta e comando
 
-`GET /api/v1/simulations/{id}/invoice-admission?layout_version=...` exige sessão e autorização de dono/admin. Retorna unidade salva, distribuidora cadastrada, layout solicitado, suporte, motivo e necessidade de contato. Unidade não salva retorna `unit_not_saved`; catálogo sem adaptador exato retorna `layout_not_supported`. Não cria tarefas nem lê arquivos. O formulário/cabeçalho visual e o pedido de contato ainda serão implementados; nenhum canal fictício foi criado.
+`GET /api/v1/simulations/{id}/invoice-admission?layout_version=...` exige sessão e autorização de dono/admin. Retorna unidade salva, distribuidora cadastrada, layout solicitado, suporte, motivo e necessidade de contato. Unidade não salva retorna `unit_not_saved`; catálogo sem adaptador exato retorna `layout_not_supported`. Não cria tarefas nem lê arquivos.
+
+O cabeçalho em `/simulations/{id}/invoices` apresenta essa consulta, compartilhando `admission_context` com a API. O formulário GET aceita somente uma versão de layout (1–80 caracteres); HTMX atualiza `/simulations/{id}/invoice-admission` e, sem JavaScript, a mesma consulta recarrega a lista. Ambos exigem dono/admin e não criam reservas/tarefas nem alteram revisões. Distribuidora vem da unidade salva, sem fallback por layout informado. Mesmo `SYNTHETIC / synthetic-v1` mantém documentos reais desabilitados. Não há seletor de arquivos ou comando de leitura. O aviso de necessidade de avaliação informa que o canal de contato ainda não existe; pedido de contato continua pendente, sem canal fictício.
 
 `admit_synthetic(engine, actor_id, simulation_id, revision, key, inspection, action="read_invoice")` é exclusivamente interno. Seleção de arquivo não chama esse comando. `Inspection` é um contrato imutável de metadados: hash SHA-256, bytes, páginas, identidade observada, layout/parser e origem. Na integração documental futura, tamanho/hash/páginas devem ser medidos pelo coordenador e pelo processo isolado, nunca aceitos como declarações do cliente. O protocolo `Adapter.inspect` não possui implementação de PDF nesta entrega.
 

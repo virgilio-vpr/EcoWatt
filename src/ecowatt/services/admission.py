@@ -50,6 +50,19 @@ def support(distributor_code, layout_version):
             "contact_required": not enabled, "document_upload_enabled": False}
 
 
+def admission_context(db, actor, simulation_id, layout_version="unknown"):
+    """Consulta compartilhada por JSON e HTML, sem admissão ou leitura."""
+    simulation = require_simulation(db, actor, simulation_id)
+    distributor = db.get(Distributor, simulation.distributor_id) if simulation.distributor_id else None
+    capability = support(distributor.code if distributor else None, layout_version)
+    if simulation.unit_saved_at is None:
+        capability.update(supported=False, reason="unit_not_saved")
+    return {"unit_saved": simulation.unit_saved_at is not None,
+            "distributor_id": simulation.distributor_id,
+            "distributor_code": distributor.code if distributor else None,
+            "layout_version": layout_version, **capability}
+
+
 def reject(code, message, status=409):
     raise DomainError(code, message, status)
 

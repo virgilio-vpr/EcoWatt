@@ -90,17 +90,9 @@ def invoice_admission_context(simulation_id: UUID,
         layout_version: Annotated[str, Query(min_length=1, max_length=80)] = "unknown",
         principal=Depends(authenticated, scope="function")):
     """Consulta suporte; não recebe arquivos nem inicia leitura. PDFs desabilitados."""
-    from ecowatt.services.admission import support
+    from ecowatt.services.admission import admission_context
     db, actor, _ = principal
-    simulation = service.require_simulation(db, actor, simulation_id)
-    distributor = db.get(Distributor, simulation.distributor_id) if simulation.distributor_id else None
-    capability = support(distributor.code if distributor else None, layout_version)
-    if simulation.unit_saved_at is None:
-        capability.update(supported=False, reason="unit_not_saved")
-    return {"unit_saved": simulation.unit_saved_at is not None,
-            "distributor_id": simulation.distributor_id,
-            "distributor_code": distributor.code if distributor else None,
-            "layout_version": layout_version, **capability}
+    return admission_context(db, actor, simulation_id, layout_version)
 
 
 @router.get("/me", response_model=MeOutput)

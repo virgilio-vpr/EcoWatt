@@ -9,6 +9,7 @@
 <p>Conjunto pendente: {{ readiness.reasons|join(', ') if readiness.reasons else 'Sem bloqueios imediatos.' }}</p>
 {% endif %}
 <nav><a href="/simulations/{{ simulation.id }}">Voltar para a simulação</a></nav>
+{% include 'partials/invoice_admission.html' %}
 <section>
   <h2>Lista de faturas</h2>
   <ul>

@@ -1,7 +1,8 @@
 from pathlib import Path
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.templating import Jinja2Templates
 
 from ecowatt.api.dependencies import authenticated
@@ -11,6 +12,7 @@ from ecowatt.services.simulations import company_data, list_simulations, require
 
 router = APIRouter(include_in_schema=False)
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+LayoutVersion = Annotated[str, Query(min_length=1, max_length=80)]
 
 
 @router.get("/auth/{page}")
@@ -58,14 +60,27 @@ def simulation_page(simulation_id: UUID, request: Request, principal=Depends(aut
 
 
 @router.get("/simulations/{simulation_id}/invoices")
-def invoice_listing_page(simulation_id: UUID, request: Request, principal=Depends(authenticated, scope="function")):
+def invoice_listing_page(simulation_id: UUID, request: Request, layout_version: LayoutVersion = "unknown",
+        principal=Depends(authenticated, scope="function")):
+    from ecowatt.services.admission import admission_context
     from ecowatt.services.invoice_validation import dataset_readiness
     db, actor, _ = principal
     simulation = serialize(require_simulation(db, actor, simulation_id))
     readiness = dataset_readiness(db, actor, str(simulation_id))
     listing = list_invoices(db, actor, str(simulation_id), 1, 20)
     return templates.TemplateResponse(request=request, name="invoices.html", context={
-        "simulation": simulation, "listing": listing, "readiness": readiness})
+        "simulation": simulation, "listing": listing, "readiness": readiness,
+        "admission": admission_context(db, actor, simulation_id, layout_version)})
+
+
+@router.get("/simulations/{simulation_id}/invoice-admission")
+def invoice_admission_fragment(simulation_id: UUID, request: Request, layout_version: LayoutVersion = "unknown",
+        principal=Depends(authenticated, scope="function")):
+    from ecowatt.services.admission import admission_context
+    db, actor, _ = principal
+    admission = admission_context(db, actor, simulation_id, layout_version)
+    return templates.TemplateResponse(request=request, name="partials/invoice_admission.html", context={
+        "simulation": {"id": str(simulation_id)}, "admission": admission})
 
 
 @router.get("/simulations/{simulation_id}/invoices/{invoice_id}")
