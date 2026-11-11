@@ -40,6 +40,12 @@ Em saída normal, erro, timeout e cancelamento controlado, o pai encerra/recolhe
 
 ## Barreira antes de documentos reais
 
+O [contrato de segurança documental](DOCUMENT-SECURITY.md) acrescenta um
+orçamento prévio de rasterização e confronto do buffer, testados somente com
+números/bytes inventados. Ainda não é consumido por renderer e não impõe RAM
+física. Registra as evidências restantes por garantia. WSL está fora da solução
+por decisão do usuário; esta entrega não instala componentes ou inicia containers.
+
 Ainda precisam ser implementados e verificados: confinamento sem rede e privilégios, CPU/RAM/pixels, controle de descendentes inclusive após morte abrupta do pai, watchdog rígido, swap/dumps, política de diretório RAM se necessário e ausência de spool no framework/proxy. O processo spawn sintético herda o ambiente de execução; separação de processo não prova isolamento de segurança.
 
 Contrato normalizado/Decimal, proveniência inicial, vínculo tarefa/fatura, persistência/remoção e consulta JSON já existem somente para fixtures. Depois da verificação de segurança, integrar inspeção e adaptador específico homologado; completar revisão operacional versionada, validações financeiras, duplicidade lógica/refaturamento, prontidão e interface. Não habilitar upload com base apenas na existência deste coordenador. Critérios integrais da seção 15 permanecem abertos.

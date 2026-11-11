@@ -30,4 +30,15 @@ Sexta entrega: [confirmação/seleção versionada](../INVOICE-CONFIRMATION.md),
 
 Sétima entrega: interface HTML/HTMX de lista, detalhe, correção, confirmação e escolha de conflitos, usando os serviços/API existentes. Fluxo validado no Edge com fixtures sintéticas: estados tipados, remoção de valor em estado missing, conflito de revisão, CSRF, confirmação e seleção explícita; sem nova migração. Remoção autenticada e acompanhamento do conjunto já foram adicionados no commit `a5a9ded`, sem estados novos de processamento.
 
-Entrega de 11/11/2026: cabeçalho autenticado de consulta de suporte ao layout, compartilhado com a API de [ADMISSION](../ADMISSION.md), com fragmento HTMX e fallback GET sem JavaScript. Não recebe arquivos nem inicia processamento; suporte sintético não libera documento real. Pedido/canal de contato permanece pendente e é indicado como indisponível. Próximo passo: avaliar lacunas da interface de revisão/recuperação que possam usar os serviços existentes; não criar fluxo público de tarefas sem contrato próprio. Upload e leitura real dependem das garantias integrais de §5/§12 e de adaptador homologado. Critérios completos da seção 15 continuam abertos.
+Entrega de 11/11/2026: cabeçalho autenticado de consulta de suporte ao layout, compartilhado com a API de [ADMISSION](../ADMISSION.md), com fragmento HTMX e fallback GET sem JavaScript. Não recebe arquivos nem inicia processamento; suporte sintético não libera documento real. Pedido/canal de contato permanece pendente e é indicado como indisponível.
+
+Prioridade atual: segurança documental e preparação do adaptador, conforme
+[DOCUMENT-SECURITY](../DOCUMENT-SECURITY.md). Orçamento prévio de pixels/bytes
+por página/documento e confronto de buffers já têm testes sintéticos; não estão
+integrados a renderer nem constituem sandbox. WSL está fora da solução por
+decisão do usuário. Próximo passo: implementar/verificar confinamento em ambiente
+autorizado, sem instalar dependências ou iniciar containers nesta entrega, antes
+de integrar renderer e proveniência documental. Upload/leitura real dependem
+das garantias integrais de §5/§12, ingresso sem spool e adaptador homologado.
+Não priorizar novas melhorias pequenas de interface nem antecipar Fase 3.
+Critérios completos da seção 15 continuam abertos na SPEC.

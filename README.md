@@ -26,6 +26,11 @@ Em `/simulations/{id}/invoices`, o cabeçalho permite consultar suporte à vers�
 
 ## Stack definida
 
+A preparação de segurança documental está em
+[docs/DOCUMENT-SECURITY.md](docs/DOCUMENT-SECURITY.md): orçamento de pixels/bytes
+testado com buffers sintéticos, ainda sem renderer ou sandbox homologado. WSL
+está fora da solução por decisão do usuário. Upload/leitura real seguem bloqueados.
+
 - Backend: Python, FastAPI, SQLAlchemy 2 e Alembic.
 - Banco atual: SQLite local, com WAL e chaves estrangeiras habilitadas.
 - Leitura: pdfplumber, pypdfium2 e OCR seletivo com Tesseract.

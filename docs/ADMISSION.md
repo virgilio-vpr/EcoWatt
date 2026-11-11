@@ -31,6 +31,10 @@ A reserva já pode ser ligada a uma fatura sintética por invoice_publications. 
 
 ## Próxima fatia e barreira para PDFs
 
+Preparação de limites por página/documento e diagnóstico das barreiras em
+[DOCUMENT-SECURITY](DOCUMENT-SECURITY.md). O orçamento de rasterização não
+altera `support`, não habilita `Adapter.inspect` nem admite origem documental.
+
 O coordenador único/fila efêmera, recuperação e resultado normalizado já existem para fixtures; não invalidam leases de tarefas ainda vivas. Próximo passo: verificar e completar as barreiras de SO/framework/proxy (§5/§12) descritas em [COORDINATOR](COORDINATOR.md), integrar adaptador homologado e completar revisão/validação/prontidão e UI de Ler fatura. Nenhum teste sintético prova descarte seguro de PDF real.
 
 Testes usam exclusivamente metadados e dados sintéticos: limites nas fronteiras, concorrência da última vaga de orçamento/capacidade, retries, rollback, suporte exato, autorização/autoria, cancelamento, expiração, remoção e resultado tardio. Isso não demonstra segurança ou desempenho de PDF real.
