@@ -14,6 +14,13 @@ Limites existentes de arquivos/bytes/páginas continuam acumulados por simulaç�
 
 `run_once(persist=None)` assume uma entrada, inicia um filho por `spawn` e aguarda fora de transação SQL. Uma trava local impede dois runners; TASKS limita execução global e por simulação. O filho não recebe engine/sessão, só a fixture e parâmetros técnicos. Faz apenas verificação sintética/hash. Não contém parser e não calcula dados faturáveis.
 
+Alternativa interna: `Coordinator(..., windows_executor=WindowsExecutor(...))`
+usa AppContainer/Job e supervisor externo com IPC limitado. Runtime/script e
+SID são internos e previamente provisionados pelo chamador; falha não faz
+fallback para spawn. A aplicação não seleciona nem provisiona esse executor.
+Somente `Sample` continua admitido. Contrato e limitações em
+[DOCUMENT-SECURITY](DOCUMENT-SECURITY.md), incluindo swap/dumps ainda bloqueantes.
+
 O modo Receipt usa `send_bytes`/`recv_bytes`, JSON de até 1.024 bytes, schema fechado e tipos estritos. Não desserializa pickle retornado pelo filho. `Receipt` contém hash, bytes, páginas e versão `synthetic-receipt-v1`. O coordenador confronta esses valores com a reserva. Receipt é recibo técnico, não extração nem prontidão. O callback opcional é interno e curto; não deve publicar faturas por esse modo técnico.
 
 Extensão normalizada: `run_invoice_once()` transporta JSON de até 262.144 bytes no contrato normalized-invoice-v1 e publica somente o gabarito inventado fornecido pelo filho, com valores/proveniência/vínculo/estado atômicos. Sempre termina em needs_review. Não executa parser nem lê documento. Revisões do conjunto e remoção estão em [INVOICE-STORAGE](INVOICE-STORAGE.md). O ciclo de liderança, cancelamento e descarte permanece o mesmo nos dois modos.
@@ -32,11 +39,11 @@ Expiração libera capacidade ativa, mas não apaga os metadados nem o orçament
 
 ## Cancelamento, timeout e descarte verificados
 
-Limites internos padrão: 180 s por arquivo e 600 s por lote ativo da simulação, incluindo espera na fila. Novas entradas do mesmo lote compartilham deadline. Não é benchmark nem promessa de tempo de PDF. Chamadas de sistema/SQLite/spawn podem acrescentar latência de interrupção; não foi demonstrado watchdog de SO para limites rígidos.
+Limites internos padrão: 180 s por arquivo e 600 s por lote ativo da simulação, incluindo espera na fila. Novas entradas do mesmo lote compartilham deadline. Não é benchmark nem promessa de tempo de PDF. Chamadas de sistema/SQLite/spawn podem acrescentar latência de interrupção; o spawn padrão não tem watchdog de SO. O executor Windows opcional possui supervisor externo, com o alcance descrito em DOCUMENT-SECURITY.
 
 O ciclo verifica cancelamento, ator, revisão, leases, geração e tempo. Remoção, exclusão, revisão da unidade, bloqueio, shutdown ou perda de liderança impedem callback tardio. Timeout e falha sintética expiram a tarefa com código técnico. Falha do callback desfaz os dados e a conclusão antes de registrar interrupção em transação separada. Não registra texto de exceção do filho.
 
-Em saída normal, erro, timeout e cancelamento controlado, o pai encerra/recolhe o filho, fecha pipes e sobrescreve/limpa seus buffers mutáveis. `close()` espera o runner encerrar e limpa a fila; é idempotente. Testes verificam buffers sem conteúdo retido e ausência de filhos novos vivos. Não se promete apagamento físico imediato: cópias temporárias do Python/IPC, swap e dumps não foram auditados. Morte abrupta do pai pode deixar filho órfão; a lease cerca a autorização de persistir, mas não é uma garantia de contenção de processo órfão pelo SO.
+Em saída normal, erro, timeout e cancelamento controlado, o pai encerra/recolhe o filho, fecha pipes e sobrescreve/limpa seus buffers mutáveis. `close()` espera o runner encerrar e limpa a fila; é idempotente. Testes verificam buffers sem conteúdo retido e ausência de filhos novos vivos. Não se promete apagamento físico imediato: cópias temporárias do Python/IPC, swap e dumps continuam sem proteção integral. No modo spawn padrão, morte abrupta do pai pode deixar filho órfão; a lease cerca persistência, mas não contém processos pelo SO. No executor Windows opcional, o supervisor externo observa morte/suspensão do host e termina a árvore pelo Job; encerramento controlado também recolhe as threads de IPC antes de descartar a fila.
 
 ## Barreira antes de documentos reais
 
@@ -46,6 +53,14 @@ números/bytes inventados. Ainda não é consumido por renderer e não impõe RA
 física. Registra as evidências restantes por garantia. WSL está fora da solução
 por decisão do usuário; esta entrega não instala componentes ou inicia containers.
 
-O backend experimental `windows_isolation.py` tem provas Win32 de token/rede local, CPU/memória comprometida e término da árvore após morte do pai; ainda **não é usado por este coordenador**. O spawn sintético continua herdando o ambiente. Faltam integração com IPC limitado, revisão ampliada de superfícies, supervisor externo rígido, swap/dumps, temporários RAM e ingresso sem spool no framework/proxy. Pixels aguardam renderer. WSL e containers estão fora deste ambiente. Alcance e execução em [DOCUMENT-SECURITY](DOCUMENT-SECURITY.md).
+O backend experimental `windows_isolation.py` tem provas Win32 de token/rede
+local, CPU/memória comprometida e término da árvore. Sua integração opcional
+usa cabeçalho/fixture em frames limitados, uma resposta JSON com EOF obrigatório
+e somente stdin/stdout/NUL herdados. O spawn padrão continua herdando o ambiente.
+Faltam revisão ampliada de superfícies, swap/dumps, RAM para bibliotecas/cópias
+e ingresso multipart sem spool no framework/proxy. Scratch travado e coletor
+ASGI são primitivas isoladas, não homologação documental. Pixels aguardam
+renderer. WSL e containers estão fora deste ambiente. Alcance e execução em
+[DOCUMENT-SECURITY](DOCUMENT-SECURITY.md).
 
 Contrato normalizado/Decimal, proveniência inicial, vínculo tarefa/fatura, persistência/remoção e consulta JSON já existem somente para fixtures. Depois da verificação de segurança, integrar inspeção e adaptador específico homologado; completar revisão operacional versionada, validações financeiras, duplicidade lógica/refaturamento, prontidão e interface. Não habilitar upload com base apenas na existência deste coordenador. Critérios integrais da seção 15 permanecem abertos.

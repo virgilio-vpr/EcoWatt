@@ -297,7 +297,7 @@ else:
 
 
 @native
-@pytest.mark.parametrize("failure", ["job_attributes", "token"])
+@pytest.mark.parametrize("failure", ["job_attributes", "token", "supervisor_stop", "supervisor_duplicate"])
 def test_setup_failure_never_runs_unconfined(profile, monkeypatch, failure):
     import ecowatt.windows_isolation as backend
     api = Win32()
@@ -324,7 +324,8 @@ def test_setup_failure_never_runs_unconfined(profile, monkeypatch, failure):
 
 
 @native
-def test_abrupt_parent_death_kills_root_and_grandchildren(profile):
+@pytest.mark.parametrize("host_action", ["kill", "suspend"])
+def test_abrupt_parent_death_kills_root_and_grandchildren(profile, host_action):
     api = Win32()
     a = api.advapi
     a.ConvertSidToStringSidW.argtypes = [C.c_void_p, C.POINTER(W.LPWSTR)]
@@ -348,7 +349,7 @@ a.ConvertStringSidToSidW.argtypes=[C.c_wchar_p,C.POINTER(C.c_void_p)]
 sid=C.c_void_p()
 assert a.ConvertStringSidToSidW({value!r},C.byref(sid))
 p=IsolatedProcess({python_executable()!r},['-I','-B','-S','-c',{worker!r}],
-                  appcontainer_sid=sid,policy=IsolationPolicy(wall_seconds=60))
+                  appcontainer_sid=sid,policy=IsolationPolicy(wall_seconds=8))
 deadline=time.monotonic()+20
 previous=()
 while True:
@@ -379,10 +380,18 @@ time.sleep(60)
         assert 3 <= len(pids) <= 4  # inclui launchers nativos quando presentes
         for pid in pids:
             handles.append(api.check(k.OpenProcess(0x100000, False, pid), "open_probe_process"))
-        parent.kill()  # TerminateProcess: sem finally, close ou cancelamento cooperativo
-        parent.wait(timeout=5)
+        if host_action == "kill":
+            parent.kill()  # TerminateProcess: sem finally/close cooperativo.
+            parent.wait(timeout=5)
+        else:
+            # Suspende TODAS as threads do host: nem GIL, watchdog ou finally
+            # podem ajudar. Supervisor externo deve encerrar a árvore sozinho.
+            ntdll = C.WinDLL("ntdll")
+            ntdll.NtSuspendProcess.argtypes = [W.HANDLE]
+            ntdll.NtSuspendProcess.restype = W.LONG
+            assert ntdll.NtSuspendProcess(int(parent._handle)) == 0
         for handle in handles:
-            assert k.WaitForSingleObject(handle, 5000) == 0
+            assert k.WaitForSingleObject(handle, 12000) == 0
     finally:
         timer.cancel()
         if parent.poll() is None:
@@ -390,3 +399,148 @@ time.sleep(60)
         parent.communicate(timeout=5)
         for handle in handles:
             k.CloseHandle(handle)
+
+
+@native
+def test_supervisor_death_fails_closed(profile):
+    with launch(profile, "import time; time.sleep(60)", wall_seconds=15) as process:
+        process._supervisor.kill()
+        assert process.wait(5) != 0
+
+
+@native
+def test_locked_ram_scratch_quota_and_cleanup_on_error():
+    from ecowatt.windows_memory import RamScratch
+    scratch = RamScratch(4096)
+    with pytest.raises(RuntimeError, match="synthetic_error"):
+        with scratch:
+            buffer = scratch.allocate(4096)
+            buffer.write(b"SYNTHETIC")
+            assert buffer.read(9) == b"SYNTHETIC"
+            assert scratch.used_bytes == 4096
+            with pytest.raises(ValueError):
+                scratch.allocate(1)
+            with pytest.raises(ValueError):
+                buffer.write(b"XX", offset=4095)
+            raise RuntimeError("synthetic_error")
+    assert scratch.used_bytes == 0
+    assert buffer._address is None
+    with pytest.raises(ValueError):
+        buffer.read(1)
+    scratch.close()
+    with RamScratch(4096) as scratch:
+        scratch.allocate(1)
+        assert scratch.used_bytes == 4096  # quota inclui arredondamento da página.
+        with pytest.raises(ValueError):
+            scratch.allocate(1)
+
+
+@native
+def test_ram_lock_failure_never_falls_back_to_pageable_or_file(monkeypatch):
+    from ecowatt.windows_memory import RamScratch
+    real_dll = C.WinDLL
+    kernel = real_dll("kernel32", use_last_error=True)
+    released = []
+    original_free = kernel.VirtualFree
+    original_free.argtypes = [C.c_void_p, C.c_size_t, W.DWORD]
+    def free(address, size, kind):
+        released.append(C.string_at(address, 4096))
+        return original_free(address, size, kind)
+    monkeypatch.setattr(kernel, "VirtualLock", lambda *_: False)
+    monkeypatch.setattr(kernel, "VirtualFree", free)
+    monkeypatch.setattr(C, "WinDLL", lambda *args, **kwargs: kernel)
+    with RamScratch(4096) as scratch:
+        with pytest.raises(IsolationError, match="scratch_lock_failed"):
+            scratch.allocate(4096)
+        assert scratch.used_bytes == 0
+    assert released == [b"\0" * 4096]
+
+
+def prepare_ipc_runtime():
+    runtime = Path(python_executable()).parent
+    package = runtime / "ecowatt"
+    package.mkdir()
+    source = Path(__file__).resolve().parents[1] / "src" / "ecowatt"
+    for name in ("__init__.py", "document_ipc.py", "synthetic_ipc_worker.py",
+                 "synthetic_invoice.py", "invoice_result.py"):
+        shutil.copyfile(source / name, package / name)
+    # Somente cópias de dependências JÁ instaladas, nunca ACL no original.
+    import pydantic, pydantic_core, annotated_types, typing_inspection, typing_extensions
+    for module in (pydantic, pydantic_core, annotated_types, typing_inspection):
+        shutil.copytree(Path(module.__file__).parent, runtime / module.__name__,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copyfile(typing_extensions.__file__, runtime / "typing_extensions.py")
+    return package / "synthetic_ipc_worker.py"
+
+
+@native
+@pytest.mark.parametrize("mode", ["receipt", "normalized", "failure", "timeout", "cancel", "launch_failure",
+                                  "oversize", "trailing", "wrong_hash", "truncated_stall"])
+def test_coordinator_windows_ipc_preserves_fencing_and_discards_buffers(profile, environment, mode, monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    from ecowatt.services.coordinator import Coordinator
+    from ecowatt.services.synthetic_worker import Sample
+    from ecowatt.services.windows_executor import WindowsExecutor
+    from ecowatt.services.simulations import delete_simulation
+    from ecowatt.schemas import DeleteInput
+    from ecowatt.db.models import User
+    from ecowatt.db.session import transaction
+    from test_admission import setup
+    from test_coordinator import state, wait_running
+    engine, sim, _ = setup(environment)
+    script = prepare_ipc_runtime()
+    if mode in ("oversize", "trailing", "wrong_hash", "truncated_stall"):
+        prelude = "import sys,struct,time,json\nsys.stdin.buffer.read()\n"
+        if mode == "oversize":
+            code = "sys.stdout.buffer.write(struct.pack('!I',0xffffffff)); sys.stdout.buffer.flush(); time.sleep(30)"
+        elif mode == "trailing":
+            code = "sys.stdout.buffer.write(struct.pack('!I',2)+b'{}'+b'EXTRA')"
+        elif mode == "truncated_stall":
+            code = "sys.stdout.buffer.write(struct.pack('!I',100)+b'{}'); sys.stdout.buffer.flush(); time.sleep(30)"
+        else:
+            code = "packet=json.dumps({'status':'ok','source_hash':'0'*64,'byte_count':1,'page_count':1,'version':'synthetic-receipt-v1'}).encode(); sys.stdout.buffer.write(struct.pack('!I',len(packet))+packet)"
+        script.write_text(prelude + code, encoding="utf-8")
+    executor = WindowsExecutor(python_executable(), str(script), profile)
+    options = {"windows_executor": executor}
+    if mode in ("timeout", "cancel"):
+        options["worker_delay"] = 3
+    if mode == "timeout":
+        options["file_timeout"] = .1
+    if mode == "truncated_stall":
+        options["file_timeout"] = 2
+    if mode == "failure":
+        options["worker_fail"] = True
+    if mode == "launch_failure":
+        def fail(*args):
+            raise IsolationError("synthetic_launch_failed")
+        monkeypatch.setattr(IsolatedProcess, "_start_supervisor", fail)
+    with Coordinator(engine, **options) as coordinator:
+        task = coordinator.read_synthetic(sim["owner_id"], sim["id"], sim["revision"],
+            "windows-test-key", Sample("00001", padding_bytes=200_000), action="read_invoice")
+        entry = coordinator._queue[task]
+        if mode == "cancel":
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                pending = pool.submit(coordinator.run_once)
+                wait_running(engine, task)
+                with transaction(engine, write=True) as db:
+                    delete_simulation(db, db.get(User, sim["owner_id"]), sim["id"],
+                        DeleteInput(confirm=True, expected_revision=sim["revision"]))
+                result = pending.result(timeout=15)
+        else:
+            result = coordinator.run_invoice_once() if mode == "normalized" else coordinator.run_once()
+        assert entry.content == bytearray()
+        assert coordinator.pending_count == coordinator.retained_bytes == 0
+        if mode in ("receipt", "normalized"):
+            assert result.state == "finished"
+            assert state(engine, task)[0] == "finished"
+            assert bool(result.invoice_id) == (mode == "normalized")
+        else:
+            assert result.state == "interrupted"
+            if mode == "cancel":
+                assert result.reason == "operation_revoked"
+            elif mode in ("timeout", "truncated_stall"):
+                assert result.reason == "file_timeout"
+            elif mode == "wrong_hash":
+                assert result.reason == "invalid_worker_result"
+            else:
+                assert result.reason == "synthetic_worker_failed"

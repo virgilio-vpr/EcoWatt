@@ -1,6 +1,6 @@
 """Backend experimental Win32, somente para executáveis/programas sintéticos.
 
-Não conectado ao coordenador ou a rotas. Falhas de configuração são fatais;
+Conectável ao coordenador sintético, sem rotas. Falhas de configuração são fatais;
 nunca repetir execução sem AppContainer/Job. Não garante RAM sem swap/dumps.
 """
 import ctypes as C
@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import subprocess
 import threading
+import sys
 
 
 @dataclass(frozen=True)
@@ -101,6 +102,10 @@ class Win32:
             "ResumeThread": ([W.HANDLE], W.DWORD),
             "WaitForSingleObject": ([W.HANDLE, W.DWORD], W.DWORD),
             "GetExitCodeProcess": ([W.HANDLE, C.POINTER(W.DWORD)], W.BOOL),
+            "GetCurrentProcess": ([], W.HANDLE),
+            "DuplicateHandle": ([W.HANDLE, W.HANDLE, W.HANDLE, C.POINTER(W.HANDLE), W.DWORD, W.BOOL, W.DWORD], W.BOOL),
+            "CreateEventW": ([C.c_void_p, W.BOOL, W.BOOL, W.LPCWSTR], W.HANDLE),
+            "SetEvent": ([W.HANDLE], W.BOOL),
             "InitializeProcThreadAttributeList": ([C.c_void_p, W.DWORD, W.DWORD, C.POINTER(C.c_size_t)], W.BOOL),
             "UpdateProcThreadAttribute": ([C.c_void_p, W.DWORD, C.c_size_t, C.c_void_p,
                                            C.c_size_t, C.c_void_p, C.c_void_p], W.BOOL),
@@ -174,13 +179,13 @@ class Win32:
 
 
 class IsolatedProcess:
-    """Handle único do Job no pai; descendentes não herdam nenhum handle.
+    """Job no host/supervisor; worker herda somente IPC explícito, quando usado.
 
-    O watchdog é thread nativa de espera, independente do polling do
-    coordenador. Morte do pai fecha o Job no kernel. Congelamento completo do
-    pai/SO ainda requer supervisor externo, não implementado aqui.
+    Supervisor externo armado antes do resume observa prazo e morte do host.
+    Thread adicional encerra o Job se o supervisor morrer com host vivo.
     """
-    def __init__(self, executable, arguments, *, appcontainer_sid, policy=IsolationPolicy()):
+    def __init__(self, executable, arguments, *, appcontainer_sid, policy=IsolationPolicy(),
+                 stdio=None):
         self.api = Win32()
         self.policy = policy
         self.job = self.process = None
@@ -188,6 +193,8 @@ class IsolatedProcess:
         self._done = threading.Event()
         self.timed_out = False
         self._watchdog = None
+        self._supervisor = None
+        self._supervisor_stop = None
         executable = str(Path(executable).resolve(strict=True))
         if not appcontainer_sid or not appcontainer_sid.value:
             raise ValueError("AppContainer obrigatório")
@@ -211,11 +218,12 @@ class IsolatedProcess:
             rate = CpuRate(1 | 4, policy.cpu_rate)  # ENABLE | HARD_CAP
             self.api.check(k.SetInformationJobObject(self.job, 15, C.byref(rate), C.sizeof(rate)), "cpu_rate")
             size = C.c_size_t()
-            k.InitializeProcThreadAttributeList(None, 2, 0, C.byref(size))
+            attribute_count = 3 if stdio is not None else 2
+            k.InitializeProcThreadAttributeList(None, attribute_count, 0, C.byref(size))
             if not size.value:
                 raise IsolationError("attribute_list_size")
             attributes = C.create_string_buffer(size.value)
-            self.api.check(k.InitializeProcThreadAttributeList(attributes, 2, 0, C.byref(size)), "initialize_attributes")
+            self.api.check(k.InitializeProcThreadAttributeList(attributes, attribute_count, 0, C.byref(size)), "initialize_attributes")
             initialized = True
             capabilities = SecurityCapabilities(appcontainer_sid, None, 0, 0)
             self.api.check(k.UpdateProcThreadAttribute(attributes, 0, 0x20009,
@@ -228,6 +236,14 @@ class IsolatedProcess:
             startup = StartupEx()
             startup.startup.cb = C.sizeof(startup)
             startup.attributes = C.cast(attributes, C.c_void_p)
+            if stdio is not None:
+                if len(stdio) != 3 or any(type(h) is not int or h <= 0 for h in stdio):
+                    raise ValueError("Handles de IPC inválidos")
+                handles = (W.HANDLE * len(set(stdio)))(*dict.fromkeys(stdio))
+                self.api.check(k.UpdateProcThreadAttribute(attributes, 0, 0x20002,
+                    handles, C.sizeof(handles), None, None), "ipc_handle_list")
+                startup.startup.flags |= 0x100  # STARTF_USESTDHANDLES
+                startup.startup.stdin, startup.startup.stdout, startup.startup.stderr = stdio
             command = C.create_unicode_buffer(subprocess.list2cmdline([executable, *arguments]))
             # Allowlist: sem PATH/PYTHONPATH, proxy, credenciais ou variáveis da API.
             root = os.environ["SystemRoot"]
@@ -237,7 +253,7 @@ class IsolatedProcess:
                       "LOCALAPPDATA": os.environ["LOCALAPPDATA"]}
             environment = C.create_unicode_buffer("\0".join(
                 f"{key}={values[key]}" for key in sorted(values, key=str.upper)) + "\0\0")
-            self.api.check(k.CreateProcessW(executable, command, None, None, False,
+            self.api.check(k.CreateProcessW(executable, command, None, None, stdio is not None,
                 0x4 | 0x80000 | 0x400 | 0x8000000, environment, root,
                 C.byref(startup), C.byref(info)), "create_suspended_appcontainer")
             self.process, self.pid = info.process, info.pid
@@ -246,6 +262,8 @@ class IsolatedProcess:
             if not in_job.value:
                 raise IsolationError("process_not_in_job")
             self.api.verify_token(self.process, appcontainer_sid)
+            # Armar supervisão ANTES de executar o filho, inclusive seu loader.
+            self._start_supervisor()
             if k.ResumeThread(info.thread) == 0xFFFFFFFF:
                 raise IsolationError(C.get_last_error(), "resume_thread")
             self._watchdog = threading.Thread(target=self._watch, daemon=True,
@@ -266,17 +284,56 @@ class IsolatedProcess:
     def _watch(self):
         # Prazo continua valendo mesmo se o processo raiz já terminou e só
         # descendentes permanecem; close/wait também encerram esses processos.
-        if not self._done.wait(self.policy.wall_seconds):
+        # A morte inesperada do supervisor também fecha a execução. O prazo
+        # principal é externo; esta thread é defesa adicional no host vivo.
+        while not self._done.wait(0.05):
+            if self._supervisor.poll() is None:
+                continue
             with self._lock:
                 if self.job:
-                    self.timed_out = True
+                    self.timed_out = self._supervisor.returncode == 1460
                     self.api.check(self.api.kernel.TerminateJobObject(self.job, 1460), "watchdog_terminate")
+            return
+
+    def _start_supervisor(self):
+        k = self.api.kernel
+        copies = []
+        ready = None
+        try:
+            self._supervisor_stop = self.api.check(k.CreateEventW(None, True, False, None), "supervisor_stop")
+            ready = self.api.check(k.CreateEventW(None, True, False, None), "supervisor_ready")
+            current = k.GetCurrentProcess()
+            for handle, access in ((self.job, 8), (current, 0x100000),
+                                   (self._supervisor_stop, 0x100000), (ready, 2)):
+                duplicate = W.HANDLE()
+                self.api.check(k.DuplicateHandle(current, handle, current,
+                    C.byref(duplicate), access, True, 0), "supervisor_duplicate")
+                copies.append(duplicate.value)
+            startup = subprocess.STARTUPINFO()
+            startup.lpAttributeList = {"handle_list": copies}
+            root = os.environ["SystemRoot"]
+            self._supervisor = subprocess.Popen([
+                sys.executable, "-I", "-B", "-S",
+                str(Path(__file__).with_name("windows_supervisor.py")),
+                *(str(h) for h in copies), str(math.ceil(self.policy.wall_seconds * 1000)),
+            ], startupinfo=startup, close_fds=True, cwd=root,
+                env={"SystemRoot": root, "WINDIR": root},
+                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                creationflags=0x8000000)
+            if k.WaitForSingleObject(ready, 5000) != 0 or self._supervisor.poll() is not None:
+                raise IsolationError("supervisor_not_ready")
+        finally:
+            for handle in copies:
+                k.CloseHandle(handle)
+            if ready:
+                k.CloseHandle(ready)
 
     def wait(self, seconds=185):
         if self.api.kernel.WaitForSingleObject(self.process, math.ceil(seconds * 1000)) != 0:
             raise IsolationError("wait_failed_or_expired")
         code = W.DWORD()
         self.api.check(self.api.kernel.GetExitCodeProcess(self.process, C.byref(code)), "exit_code")
+        self.timed_out = self.timed_out or code.value == 1460
         self.close()
         return code.value
 
@@ -297,6 +354,9 @@ class IsolatedProcess:
         self._done.set()
         with self._lock:
             if self.job:
+                # Supervisor possui uma cópia limitada do Job; fechar o handle
+                # do host sozinho já não basta. Encerramento sempre explícito.
+                self.api.kernel.TerminateJobObject(self.job, 1)
                 self.api.kernel.CloseHandle(self.job)
                 self.job = None
         if self._watchdog and self._watchdog is not threading.current_thread():
@@ -305,6 +365,18 @@ class IsolatedProcess:
             self.api.kernel.WaitForSingleObject(self.process, 5000)
             self.api.kernel.CloseHandle(self.process)
             self.process = None
+        if self._supervisor_stop:
+            self.api.kernel.SetEvent(self._supervisor_stop)
+        if self._supervisor:
+            try:
+                self._supervisor.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self._supervisor.kill()
+                self._supervisor.wait(timeout=5)
+            self._supervisor = None
+        if self._supervisor_stop:
+            self.api.kernel.CloseHandle(self._supervisor_stop)
+            self._supervisor_stop = None
 
     def __enter__(self):
         return self

@@ -35,11 +35,14 @@ Entrega de 11/11/2026: cabeçalho autenticado de consulta de suporte ao layout, 
 Prioridade atual: segurança documental, conforme
 [DOCUMENT-SECURITY](../DOCUMENT-SECURITY.md). Orçamento prévio de raster e
 backend experimental Win32 (AppContainer/Job, token efetivo, limites e morte
-da árvore) têm provas sintéticas; nenhum está integrado ao renderer/coordenador.
+da árvore) têm provas sintéticas. Backend Windows agora é selecionável no
+coordenador sintético, com supervisor externo e IPC limitado; raster continua
+sem renderer. Scratch RAM travado e coletor ASGI sem spool têm provas isoladas.
 A solução local usa Windows nativo: WSL e containers estão fora deste ambiente
 por restrição informada pelo usuário, sem instalações. Próximo passo: completar
-supervisor externo, swap/dumps, temporários RAM e revisão ampliada de superfícies;
-integrar backend/IPC limitado antes do adaptador documental. Upload/leitura real
+política efetiva de swap/dumps, RAM para bibliotecas/cópias e revisão ampliada
+de superfícies; completar multipart limitado, reserva/capacidade e verificar
+servidor/proxy antes do adaptador documental. Upload/leitura real
 continuam bloqueados até garantias integrais de §5/§12, ingresso sem spool e
 adaptador homologado. Não antecipar Fase 3. Fase 2 e critérios integrais de §15
 permanecem abertos.

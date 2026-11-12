@@ -1,8 +1,65 @@
 # Estado do EcoWatt
 
-Atualizado em 11/11/2026. Referência: SPEC versão 3.11; gabarito mínimo aceito v0.2.
+Atualizado em 12/11/2026. Referência: SPEC versão 3.11; gabarito mínimo aceito v0.2.
 
-## Entrega corrente — organização dos temporários de testes
+## Entrega corrente — supervisor externo e IPC Windows sintético
+
+Coordenador aceita `WindowsExecutor` interno opcional, sem fallback para spawn
+em falha. Worker AppContainer/Job recebe somente stdin/stdout/NUL por lista
+explícita de handles. IPC com frames limitados de entrada/saída, schema/versão
+e reserva revalidados, EOF obrigatório e threads recolhidas antes de liberar
+capacidade/buffers. Mantidos cancelamento, fencing e publicação normalizada
+atômica em needs_review; aplicação não instancia o executor nem recebe uploads.
+
+Supervisor externo confiável armado antes de resume observa prazo e morte
+do host; probe suspende todas as threads do host e verifica término dos
+descendentes por handles. Morte do supervisor com host vivo também interrompe
+a árvore. Job agora tem handle adicional no supervisor: close termina a árvore
+explicitamente antes de recolhê-lo. Sem garantia durante falha global do SO ou
+suspensão simultânea de host/supervisor; prazo exclui sleep energético do Windows.
+
+Adicionados scratch em páginas nativas travadas com quota/limpeza e coletor
+ASGI limitado sem spool, ambos primitivas sem integração documental. Scratch
+não é filesystem RAM e não protege cópias Python/IPC/bibliotecas ou dumps.
+Auditoria somente leitura: CrashDumpEnabled=3, EncryptPagingFile desconhecido
+e chave LocalDumps presente. Não altera políticas nem libera documentos.
+
+Verificações: suíte geral com **375 aprovados e 31 omitidos em 248,04 s**
+(quatro omissões anteriores e 27 probes nativos explícitos); **51 testes**
+de transporte/coordenador aprovados em 30,13 s. Compilação de src/tests
+aprovada. Runner Win32 final: **42 aprovados em 233,88 s** (15 políticas e
+27 probes nativos); coordenador após ajuste do timeout: **32 aprovados em
+27,39 s**. Runner com controlador realocado e cache habilitado: **quatro
+aprovados, 38 desmarcados em 24,48 s**, sem o aviso de cache do runner antigo.
+Controlador e fixtures novos ficam em `.local-analysis/pytest/`; cópias antigas
+fora dessa pasta foram preservadas. Ao final: zero processos Python e zero
+diretórios de perfis EcoWatt.Synthetic em Packages. Tentativas iniciais encontraram restrição de temporários
+do sandbox, corrida no indicador de timeout, chamada incorreta da exclusão
+na fixture e classificação de IPC rompido junto ao prazo; corrigidas e
+revalidadas. Nenhuma falha de SO foi convertida em skip.
+
+Base remota conferida: `37a11d7621200585bfa1d34f2aaaf9b6d4ee6e3d`, branch
+`fase-2`. Diferenças dos arquivos existentes limitadas a esta entrega;
+contratos/corpus, `.env`, dados e demais alterações locais preservados.
+Envio somente de código, testes e documentação, sem merge, instalação,
+WSL/containers ou execução da aplicação com dados reais. Nenhum item integral
+de §15 marcado. Upload/leitura real bloqueados; Fase 2 aberta.
+
+Novos: `document_ipc.py`, `document_environment.py`, `memory_ingress.py`,
+`windows_memory.py`, `windows_supervisor.py`, `synthetic_ipc_worker.py` em
+`src/ecowatt/`; `src/ecowatt/services/windows_executor.py`;
+`tests/test_document_transport.py`. Alterados: backend Windows, coordenador,
+`tests/test_windows_isolation.py`, `tests/run_windows_isolation.ps1`, README, STATUS, DOCUMENT-SECURITY,
+COORDINATOR e plano da Fase 2. Nenhum arquivo versionado removido.
+
+Próximo passo: resolver política efetiva de swap/dumps para todos os
+processos/cópias e RAM para bibliotecas; ampliar revisão de IPC/COM/brokers,
+perfis graváveis e herança concorrente de handles. Completar multipart em
+memória com capacidade/reserva e verificar servidor/proxy efetivos antes do
+adaptador documental. Não declarar estas garantias concluídas pela existência
+do executor, do scratch ou do coletor.
+
+## Histórico — organização dos temporários de testes
 
 Removidos 31 diretórios locais de resíduos `.pytest-tmp-*`, `.pytest-support-*`,
 `pytest-cache-files-*`, `.local-isolation-tests` e `.pytest_cache` na raiz:
@@ -139,9 +196,10 @@ e escolhas pertinentes; retry histórico não restaura prontidão antiga.
 
 ## Pendências e próximo passo
 
-Completar supervisor externo, revisão ampliada de superfícies, swap/dumps,
-temporários RAM e ingresso sem spool; integrar backend Windows/IPC limitado
-ao coordenador. WSL/containers não fazem parte deste ambiente. Depois das
+Completar política efetiva de swap/dumps, RAM para bibliotecas/cópias, revisão
+ampliada de superfícies e ingresso multipart sem spool com capacidade/reserva
+e auditoria do servidor/proxy. Backend Windows/IPC limitado já é selecionável
+no coordenador sintético. WSL/containers não fazem parte deste ambiente. Depois das
 garantias integrais de §5/§12, integrar renderer ao orçamento e proveniência
 documental versionada, com homologação específica do layout. As provas
 sintéticas desta entrega não liberam upload/leitura real.

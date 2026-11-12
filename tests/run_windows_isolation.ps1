@@ -15,7 +15,7 @@ try {
     if ($LASTEXITCODE) { throw 'source_runtime' }
     $env:ECOWATT_TEST_SOURCE_PYTHON = $sourceRuntime
     $workspace = (Get-Location).Path
-    $controller = Join-Path $workspace '.local-analysis/isolation-controller'
+    $controller = Join-Path $workspace '.local-analysis/pytest/isolation-controller'
     [void](New-Item -ItemType Directory -Force -Path $controller)
     foreach ($filename in @('python.exe','python313.dll','python3.dll','vcruntime140.dll','vcruntime140_1.dll')) {
         $sourceFile = Join-Path $sourceRuntime $filename
@@ -35,7 +35,7 @@ try {
         $controller, (Join-Path $workspace '.venv/Lib/site-packages'),
         (Join-Path $workspace 'src'), $workspace)
     [IO.File]::WriteAllLines((Join-Path $controller 'python313._pth'), $runtimePaths, [Text.UTF8Encoding]::new($false))
-    & (Join-Path $controller 'python.exe') -m pytest tests/test_windows_isolation.py -q -p no:cacheprovider --basetemp=.local-analysis/pytest/isolation -k $TestFilter
+    & (Join-Path $controller 'python.exe') -m pytest tests/test_windows_isolation.py -q --basetemp=.local-analysis/pytest/isolation -k $TestFilter
     $testExit = $LASTEXITCODE
 } finally {
     $env:ECOWATT_SYNTHETIC_PROFILE_SID = $previousSid

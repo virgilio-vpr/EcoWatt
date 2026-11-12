@@ -126,10 +126,24 @@ Execute os testes a partir da raiz, por exemplo:
 A configuração centraliza temporários em `.local-analysis/pytest/default/`
 e cache em `.local-analysis/pytest/cache/`, fora do Git. A pasta de temporários
 é recriada pelo pytest a cada execução; não guarde materiais nela. O runner
-Windows usa `.local-analysis/pytest/isolation/`. Para execuções simultâneas,
+Windows usa `.local-analysis/pytest/isolation/` e copia o controlador para
+`.local-analysis/pytest/isolation-controller/`. Para execuções simultâneas,
 use nomes diferentes, como `--basetemp=.local-analysis/pytest/run-02`,
 sem reutilizar a pasta de outra execução ativa. Não crie novas pastas
 `.pytest-tmp-*` ou `.pytest-support-*` na raiz.
+
+Segurança documental da Fase 2 continua experimental e somente sintética.
+O coordenador aceita um executor Windows interno opcional, com supervisor
+externo e IPC limitado; isso não habilita upload ou leitura real. Auditoria
+somente leitura dos indicadores de swap/dumps, sem mudar políticas:
+
+```powershell
+.\.venv\Scripts\python.exe -m ecowatt.document_environment
+```
+
+O relatório nunca libera documentos. Consulte
+[docs/DOCUMENT-SECURITY.md](docs/DOCUMENT-SECURITY.md) para bloqueios,
+scratch RAM, coletor ASGI e runner de probes sintéticos Win32.
 
 ## Documentação a manter
 

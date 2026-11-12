@@ -1,7 +1,7 @@
-"""Coordenador explícito de fixtures: fila RAM, fencing e subprocesso spawn.
+"""Coordenador de fixtures: fila RAM, fencing e executor sintético selecionado.
 
 Não é iniciado pela aplicação nem recebe bytes arbitrários/PDFs. O processo
-sintético não demonstra isolamento de rede/CPU/RAM ou proteção de swap/dumps.
+sintético padrão usa spawn. Backend Windows é opt-in; sem swap/dumps homologados.
 """
 from collections import OrderedDict
 from dataclasses import dataclass
@@ -46,12 +46,17 @@ class Outcome:
 
 class Coordinator:
     def __init__(self, engine, *, ttl=60, file_timeout=180, batch_timeout=600,
-            poll_interval=0.1, worker_delay=0, worker_fail=False):
+            poll_interval=0.1, worker_delay=0, worker_fail=False, windows_executor=None):
         if (not 0 < file_timeout <= 180 or not 0 < batch_timeout <= 600
                 or not 0 < poll_interval <= 0.5 or poll_interval >= ttl / 2
                 or not 0 <= worker_delay <= 10):
             raise ValueError("Limites de execução inválidos")
         self.engine = engine
+        if windows_executor is not None:
+            from ecowatt.services.windows_executor import WindowsExecutor
+            if type(windows_executor) is not WindowsExecutor:
+                raise ValueError("Executor Windows inválido")
+        self.windows_executor = windows_executor
         self.ttl, self.file_timeout, self.batch_timeout = ttl, file_timeout, batch_timeout
         self.poll_interval, self.worker_delay, self.worker_fail = poll_interval, worker_delay, worker_fail
         self._lock, self._runner, self._stop = RLock(), Lock(), Event()
@@ -194,13 +199,18 @@ class Coordinator:
             reason = None
             deadline = min(time.monotonic() + self.file_timeout, entry.deadline)
             try:
-                context = multiprocessing.get_context("spawn")
-                reader, writer = context.Pipe(duplex=False)
-                process = context.Process(target=work,
-                    args=(writer, entry.content, entry.inspection.page_count, self.worker_delay, self.worker_fail, _invoice),
-                    daemon=True)
-                process.start()
-                writer.close()
+                if self.windows_executor is not None:
+                    process = reader = self.windows_executor.start(entry.content,
+                        entry.inspection.page_count, self.worker_delay, self.worker_fail,
+                        _invoice, max(0.001, deadline - time.monotonic()))
+                else:
+                    context = multiprocessing.get_context("spawn")
+                    reader, writer = context.Pipe(duplex=False)
+                    process = context.Process(target=work,
+                        args=(writer, entry.content, entry.inspection.page_count, self.worker_delay, self.worker_fail, _invoice),
+                        daemon=True)
+                    process.start()
+                    writer.close()
                 while True:
                     if self._stop.is_set():
                         reason = "coordinator_shutdown"
@@ -211,6 +221,11 @@ class Coordinator:
                     leadership.renew(self.engine, self.identity, self.ttl)
                     tasks.heartbeat(self.engine, task_id, lease, self.ttl)
                     if reader.poll(self.poll_interval):
+                        # I/O pode concluir/romper no mesmo instante do prazo.
+                        # Classificar timeout antes de interpretar o pacote.
+                        if time.monotonic() >= deadline:
+                            reason = "batch_timeout" if entry.deadline <= deadline else "file_timeout"
+                            break
                         try:
                             packet = reader.recv_bytes(maxlength=262144 if _invoice else 1024)
                             if _invoice:
@@ -247,14 +262,17 @@ class Coordinator:
             except DomainError:
                 reason = "operation_revoked"
             except (EOFError, OSError):
-                reason = "synthetic_worker_failed"
+                reason = ("batch_timeout" if entry.deadline <= deadline else "file_timeout"
+                    ) if time.monotonic() >= deadline else "synthetic_worker_failed"
             except Exception:
                 reason = "persistence_failed"
                 raise
             finally:
                 # Encerrar/recolher o filho antes de liberar capacidade ou bytes.
                 try:
-                    if process is not None and process.pid is not None:
+                    if self.windows_executor is not None and process is not None:
+                        process.close()
+                    elif process is not None and process.pid is not None:
                         if process.is_alive():
                             process.terminate()
                         process.join(timeout=2)

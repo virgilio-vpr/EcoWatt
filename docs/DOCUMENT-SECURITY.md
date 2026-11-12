@@ -12,11 +12,13 @@ Windows; não houve instalação de infraestrutura ou mudança de política.
 ## Backend nativo Windows e alcance da evidência
 
 `src/ecowatt/windows_isolation.py` usa ctypes/Win32, sem dependência nova,
-ORM ou HTTP. Não é usado pelo coordenador. Recebe executável interno e SID
+ORM ou HTTP. É selecionável pelo coordenador exclusivamente sintético via
+`WindowsExecutor`; o modo padrão `spawn` não tem essas garantias. Recebe executável interno e SID
 de perfil previamente provisionado; não tem endpoint ou ingresso de documentos.
 
 Cada processo nasce suspenso em AppContainer, sem capacidades solicitadas,
-sem herança de handles, com ambiente limitado a SystemRoot/WINDIR/LOCALAPPDATA
+sem herança de handles por padrão; no IPC, herda somente stdin/stdout/NUL
+pela lista explícita `PROC_THREAD_ATTRIBUTE_HANDLE_LIST`. Ambiente limitado a SystemRoot/WINDIR/LOCALAPPDATA
 (necessário ao perfil) e diretório inicial Windows. Não herda PATH, proxies,
 credenciais ou ambiente da API. O Job é atribuído atomicamente na criação
 por PROC_THREAD_ATTRIBUTE_JOB_LIST, evitando órfão suspenso se o pai morrer
@@ -36,13 +38,23 @@ parede até 180 segundos; memória/processos não excedem esses tetos. O SO pode
 arredondar memória para baixo por páginas. Não é limite de RSS nem proteção
 contra swap/dumps.
 
-KILL_ON_JOB_CLOSE encerra a árvore quando o kernel fecha o último handle,
-inclusive por morte abrupta do pai. wait/close encerram descendentes restantes.
-Watchdog de thread encerra o Job ao prazo sem polling do coordenador; não é
-supervisor externo. Suspensão completa do pai, GIL travado ou falha de SO ainda
-exigem outra barreira. Não há garantia de prazo rígido nesses casos.
+O supervisor externo `windows_supervisor.py` é armado e confirma prontidão
+antes de ResumeThread. Recebe cópias limitadas de quatro handles: Job apenas
+para término, pai apenas para espera, evento de parada apenas para espera e
+evento de prontidão apenas para sinalizar. Não recebe bytes, nomes de arquivo,
+credenciais ou ambiente da API. Espera morte do pai, parada explícita ou prazo;
+encerra o Job se o pai morrer ou o prazo vencer, mesmo com todas as threads
+do host suspensas. Uma thread no host encerra a árvore se o supervisor morrer.
 
-Verificação local final: **26 testes aprovados em 50,48 s**, Windows 11 build 26200,
+O supervisor também possui handle do Job: o fechamento isolado do handle do
+host já não aciona sozinho KILL_ON_JOB_CLOSE. `close()` termina o Job
+explicitamente antes de sinalizar/recolher o supervisor; morte dos dois fecha
+o último handle no kernel. Erros de preparo não retomam o filho nem fazem
+fallback. Suspensão simultânea do host/supervisor ou falha de kernel não estão
+cobertas. No Windows moderno, a espera de prazo não inclui suspensão energética
+do computador; não é promessa de prazo rígido durante sleep/hibernação.
+
+Verificação anterior (11/11/2026): **26 testes aprovados em 50,48 s**, Windows 11 build 26200,
 Python 3.13.14. Token sem capacidades/elevação, memória do pai e canário de
 arquivo negados; variáveis-canário não herdadas. Serviços sintéticos locais
 TCP/UDP IPv4/IPv6 são alcançáveis antes/depois fora do isolamento; dentro dele
@@ -63,16 +75,94 @@ ResumeThread não é chamado. Nenhum teste usa PDF, OCR ou credenciais reais.
 com `tests/windows_profile.ps1`, sem administrador, firewall ou ExecutionPolicy
 novos. Prepara cópias locais do Python/bibliotecas já instalados, fora da
 identidade MSIX; não baixa/instala dependências. Cópias ficam em
-`.local-analysis/`; somente bibliotecas/worker copiados recebem ACL RX do perfil.
+`.local-analysis/pytest/` (controlador em `isolation-controller/` e fixtures em
+`isolation/`); somente bibliotecas/worker copiados recebem ACL RX do perfil.
 Originais, ACLs do projeto/venv e credenciais não são alterados. Artefatos
 sintéticos locais ficam ignorados, fora do envio. Perfil é removido em finally;
 morte abrupta do runner inteiro pode deixar perfil/cópias sintéticos. Janitor
 independente e limpeza documental continuam pendentes.
 
-Primitivas documentadas pela Microsoft: [AppContainer](https://learn.microsoft.com/en-us/windows/win32/secauthz/implementing-an-appcontainer),
+Primitivas documentadas pela Microsoft: [lista de handles](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute),
+[espera/prazo](https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitformultipleobjects),
+[AppContainer](https://learn.microsoft.com/en-us/windows/win32/secauthz/implementing-an-appcontainer),
 [Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects),
 [limites de Job](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_basic_limit_information)
 e [taxa de CPU](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_cpu_rate_control_information).
+
+## Integração sintética e IPC limitado
+
+`Coordinator(..., windows_executor=WindowsExecutor(...))` usa o backend
+AppContainer/Job sem fallback para spawn em caso de erro. SID, runtime e script
+são provisionados pelo chamador interno confiável, nunca por payload HTTP.
+Não há configuração pública nem processo de provisionamento documental.
+`read_synthetic` continua aceitando somente `Sample`; todos os layouts reais
+e o recebimento de bytes arbitrários permanecem bloqueados.
+
+`document_ipc.py` transporta frames com comprimento uint32 em ordem de rede.
+Entrada: cabeçalho JSON fechado de até 512 bytes e fixture de até 10.000.000
+bytes. Saída: um único frame JSON, até 1.024 bytes para recibo ou 262.144 para
+resultado normalizado; EOF obrigatório, sem bytes extras. Comprimentos inválidos
+são recusados antes da alocação do payload. Pipes anônimos são os únicos canais;
+stderr vai a NUL. Não há pickle, spool ou conteúdo em argv/env/banco/logs.
+
+Threads de I/O permitem que o coordenador continue verificando prazo,
+heartbeat, cancelamento e fencing enquanto o pipe bloqueia. Saída parcial
+que não fecha continua sujeita a timeout; saída excedente/malformada encerra
+o Job. No encerramento, a árvore termina antes de recolher threads, liberar
+capacidade e limpar buffers. Schema, versão/hash/bytes/páginas, revisão,
+titularidade e lease continuam revalidados antes da persistência atômica.
+Resultados normalizados permanecem inventados e `needs_review`.
+
+## Swap/dumps, scratch RAM e ingresso
+
+`python -m ecowatt.document_environment` faz auditoria conservadora e somente
+leitura de indicadores do Registro; não imprime caminhos/conteúdo e nunca
+autoriza processamento. Consulta local de 12/11/2026: CrashDumpEnabled=3,
+EncryptPagingFile desconhecido/ausente e chave LocalDumps presente. Presença
+da chave pode incluir configuração por executável; não prova coleta efetiva
+para o worker. Ausência/negação tampouco prova proteção. Permanecem bloqueios
+para dumps de processo/sistema e swap protegido. Não houve mudança de Registro,
+WER, pagefile, privilégios, EDR, firewall ou política organizacional.
+
+`windows_memory.RamScratch` fornece buffers nativos sem arquivo, quota total
+máxima de 4.000.000 bytes (cobrando páginas inteiras), acesso sob trava e limpeza
+antes de liberar. Usa VirtualAlloc/VirtualLock; falha de lock é erro fechado,
+sem fallback para disco ou memória paginável. A quota não garante que o SO
+conseguirá travá-la. Não é diretório/filesystem RAM nem está integrado ao
+parser/coordenador. A cópia retornada por `read`, buffers Python, IPC e futuras
+bibliotecas não ficam protegidos por esse lock; dumps também não são excluídos.
+Não mudar working set/privilégios para contornar falha. Bibliotecas que
+exigirem nomes de arquivo continuam bloqueadas sem filesystem RAM homologado.
+
+`memory_ingress.memory_body` é uma primitiva ASGI interna, sem rota, com teto
+de corpo total (inclusive envelope futuro), verificação de Content-Length,
+contagem de chunks, recusa de content-encoding e limpeza no sucesso, erro ou
+cancelamento. Não chama Request.form/UploadFile/SpooledTemporaryFile. Testes
+injetam mensagens ASGI inventadas e vedam temporários de arquivo. Isso prova
+somente o coletor: falta parser multipart incremental limitado e integração
+autenticada após reserva/capacidade, limites de duração/concorrência e auditoria
+do servidor/proxy efetivamente usados. Um chunk já chega alocado pelo servidor;
+o coletor não limita memória/retensão anterior do ASGI/proxy.
+
+Fontes Microsoft: [VirtualLock e pagefile](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtuallock)
+e [dumps locais WER](https://learn.microsoft.com/en-us/windows/win32/wer/collecting-user-mode-dumps).
+
+Verificação de 12/11/2026: runner Win32 **42 aprovados em 233,88 s**
+(15 testes de política e 27 probes nativos). Inclui árvore após morte e
+suspensão completa do host, morte do supervisor, falha de preparo sem resume,
+RAM/quota/lock recusado, recibo/publicação normalizada, cancelamento por
+exclusão, timeout, falha sem fallback, frame excedente, bytes extras,
+hash divergente e resposta truncada que trava. Suíte geral: **375 aprovados,
+31 omitidos em 248,04 s** (27 probes explícitos e quatro omissões anteriores).
+Regressão do coordenador depois da classificação de timeout: **32 aprovados
+em 27,39 s**. Compilação src/tests aprovada. Estes resultados não medem
+renderer/OCR, tráfego externo, COM/brokers, arquivos temporários de bibliotecas
+ou persistência em proxy. Só fixtures e buffers inventados foram usados.
+Runner realocado para `.local-analysis/pytest/isolation-controller/`, com cache
+central habilitado, revalidado em quatro casos (host suspenso, scratch/lock
+recusado e publicação normalizada): **quatro aprovados, 38 desmarcados em
+24,48 s**. Ao final não restaram processos Python nem diretórios de perfis
+EcoWatt.Synthetic em Packages. Cópias antigas do controlador foram preservadas.
 
 ## Contrato executável de pixels e buffers
 
@@ -133,13 +223,13 @@ foram instaladas. Falta de administrador não foi tratada como impossibilidade.
 | Garantia de §5/§12 | Evidência atual e condição antes de documentos |
 | --- | --- |
 | Pixels/bytes de raster | Planejamento e confronto sintéticos testados; falta integração com renderer e teste de expansão real sintética. |
-| Rede e privilégios | Backend confere token antes de executar; probes locais/canário. Falta integração ao coordenador e revisão ampliada de superfícies/ambiente. |
+| Rede e privilégios | Backend selecionável no coordenador sintético, token conferido antes de executar e probes locais/canário. Falta revisão ampliada de superfícies/ambiente. |
 | CPU/RAM | Job impõe CPU/memória comprometida agregadas; exaustão sintética testada. Falta benchmark e integração ao parser/OCR. |
-| Descendentes e morte do pai | Backend testado com morte abrupta/handles de descendentes; coordenador ainda usa spawn anterior. |
-| Tempo/watchdog | Thread independente do polling testada; falta supervisor externo para host suspenso/GIL travado. |
-| Swap/dumps | Não auditados; falta política efetiva verificada no ambiente de processamento. |
-| Temporários | Esta entrega não cria temporários documentais; bibliotecas futuras devem funcionar em memória ou em RAM com quota/permissões e limpeza verificadas. |
-| Framework/proxy | Não há upload; falta implementar ingresso sem spool e verificar framework e proxy efetivamente usados. Ausência de endpoint não homologa o futuro ingresso. |
+| Descendentes e morte do pai | Backend opcional integrado; supervisor externo e fechamento explícito do Job. Modo spawn padrão permanece somente sintético. |
+| Tempo/watchdog | Supervisor armado antes de resume; probes de morte/suspensão completa do host. Falta integração/benchmark do parser/OCR; sem garantia de falha global do SO. |
+| Swap/dumps | Auditoria somente leitura aponta bloqueios; falta política efetiva verificada para todos os processos/cópias. |
+| Temporários | Scratch nativo com quota/lock, sem arquivos; não é filesystem RAM nem protege bibliotecas futuras. Integração e limpeza documental/janitor pendentes. |
+| Framework/proxy | Coletor ASGI em memória testado isoladamente; falta multipart, integração autenticada com capacidade e auditoria do servidor/proxy. Nenhum upload habilitado. |
 | Parser/proveniência | Não instalados nem implementados; faltam contrato documental versionado, páginas/regiões, confronto texto/OCR e homologação do layout específico. |
 
 A solução local segue Windows nativo, sem WSL/containers. Lease/fencing
@@ -148,9 +238,11 @@ do backend libera documentos no coordenador existente.
 
 ## Próximo passo verificável
 
-Completar supervisor externo, swap/dumps, temporários RAM e revisão ampliada
-de superfícies; integrar backend/IPC limitado ao coordenador antes do adaptador
-documental. Depois das garantias integrais de §5/§12, integrar renderer ao
+Resolver política de swap/dumps e RAM para bibliotecas/cópias e ampliar revisão
+de superfícies (IPC/COM/brokers, perfis graváveis e ambiente). Completar multipart
+sem spool com capacidade/reserva e verificar servidor/proxy, mantendo bloqueio
+de documentos. O executor Windows já é selecionável no coordenador sintético.
+Depois das garantias integrais de §5/§12, integrar renderer ao
 orçamento/proveniência documental versionada. Ingresso sem spool e homologação
 de layout seguem cumulativos. Seleção local não envia; leitura futura exige
 “Ler fatura”. Fase 2 permanece aberta.
