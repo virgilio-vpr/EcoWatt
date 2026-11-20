@@ -119,7 +119,7 @@ describe('application shell', () => {
     expect(screen.getByRole('heading', { name: 'Meu perfil' })).toBeInTheDocument()
     expect(screen.getByLabelText('Nome do responsável')).toHaveValue('Nome em edição')
     expect(screen.getByRole('button', { name: 'Sair' })).toBeEnabled()
-    fireEvent.click(screen.getByRole('link', { name: 'EnerDiag' }))
+    fireEvent.click(screen.getByRole('link', { name: 'EcoWatt' }))
     expect(window.location.pathname).toBe('/')
     expect(screen.getByRole('link', { name: 'Meu perfil' })).toHaveAttribute('href', '/perfil')
   })
@@ -140,7 +140,7 @@ describe('application shell', () => {
   it('renders the landing page sections and links to registration', () => {
     render(<App />)
 
-    expect(screen.getByRole('link', { name: 'EnerDiag' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'EcoWatt' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /Sua energia pode trabalhar melhor/ })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Como funciona' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /Entenda onde estão as oportunidades/ })).toBeInTheDocument()

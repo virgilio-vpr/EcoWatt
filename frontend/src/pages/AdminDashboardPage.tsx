@@ -15,7 +15,7 @@ export function AdminDashboardPage() {
     <section className="admin-page" aria-labelledby="admin-title">
       <p className="section-eyebrow">Área administrativa</p>
       <h1 id="admin-title">Painel administrativo</h1>
-      <p className="access-intro">Acesse as ferramentas de gestão da EnerDiag.</p>
+      <p className="access-intro">Acesse as ferramentas de gestão da EcoWatt.</p>
       <nav className="admin-grid" aria-label="Gestão administrativa">
         {adminSections.map((section) => (
           <a className="admin-card" href={section.href} key={section.href}>

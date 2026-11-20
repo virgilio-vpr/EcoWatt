@@ -45,12 +45,12 @@ describe('sequential invoice import', () => {
     const fetchMock = setupFetch()
     render(<InvoiceUploadPage />)
     await waitFor(() => expect(window.location.pathname).toBe('/login'))
-    expect(window.localStorage.getItem('enerdiag_invoice_import_id')).toBe('12')
+    expect(window.localStorage.getItem('ecowatt_invoice_import_id')).toBe('12')
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('removes a draft invoice and updates the review table before allowing a replacement', async () => {
-    window.localStorage.setItem('enerdiag_invoice_import_id', '12')
+    window.localStorage.setItem('ecowatt_invoice_import_id', '12')
     const fetchMock = setupFetch((url, options) => json(200, { data: session(url.endsWith('/invoices/3') && options?.method === 'DELETE' ? [] : ['2026-03']) }))
     render(<InvoiceUploadPage />)
     const summaryTable = await screen.findByRole('region', { name: 'Resumo das faturas salvas' })
@@ -119,12 +119,12 @@ describe('sequential invoice import', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('A leitura precisa ser revisada')
     expect(screen.getByRole('alert')).toHaveTextContent('03/2026 · 2026-03.pdf')
     expect(screen.getByRole('alert')).toHaveTextContent('Encargos de bandeira tarifária ou outros ajustes podem explicar a diferença')
-    expect(window.localStorage.getItem('enerdiag_invoice_import_id')).toBe('12')
+    expect(window.localStorage.getItem('ecowatt_invoice_import_id')).toBe('12')
   })
 
   it('limits a resumed import to twelve saved invoices', async () => {
     const months = Array.from({ length: 11 }, (_, index) => `2026-${String(index + 1).padStart(2, '0')}`)
-    window.localStorage.setItem('enerdiag_invoice_import_id', '12')
+    window.localStorage.setItem('ecowatt_invoice_import_id', '12')
     const fetchMock = setupFetch((url) => json(url.endsWith('/invoices') ? 201 : 200, { data: session(url.endsWith('/invoices') ? [...months, '2026-12'] : months) }))
     render(<InvoiceUploadPage />)
     fireEvent.change(await screen.findByLabelText(/Selecionar faturas/), { target: { files: [pdf('december.pdf'), pdf('extra.pdf')] } })
@@ -136,7 +136,7 @@ describe('sequential invoice import', () => {
 
   it.each([
     [new File(['text'], 'invalid.txt', { type: 'text/plain' }), 'selecione um arquivo PDF'],
-    [new File(['text'], 'invalid.pdf', { type: 'application/pdf' }), 'o conteúdo não é um PDF válido'],
+    [new File(['text'], 'invalid.pdf', { type: 'application/pdf' }), 'o conteúdo não é um PDF, PNG ou JPEG válido'],
     [new File([new Uint8Array(20 * 1024 * 1024 + 1)], 'large.pdf', { type: 'application/pdf' }), 'cada fatura pode ter no máximo 20 MB'],
   ])('rejects invalid uploads without sending them: %s', async (file, message) => {
     const fetchMock = setupFetch()
@@ -144,6 +144,18 @@ describe('sequential invoice import', () => {
     fireEvent.change(picker, { target: { files: [file] } })
     expect(await screen.findByRole('alert')).toHaveTextContent(message)
     expect(fetchMock.mock.calls.filter(([url]) => url.endsWith('/invoices'))).toHaveLength(0)
+  })
+
+  it.each([
+    ['invoice.png', 'image/png', new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10])],
+    ['invoice.jpeg', 'image/jpeg', new Uint8Array([255, 216, 255, 224])],
+  ])('sends supported image %s for backend validation and OCR', async (name, type, bytes) => {
+    const fetchMock = setupFetch(() => json(201, { data: session(['2026-01']) }))
+    const picker = await startImport()
+    expect(picker).toHaveAttribute('accept', 'application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg')
+    fireEvent.change(picker, { target: { files: [new File([bytes], name, { type })] } })
+    await screen.findByText('1 de 12 faturas lidas e salvas')
+    expect(fetchMock.mock.calls.filter(([url]) => url.endsWith('/invoices'))).toHaveLength(1)
   })
 
   it('keeps the current draft when the file picker is canceled', async () => {
@@ -155,7 +167,7 @@ describe('sequential invoice import', () => {
   })
 
   it('shows asynchronous processing failures', async () => {
-    window.localStorage.setItem('enerdiag_invoice_import_id', '12')
+    window.localStorage.setItem('ecowatt_invoice_import_id', '12')
     setupFetch((url) => json(200, { data: url.endsWith('/status')
       ? { id: 12, status: 'failed', processing_errors: [{ file: 'simulação', code: 'FAILED', errors: { message: 'Falha no cálculo.' } }] }
       : { ...session(['2026-03']), status: 'queued' } }))

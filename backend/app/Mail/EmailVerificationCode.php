@@ -24,7 +24,7 @@ class EmailVerificationCode extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Código de verificação do EnerDiag',
+            subject: 'Código de verificação do EcoWatt',
         );
     }
 

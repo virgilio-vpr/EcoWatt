@@ -34,6 +34,9 @@ export type Report = {
   id: number
   simulation_id: number
   months_count: number
+  consumer_unit?: string | null
+  period_start?: string | null
+  period_end?: string | null
   total_monthly_savings: string | null
   total_yearly_savings: string | null
   savings_percentage: string | null
@@ -60,6 +63,7 @@ const warningText: Record<string, string> = reportTexts.warnings
 
 const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const decimal = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 })
+const demandDecimal = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 })
 
 function amount(value: string | null | undefined) {
   if (value === null || value === undefined || value === '') return '—'
@@ -67,12 +71,20 @@ function amount(value: string | null | undefined) {
   return Number.isFinite(parsed) ? currency.format(parsed) : '—'
 }
 
-function monthLabel(value?: string) {
+function monthLabel(value?: string, fullYear = false) {
   if (!value) return ''
   const [year, month] = value.split('-').map(Number)
   if (!year || !month) return value
-  return new Intl.DateTimeFormat('pt-BR', { month: 'short', year: '2-digit', timeZone: 'UTC' }).format(new Date(Date.UTC(year, month - 1, 1)))
+  return new Intl.DateTimeFormat('pt-BR', { month: 'short', year: fullYear ? 'numeric' : '2-digit', timeZone: 'UTC' }).format(new Date(Date.UTC(year, month - 1, 1)))
 }
+
+function axisCurrency(value: number) {
+  const scale = Math.abs(value) >= 1_000_000 ? 1_000_000 : Math.abs(value) >= 1_000 ? 1_000 : 1
+  return `R$ ${decimal.format(value / scale)}${scale === 1_000_000 ? ' mi' : scale === 1_000 ? ' mil' : ''}`
+}
+
+const chartTick = { fill: 'var(--text)', fontSize: 12 }
+const chartTooltipStyle = { backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, color: 'var(--text-h)' }
 
 function numeric(value: string | null | undefined) {
   if (value === null || value === undefined || value === '') return null
@@ -184,7 +196,7 @@ export function SimulationReportView({ report, simulationId, backHref = '/minhas
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `relatorio-enerdiag-${simulationId}.pdf`
+      link.download = `relatorio-ecowatt-${simulationId}.pdf`
       document.body.appendChild(link)
       link.click()
       link.remove()
@@ -201,8 +213,7 @@ export function SimulationReportView({ report, simulationId, backHref = '/minhas
   const warnings = [...report.warnings]
   if (report.months_count > 0 && report.months_count < 12) warnings.unshift('incomplete_invoice_series')
   const uniqueWarnings = [...new Set(warnings)]
-  const consultationWarning = 'demand_invoice_reconciliation_mismatch'
-  const customerWarnings = uniqueWarnings.filter((warning) => !reportTexts.internal_warnings.includes(warning) && warning !== consultationWarning)
+  const customerWarnings = uniqueWarnings.filter((warning) => !reportTexts.internal_warnings.includes(warning))
   const reserveValues = report.r_values.filter((value) => value.source === 'fallback' && value.ratio !== null && value.ratio !== '')
   const demandUnavailable = uniqueWarnings.includes('demand_savings_unavailable_pending_section_9_limits')
     || uniqueWarnings.includes('demand_optimization_unavailable_pending_section_9_limits')
@@ -212,13 +223,35 @@ export function SimulationReportView({ report, simulationId, backHref = '/minhas
   const percentageText = report.savings_percentage === null ? '—' : `${decimal.format(Number(report.savings_percentage))}%`
   const demandReferences = [...new Map((report.chart_series.demand ?? []).filter((point) => point.tariff_reference_source).map((point) => [point.time_slot, point])).values()]
   const demandReferenceMonth = report.chart_series.demand?.find((point) => point.tariff_reference_month)?.tariff_reference_month
+  const measuredDemands = new Map<string, Record<string, string | null | undefined>>()
+  for (const point of report.chart_series.demand_measurements ?? []) {
+    if (!point.reference_month || !point.time_slot) continue
+    const row = measuredDemands.get(point.reference_month) ?? {}
+    row[point.time_slot] = point.measured
+    measuredDemands.set(point.reference_month, row)
+  }
   const demandSlots = demandData.some((point) => point.timeSlot === 'peak' || point.timeSlot === 'off_peak')
     ? [{ key: 'peak', label: 'Ponta' }, { key: 'off_peak', label: 'Fora de ponta' }]
     : [{ key: 'unique', label: 'Única' }]
 
+  const months = [...new Set(Object.values(report.chart_series).flat().map((point) => point.reference_month)
+    .filter((month): month is string => Boolean(month && /^\d{4}-(0[1-9]|1[0-2])$/.test(month))))].sort()
+  const periodStart = report.period_start || months[0]
+  const periodEnd = report.period_end || months.at(-1)
+  const period = periodStart && periodEnd ? periodStart === periodEnd ? monthLabel(periodStart, true) : `${monthLabel(periodStart, true)} – ${monthLabel(periodEnd, true)}` : null
+  const hasTechnicalDetails = demandReferences.length > 0 || Boolean(demandReferenceMonth) || reserveValues.length > 0 || measuredDemands.size > 0
+  const comparisonAvailable = !migrationUnavailable && modalityData.length > 0 && modalityData.every((point) => point.Azul !== null && point.Verde !== null)
+  const migrationMonthly = numeric(report.migration_savings_monthly)
+  const recommendedModality = report.recommended_modality === 'blue' ? 'Azul' : report.recommended_modality === 'green' ? 'Verde' : null
+
   return <section className="report-page" aria-labelledby="report-title">
     <div className="report-heading">
-      <div><p className="section-eyebrow">Análise concluída · Protocolo {simulationId}</p><h1 id="report-title">Seu relatório de energia</h1><p className="access-intro">Resultados calculados para {report.months_count} {report.months_count === 1 ? 'fatura' : 'faturas'}.</p></div>
+      <div><p className="section-eyebrow">Análise concluída · Protocolo {simulationId}</p><h1 id="report-title">Seu relatório de energia</h1><p className="access-intro">Resultados calculados para {report.months_count} {report.months_count === 1 ? 'fatura' : 'faturas'}.</p>
+        {(report.consumer_unit || period) && <dl className="report-context">
+          {report.consumer_unit && <div><dt>Unidade consumidora</dt><dd>{report.consumer_unit}</dd></div>}
+          {period && <div><dt>Período analisado</dt><dd>{period}</dd></div>}
+        </dl>}
+      </div>
       <div className="report-actions"><NavigationLink direction="back" href={backHref}>{backLabel}</NavigationLink><button className="button button--secondary" type="button" disabled={downloading} onClick={downloadPdf}>{downloading ? 'Preparando PDF…' : 'Baixar relatório em PDF'}</button></div>
     </div>
     {pdfMessage && <p className="form-success" role="status">{pdfMessage}</p>}
@@ -226,14 +259,14 @@ export function SimulationReportView({ report, simulationId, backHref = '/minhas
     {children}
 
     <section className="report-highlights" aria-label="Indicadores principais">
-      <article className="report-highlight"><span>Economia mensal média</span><strong>{amount(report.total_monthly_savings)}</strong></article>
-      <article className="report-highlight"><span>Projeção de economia anual</span><strong>{amount(report.total_yearly_savings)}</strong></article>
+      <article className="report-highlight report-highlight--primary"><span>Economia mensal média</span><strong>{amount(report.total_monthly_savings)}</strong><small>Potencial estimado com base nas faturas analisadas.</small></article>
+      <article className="report-highlight"><span>Projeção de economia anual</span><strong>{amount(report.total_yearly_savings)}</strong><small>Projeção baseada na média dos meses analisados.</small></article>
       <article className="report-highlight"><span>{report.explanatory_texts.percentage || '% do valor médio pago no período'}</span><strong>{percentageText}</strong><small>{report.explanatory_texts.percentage_observation?.replace('A economia usa tarifas atuais e o valor pago usa as tarifas históricas.', 'A economia usa tarifas de referência; o valor pago usa as tarifas históricas.') || 'A economia usa tarifas de referência; o valor pago usa as tarifas históricas.'}</small></article>
     </section>
 
     <section className="report-components" aria-labelledby="components-title">
       <div className="report-components-heading"><div><h2 id="components-title">Economia por componente</h2><p>Veja onde estão as oportunidades de economia.</p></div>
-        {report.recommended_modality && <div className="report-modality-badge" data-modality={report.recommended_modality}><span>Modalidade recomendada</span><strong>{report.recommended_modality === 'blue' ? 'Azul' : report.recommended_modality === 'green' ? 'Verde' : report.recommended_modality}</strong></div>}
+        {recommendedModality && comparisonAvailable && <div className="report-modality-badge" data-modality={report.recommended_modality}><span>Modalidade recomendada</span><strong>{report.recommended_modality === 'blue' ? 'Azul' : report.recommended_modality === 'green' ? 'Verde' : report.recommended_modality}</strong></div>}
       </div>
       <dl>
         {[
@@ -243,25 +276,67 @@ export function SimulationReportView({ report, simulationId, backHref = '/minhas
           { label: 'Migração de modalidade', monthly: report.migration_savings_monthly, yearly: report.migration_savings_yearly, unavailable: migrationUnavailable },
         ].map((component) => <div key={component.label} className={`report-component${!component.unavailable && Number(component.monthly) > 0 ? ' report-component--positive' : ''}`}><dt>{component.label}</dt><dd>{component.unavailable ? <strong className="report-component-unavailable">Indisponível</strong> : <><div className="report-component-monthly"><strong>{amount(component.monthly)}</strong><span>/ mês</span></div><div className="report-component-yearly"><strong>{amount(component.yearly)}</strong><span>/ ano</span></div></>}</dd></div>)}
       </dl>
-      {demandReferences.length > 0 ? <div className="report-tariff-note"><h3>Tarifas utilizadas na comparação</h3><p>{reportTexts.demand_reference_note}</p><div className="report-tariff-references">{demandReferences.map((point) => <p key={point.time_slot}><strong>{point.time_slot === 'peak' ? 'Ponta' : point.time_slot === 'off_peak' ? 'Fora de ponta' : 'Única'}: {point.reference_tariff?.replace('.', ',')} R$/kW</strong><span>{reportTexts.demand_reference_sources[point.tariff_reference_source as keyof typeof reportTexts.demand_reference_sources] ?? 'Tarifa de referência'} · {monthLabel(point.tariff_reference_month ?? undefined)}</span></p>)}</div></div> : demandReferenceMonth && <p className="report-chart-note">{reportTexts.demand_comparison_note.replace('{month}', monthLabel(demandReferenceMonth))}</p>}
+
     </section>
 
-    {uniqueWarnings.includes(consultationWarning) && <section className="report-consultation" aria-labelledby="consultation-title">
-      <div className="report-consultation-content"><p className="section-eyebrow">Consultoria especializada</p><h2 id="consultation-title">{reportTexts.consultation_title}</h2><p>{reportTexts.warnings.demand_invoice_reconciliation_mismatch}</p></div>
-      <NavigationLink href="#enerdiag-contact" variant="primary">{reportTexts.consultation_contact}</NavigationLink>
-    </section>}
     {customerWarnings.length > 0 && <section className="report-warnings" aria-labelledby="warnings-title"><h2 id="warnings-title">Avisos da análise</h2><ul>{customerWarnings.map((warning) => <li key={warning}>{warningText[warning] ?? reportTexts.fallback_warning}</li>)}</ul></section>}
-    {reserveValues.length > 0 && <section className="report-ratio" aria-label="Reserva da demanda ociosa"><h2>Reserva aplicada à demanda ociosa</h2><p>Foi usada a proporção r = {decimal.format(Number(reserveValues[0].ratio) * 100)}% nos períodos em que a fatura não indicou essa proporção.</p></section>}
 
     <section className="report-charts" aria-label="Gráficos do relatório">
+      <div className="report-section-heading"><p className="section-eyebrow">Evolução e comparação</p><h2>Entenda os resultados</h2><p>Acompanhe a demanda, a economia com reativos e os custos das modalidades.</p></div>
       {demandSlots.map(({ key, label }) => {
         const points = demandData.filter((point) => point.timeSlot === key)
-        return <article className="report-chart" key={key}><h2>Demanda {label.toLowerCase()}: registrada × contratada × ótima</h2>{points.length ? <div className="chart-container" data-testid={`demand-chart-${key}`} aria-label={`Gráfico de demanda ${label.toLowerCase()} em kW`}><ResponsiveContainer width="100%" height={280}><LineChart data={points} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="month" tick={{ fill: 'var(--text)', fontSize: 11 }} /><YAxis unit=" kW" tick={{ fill: 'var(--text)', fontSize: 11 }} /><Tooltip formatter={(value) => value == null ? '—' : `${decimal.format(Number(value))} kW`} /><Legend /><Line type="monotone" dataKey="measured" name="Registrada" stroke="#0b8f6a" strokeWidth={2} connectNulls /><Line type="monotone" dataKey="contracted" name="Contratada" stroke="#2764c5" strokeWidth={2} connectNulls /><Line type="monotone" dataKey="contractedTolerance" name="Contratada + 5%" stroke="#dc2626" strokeWidth={2} strokeDasharray="6 4" dot={false} /><Line type="monotone" dataKey="optimal" name="Ótima" stroke="#b86d13" strokeWidth={2} connectNulls /><Line type="monotone" dataKey="optimalTolerance" name="Ótima + 5%" stroke="#a855f7" strokeWidth={2} strokeDasharray="6 4" dot={false} /></LineChart></ResponsiveContainer></div> : <p className="chart-empty">A série de demanda não está disponível neste relatório.</p>}{points.length > 0 && <p className="report-chart-note">As linhas tracejadas indicam +5% sobre a demanda contratada e sobre a ótima simulada, para comparar a medição com o limite de tolerância de cada cenário.</p>}</article>
+        return <article className="report-chart" key={key}><h3>Demanda {label.toLowerCase()}: registrada × contratada × ótima</h3>{points.length ? <div className="chart-container" data-testid={`demand-chart-${key}`} aria-label={`Gráfico de demanda ${label.toLowerCase()} em kW`}><ResponsiveContainer width="100%" height={280}><LineChart data={points} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}><CartesianGrid vertical={false} strokeDasharray="3 5" stroke="var(--border)" opacity={0.65} /><XAxis dataKey="month" tick={chartTick} /><YAxis width={76} unit=" kW" tickFormatter={(value) => decimal.format(Number(value))} tick={chartTick} /><Tooltip contentStyle={chartTooltipStyle} formatter={(value) => value == null ? '—' : `${decimal.format(Number(value))} kW`} /><Legend iconSize={12} wrapperStyle={{ fontSize: '0.78rem', paddingTop: 12 }} /><Line type="monotone" dataKey="measured" name="Registrada" stroke="var(--chart-measured)" strokeWidth={3} connectNulls /><Line type="monotone" dataKey="contracted" name="Contratada" stroke="var(--chart-contracted)" strokeWidth={3} connectNulls /><Line type="monotone" dataKey="contractedTolerance" name="Contratada + 5%" stroke="var(--chart-contracted-tolerance)" strokeWidth={1.5} strokeOpacity={0.7} strokeDasharray="6 4" dot={false} /><Line type="monotone" dataKey="optimal" name="Ótima" stroke="var(--chart-optimal)" strokeWidth={3} connectNulls /><Line type="monotone" dataKey="optimalTolerance" name="Ótima + 5%" stroke="var(--chart-optimal-tolerance)" strokeWidth={1.5} strokeOpacity={0.7} strokeDasharray="6 4" dot={false} /></LineChart></ResponsiveContainer></div> : <p className="chart-empty">A série de demanda não está disponível neste relatório.</p>}{points.length > 0 && <p className="report-chart-note">As linhas tracejadas indicam +5% sobre a demanda contratada e sobre a ótima simulada, para comparar a medição com o limite de tolerância de cada cenário.</p>}</article>
       })}
-      <article className="report-chart"><h2>Economia com reativos por mês</h2>{reactiveData.length ? <div className="chart-container" data-testid="reactive-chart" aria-label="Gráfico mensal da economia com reativos"><ResponsiveContainer width="100%" height={280}><BarChart data={reactiveData} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="month" tick={{ fill: 'var(--text)', fontSize: 11 }} /><YAxis tickFormatter={(value) => `R$ ${decimal.format(Number(value))}`} tick={{ fill: 'var(--text)', fontSize: 11 }} /><Tooltip formatter={(value) => amount(String(value ?? ''))} /><Bar dataKey="value" name="Economia mensal" fill="#0b8f6a" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div> : <p className="chart-empty">A série de reativos não está disponível neste relatório.</p>}</article>
-      <article className="report-chart"><h2>Comparação entre Azul e Verde</h2>{report.chart_series.modality?.[0]?.tariff_reference_date && <p className="report-chart-note">{reportTexts.modality_reference_note}</p>}{modalityData.length ? <div className="chart-container" data-testid="modality-chart" aria-label="Comparação dos custos da modalidade Azul e Verde"><ResponsiveContainer width="100%" height={280}><BarChart data={modalityData} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="month" tick={{ fill: 'var(--text)', fontSize: 11 }} /><YAxis tickFormatter={(value) => `R$ ${decimal.format(Number(value))}`} tick={{ fill: 'var(--text)', fontSize: 11 }} /><Tooltip formatter={(value) => amount(String(value ?? ''))} /><Legend /><Bar dataKey="Azul" fill="#2764c5" /><Bar dataKey="Verde" fill="#0b8f6a" /></BarChart></ResponsiveContainer></div> : <p className="chart-empty">A comparação não está disponível sem tarifas válidas e dados suficientes para as duas modalidades.</p>}</article>
+      <article className="report-chart"><h3>Economia com reativos por mês</h3>{reactiveData.length ? <div className="chart-container" data-testid="reactive-chart" aria-label="Gráfico mensal da economia com reativos"><ResponsiveContainer width="100%" height={280}><BarChart data={reactiveData} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}><CartesianGrid vertical={false} strokeDasharray="3 5" stroke="var(--border)" opacity={0.65} /><XAxis dataKey="month" tick={chartTick} /><YAxis width={88} tickFormatter={(value) => axisCurrency(Number(value))} tick={chartTick} /><Tooltip contentStyle={chartTooltipStyle} formatter={(value) => amount(String(value ?? ''))} /><Bar dataKey="value" name="Economia mensal" fill="var(--chart-measured)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div> : <p className="chart-empty">A série de reativos não está disponível neste relatório.</p>}</article>
+      <article className={`report-chart report-modality${demandSlots.length === 1 ? ' report-chart--wide' : ''}`}>
+        <h3>Comparação entre Azul e Verde</h3>
+        <div className="report-modality-layout">
+          <div className="report-modality-graph">{report.chart_series.modality?.[0]?.tariff_reference_date && <p className="report-chart-note">{reportTexts.modality_reference_note}</p>}{modalityData.length ? <div className="chart-container" data-testid="modality-chart" aria-label="Comparação dos custos da modalidade Azul e Verde"><ResponsiveContainer width="100%" height={280}><BarChart data={modalityData} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}><CartesianGrid vertical={false} strokeDasharray="3 5" stroke="var(--border)" opacity={0.65} /><XAxis dataKey="month" tick={chartTick} /><YAxis width={88} tickFormatter={(value) => axisCurrency(Number(value))} tick={chartTick} /><Tooltip contentStyle={chartTooltipStyle} formatter={(value) => amount(String(value ?? ''))} /><Legend iconSize={12} wrapperStyle={{ fontSize: '0.78rem', paddingTop: 12 }} /><Bar dataKey="Azul" fill="var(--chart-contracted)" /><Bar dataKey="Verde" fill="var(--chart-measured)" /></BarChart></ResponsiveContainer></div> : <p className="chart-empty">A comparação não está disponível sem tarifas válidas e dados suficientes para as duas modalidades.</p>}</div>
+          <aside className="report-modality-summary" aria-label="Conclusão da comparação de modalidades">
+            <span className="section-eyebrow">Leitura da comparação</span>
+            <h4>{!comparisonAvailable ? 'Comparação ainda não disponível' : recommendedModality ? `Modalidade indicada: ${recommendedModality}` : 'Comparação de custos por modalidade'}</h4>
+            {!comparisonAvailable ? <p>A série de custos está incompleta ou a análise identificou uma limitação. Consulte os avisos para conferir as condições.</p>
+              : migrationMonthly !== null && migrationMonthly > 0 ? <dl><div><dt>Economia estimada com a migração</dt><dd><strong>{amount(report.migration_savings_monthly)}</strong><span>/ mês</span></dd></div><div><dt>Projeção anual</dt><dd>{amount(report.migration_savings_yearly)}</dd></div></dl>
+                : migrationMonthly === 0 ? <p>A análise não indica economia adicional com a troca de modalidade.</p>
+                  : <p>Confira os custos dos dois planos no gráfico e as observações da análise.</p>}
+            <p className="report-chart-note">Cada modalidade utiliza suas próprias tarifas com tributos: demanda única na Verde e demandas de ponta e fora de ponta na Azul.</p>
+          </aside>
+        </div>
+      </article>
     </section>
 
+    {hasTechnicalDetails && <details className="report-details">
+      <summary><span>Detalhes da análise</span><small>Tarifas de referência, premissas e medições das faturas</small></summary>
+      <div className="report-details-content">
+      {demandReferences.length > 0 ? <div className="report-tariff-note"><h3>Tarifas utilizadas na comparação</h3><p>{reportTexts.demand_reference_note}</p><div className="report-tariff-references">{demandReferences.map((point) => <p key={point.time_slot}><strong>{point.time_slot === 'peak' ? 'Ponta' : point.time_slot === 'off_peak' ? 'Fora de ponta' : 'Única'}: {point.reference_tariff?.replace('.', ',')} R$/kW</strong><span>{reportTexts.demand_reference_sources[point.tariff_reference_source as keyof typeof reportTexts.demand_reference_sources] ?? 'Tarifa de referência'} · {monthLabel(point.tariff_reference_month ?? undefined)}</span></p>)}</div></div> : demandReferenceMonth && <p className="report-chart-note">{reportTexts.demand_comparison_note.replace('{month}', monthLabel(demandReferenceMonth))}</p>}
+    {reserveValues.length > 0 && <section className="report-ratio" aria-label="Reserva da demanda ociosa"><h2>Reserva aplicada à demanda ociosa</h2><p>Foi usada a proporção r = {decimal.format(Number(reserveValues[0].ratio) * 100)}% nos períodos em que a fatura não indicou essa proporção.</p></section>}
+
+    {measuredDemands.size > 0 && <section className="report-tariff-note" aria-labelledby="measurements-title">
+      <h2 id="measurements-title">Demandas do quadro de medição</h2>
+      <p>{reportTexts.measurement_reference_note}</p>
+      <div className="invoice-table-wrap" tabIndex={0} role="region" aria-label="Demandas medidas por mês"><table className="invoice-review-table"><thead><tr><th scope="col">Mês</th><th scope="col">Ponta (kW)</th><th scope="col">Fora de ponta indutiva (kW)</th></tr></thead><tbody>{[...measuredDemands].map(([month, values]) => <tr key={month}><th scope="row">{monthLabel(month)}</th><td>{values.peak == null ? '—' : demandDecimal.format(Number(values.peak))}</td><td>{values.off_peak == null ? '—' : demandDecimal.format(Number(values.off_peak))}</td></tr>)}</tbody></table></div>
+      <p>{reportTexts.demand_tax_note}</p>
+    </section>}
+
+      </div>
+    </details>}
+
     {report.recommendations.length > 0 && <section className="report-recommendations" aria-labelledby="recommendations-title"><h2 id="recommendations-title">Próximos passos</h2><ul>{report.recommendations.map((recommendation, index) => <li key={`${recommendation}-${index}`}>{recommendation}</li>)}</ul></section>}
+    <section className="report-consultation" aria-labelledby="consultation-title">
+      <div className="report-consultation-content"><p className="section-eyebrow">Seu próximo passo</p><h2 id="consultation-title">{reportTexts.consultation_title}</h2><p>Converse com a equipe para revisar as oportunidades identificadas e planejar a avaliação técnica da sua unidade.</p></div>
+      <svg className="report-consultation-art" viewBox="0 0 220 120" fill="none" aria-hidden="true" focusable="false">
+        <circle cx="120" cy="57" r="49" fill="currentColor" opacity="0.06" />
+        <path d="M20 102h180M26 25v77" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M26 41h166M26 71h166" stroke="currentColor" strokeOpacity="0.12" strokeDasharray="3 7" />
+        <rect x="39" y="83" width="11" height="19" rx="3" fill="currentColor" opacity="0.2" />
+        <rect x="59" y="68" width="11" height="34" rx="3" fill="currentColor" opacity="0.35" />
+        <rect x="79" y="53" width="11" height="49" rx="3" fill="currentColor" opacity="0.55" />
+        <path d="m123 17-27 43h23l-10 33 41-49h-25l12-27h-14Z" fill="currentColor" opacity="0.9" />
+        <path d="M151 83h12l10-17 12 8 16-23" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="201" cy="51" r="4" fill="currentColor" />
+        <path d="M174 21v10m-5-5h10" stroke="currentColor" strokeOpacity="0.45" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="51" cy="35" r="3" fill="currentColor" opacity="0.4" />
+      </svg>
+    </section>
   </section>
 }

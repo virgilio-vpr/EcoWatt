@@ -84,8 +84,8 @@ class TotpService
 
     public function provisioningUri(string $email, #[\SensitiveParameter] string $secret): string
     {
-        return 'otpauth://totp/'.rawurlencode('EnerDiag:'.$email).'?'.http_build_query([
-            'secret' => $secret, 'issuer' => 'EnerDiag', 'algorithm' => 'SHA1', 'digits' => 6, 'period' => 30,
+        return 'otpauth://totp/'.rawurlencode('EcoWatt:'.$email).'?'.http_build_query([
+            'secret' => $secret, 'issuer' => 'EcoWatt', 'algorithm' => 'SHA1', 'digits' => 6, 'period' => 30,
         ], '', '&', PHP_QUERY_RFC3986);
     }
 }

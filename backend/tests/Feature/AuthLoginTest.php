@@ -30,7 +30,7 @@ class AuthLoginTest extends TestCase
         $this->assertSame($expectedExpiry->toIso8601String(), $response->json('expires_at'));
         $this->assertDatabaseHas('personal_access_tokens', [
             'tokenable_id' => $user->id,
-            'name' => 'enerdiag-api',
+            'name' => 'ecowatt-api',
             'expires_at' => $expectedExpiry->toDateTimeString(),
         ]);
     }

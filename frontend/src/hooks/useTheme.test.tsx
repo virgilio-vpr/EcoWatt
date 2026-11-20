@@ -24,7 +24,7 @@ describe('theme', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Tema escuro' }))
 
-    await waitFor(() => expect(localStorage.getItem('enerdiag-theme')).toBe('dark'))
+    await waitFor(() => expect(localStorage.getItem('ecowatt-theme')).toBe('dark'))
     expect(document.documentElement.dataset.theme).toBe('dark')
     expect(screen.getByRole('button', { name: 'Tema claro' })).toHaveAttribute('aria-pressed', 'true')
 
@@ -33,7 +33,7 @@ describe('theme', () => {
     expect(screen.getByRole('button', { name: 'Tema claro' })).toHaveAttribute('aria-pressed', 'true')
 
     fireEvent.click(screen.getByRole('button', { name: 'Tema claro' }))
-    await waitFor(() => expect(localStorage.getItem('enerdiag-theme')).toBe('light'))
+    await waitFor(() => expect(localStorage.getItem('ecowatt-theme')).toBe('light'))
     expect(screen.getByRole('button', { name: 'Tema escuro' })).toHaveAttribute('aria-pressed', 'false')
   })
 

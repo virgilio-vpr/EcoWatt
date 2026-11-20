@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8">
-    <title>Seu relatório EnerDiag</title>
+    <title>Seu relatório EcoWatt</title>
 </head>
 <body>
     <h1>Seu relatório de eficiência energética</h1>

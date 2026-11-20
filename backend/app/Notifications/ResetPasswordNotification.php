@@ -27,13 +27,13 @@ class ResetPasswordNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = rtrim(config('enerdiag.frontend_url'), '/').'/reset-password?'.http_build_query([
+        $url = rtrim(config('ecowatt.frontend_url'), '/').'/reset-password?'.http_build_query([
             'token' => $this->token,
             'email' => $notifiable->getEmailForPasswordReset(),
         ]);
 
         return (new MailMessage)
-            ->subject('Redefinição de senha do EnerDiag')
+            ->subject('Redefinição de senha do EcoWatt')
             ->line('Recebemos uma solicitação para redefinir a senha da sua conta.')
             ->action('Redefinir senha', $url)
             ->line('Este link é de uso único e expira em '.config('auth.passwords.users.expire').' minutos.');

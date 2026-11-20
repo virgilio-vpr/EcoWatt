@@ -21,7 +21,7 @@ class EmailVerificationService
         $user->verificationCodes()->delete();
         $user->verificationCodes()->create([
             'code_hash' => Hash::make($code),
-            'expires_at' => now()->addMinutes(config('enerdiag.verification_code_ttl_minutes')),
+            'expires_at' => now()->addMinutes(config('ecowatt.verification_code_ttl_minutes')),
             'attempts' => 0,
         ]);
 
@@ -49,7 +49,7 @@ class EmailVerificationService
             }
 
             $verificationCode = $user->verificationCodes()->latest('id')->lockForUpdate()->first();
-            $maxAttempts = (int) config('enerdiag.verification_code_max_attempts');
+            $maxAttempts = (int) config('ecowatt.verification_code_max_attempts');
 
             if (! $verificationCode || $verificationCode->expires_at->isPast() || $verificationCode->attempts >= $maxAttempts) {
                 return false;

@@ -1,6 +1,7 @@
 import { SectionLink } from './components/SectionLink'
 import { NavigationLink } from './components/NavigationControl'
 import { CompanyContactDetails } from './components/CompanyContactDetails'
+import { BrandName } from './components/BrandName'
 import { lazy, Suspense, useEffect, useState, useSyncExternalStore } from 'react'
 import { useTheme } from './hooks/useTheme'
 import { useViewport } from './hooks/useViewport'
@@ -96,9 +97,9 @@ function App() {
       <header className="app-header">
         <a className="brand" href="/">
           <span className="brand-icon" aria-hidden="true">
-            <img src="/enerdiag-logo-horizontal.png" alt="" width="264" height="88" />
+            <img src="/ecowatt-logo-horizontal.png" alt="" width="264" height="88" />
           </span>
-          <span className="brand-name">Ener<span>Diag</span></span>
+          <BrandName className="brand-name" />
         </a>
         <nav className="header-actions" aria-label="Acesso">
           {isAuthenticated ? <>
@@ -206,7 +207,7 @@ function App() {
           <section className="landing-section contact-section" id="contato" aria-labelledby="contact-title">
             <div className="contact-copy">
               <p className="section-eyebrow">Estamos por aqui</p>
-              <h2 id="contact-title">Fale com a EnerDiag</h2>
+              <h2 id="contact-title">Fale com a <BrandName /></h2>
               <p>Entre em contato para tirar dúvidas sobre a análise de energia da sua empresa.</p>
               <p className="contact-demo-note">Canais fictícios para demonstração.</p>
             </div>

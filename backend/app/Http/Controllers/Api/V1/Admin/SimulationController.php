@@ -115,7 +115,7 @@ class SimulationController extends Controller
 
         return response($generator->generate($report), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="relatorio-enerdiag-'.$simulation->id.'.pdf"',
+            'Content-Disposition' => 'attachment; filename="relatorio-ecowatt-'.$simulation->id.'.pdf"',
         ]);
     }
 

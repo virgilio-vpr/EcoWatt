@@ -20,6 +20,7 @@ final class TariffService
         DateTimeInterface|string $date,
         ?bool $includesTaxes = null,
         bool $requireExplicitValidity = false,
+        ?string $source = null,
     ): TariffResolution {
         $referenceDate = $date instanceof DateTimeInterface
             ? CarbonImmutable::instance($date)->toDateString()
@@ -33,6 +34,7 @@ final class TariffService
             ->where('time_slot', $timeSlot)
             ->when($includesTaxes !== null, fn ($query) => $query->where('includes_taxes', $includesTaxes))
             ->when($requireExplicitValidity, fn ($query) => $query->whereNotNull('valid_to'))
+            ->when($source !== null, fn ($query) => $query->where('source', $source))
             ->whereDate('valid_from', '<=', $referenceDate)
             ->where(function ($query) use ($referenceDate): void {
                 $query->whereNull('valid_to')

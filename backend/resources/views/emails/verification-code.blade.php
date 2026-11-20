@@ -1,6 +1,6 @@
 <p>Olá,</p>
 
-<p>Use o código abaixo para confirmar seu e-mail no EnerDiag:</p>
+<p>Use o código abaixo para confirmar seu e-mail no @include('emails.partials.brand-name'):</p>
 
 <p><strong>{{ $verificationCode }}</strong></p>
 

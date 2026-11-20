@@ -17,6 +17,13 @@ export function SectionLink({ href, children, className = '', onClick, ...props 
     onClick?.(event)
     if (!internal || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return
     event.preventDefault()
+    if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) {
+      const destination = document.getElementById(decodeURIComponent(url.hash.slice(1)))
+      destination?.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
+      destination?.focus({ preventScroll: true })
+      if (window.location.hash !== url.hash) window.history.pushState({}, '', url.pathname + url.search + url.hash)
+      return
+    }
     window.history.pushState({}, '', url.pathname + url.search + url.hash)
     window.dispatchEvent(new PopStateEvent('popstate'))
   }}>{children}</a>

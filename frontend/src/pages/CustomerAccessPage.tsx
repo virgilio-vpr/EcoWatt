@@ -82,7 +82,7 @@ export function RegistrationPage() {
 
   return (
     <section className="access-page" aria-labelledby="register-title">
-      <p className="section-eyebrow">Sua conta EnerDiag</p>
+      <p className="section-eyebrow">Sua conta EcoWatt</p>
       <h1 id="register-title">Crie sua conta</h1>
       <p className="access-intro">Cadastre-se para iniciar a análise das faturas de energia da sua empresa.</p>
       <form className="access-form" onSubmit={submit} noValidate>

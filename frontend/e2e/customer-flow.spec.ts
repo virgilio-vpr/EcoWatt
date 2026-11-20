@@ -9,7 +9,7 @@ for (const invoiceCount of [1, 12]) {
     test.setTimeout(300_000)
     if (invoiceCount === 12) test.setTimeout(480_000)
     const email = `customer-${Date.now()}@example.test`
-    const password = 'EnerDiagSyntheticPassword2026!'
+    const password = 'EcoWattSyntheticPassword2026!'
     const messages = async (): Promise<CapturedMessage[]> => {
       const response = await request.get(`${mailboxUrl}/messages`)
       expect(response.ok()).toBeTruthy()
@@ -24,14 +24,14 @@ for (const invoiceCount of [1, 12]) {
     await page.getByLabel('Confirme sua senha').fill(password)
     await page.getByRole('checkbox', { name: /Li e aceito/ }).check()
     const registered = page.waitForResponse((response) => response.url().endsWith('/api/v1/auth/register'))
-    await page.getByRole('button', { name: 'Criar conta', exact: true }).click()
+    await page.getByRole('region', { name: 'Crie sua conta' }).getByRole('button', { name: 'Criar conta', exact: true }).click()
     const registrationResponse = await registered
     expect(registrationResponse.status(), await registrationResponse.text()).toBe(201)
     await expect(page.getByRole('heading', { name: 'Verifique seu e-mail' })).toBeVisible()
 
     let verification: CapturedMessage | undefined
     await expect.poll(async () => {
-      verification = (await messages()).find((mail) => mail.recipients.includes(email) && mail.subject === 'Código de verificação do EnerDiag')
+      verification = (await messages()).find((mail) => mail.recipients.includes(email) && mail.subject === 'Código de verificação do EcoWatt')
       return Boolean(verification)
     }).toBe(true)
     const code = verification!.text.match(/\b[0-9]{6}\b/)?.[0]
@@ -90,10 +90,10 @@ for (const invoiceCount of [1, 12]) {
 
     let reportMail: CapturedMessage | undefined
     await expect.poll(async () => {
-      reportMail = (await messages()).find((mail) => mail.recipients.includes(email) && mail.subject === 'Seu relatório EnerDiag está pronto')
+      reportMail = (await messages()).find((mail) => mail.recipients.includes(email) && mail.subject === 'Seu relatório EcoWatt está pronto')
       return Boolean(reportMail)
     }).toBe(true)
-    const attachment = reportMail!.attachments.find((item) => item.filename === 'relatorio-enerdiag.pdf')
+    const attachment = reportMail!.attachments.find((item) => item.filename === 'relatorio-ecowatt.pdf')
     expect(attachment?.contentType).toBe('application/pdf')
     expect(Buffer.from(attachment!.content, 'base64').equals(pdf)).toBe(true)
     expect((await messages()).filter((mail) => mail.recipients.includes(email) && mail.subject === reportMail!.subject)).toHaveLength(1)

@@ -23,9 +23,9 @@ class TestUserSeeder extends Seeder
 
         // Admin
         User::updateOrCreate(
-            ['email' => 'admin@enerdiag.com.br'],
+            ['email' => 'admin@ecowatt.com.br'],
             [
-                'name' => 'Administrador EnerDiag',
+                'name' => 'Administrador EcoWatt',
                 'phone' => '11988887777',
                 'password_hash' => Hash::make('Admin123456!'),
                 'role' => 'admin',

@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Calculation\Contracts\ReportCalculationEngine;
+use App\Invoices\InvoiceDocumentReader;
 use App\Invoices\Pdf\TemporaryPdfTextExtractor;
 use App\Invoices\Readers\InvoiceReaderResolver;
 use App\Invoices\Validation\InvoiceExtractionValidator;
@@ -46,7 +47,7 @@ class ProcessSimulation implements ShouldQueue
 
     public function handle(
         InvoiceReaderResolver $readerResolver,
-        TemporaryPdfTextExtractor $textExtractor,
+        InvoiceDocumentReader $textExtractor,
         InvoiceExtractionValidator $validator,
         InvoiceProcessingFailureRecorder $failureRecorder,
         ReportCalculationEngine $calculationEngine,
@@ -87,17 +88,26 @@ class ProcessSimulation implements ShouldQueue
 
         $invoices = [];
         $fileNames = [];
+        $readDeadline = microtime(true) + 240;
         foreach ($paths as $path) {
             $this->activeStage = 'reading';
             $this->activeFile = basename($path);
+            if (microtime(true) + 45 > $readDeadline) {
+                throw new \InvalidArgumentException('O lote excedeu o tempo de leitura. Envie as faturas individualmente.');
+            }
             $contents = $disk->get($path);
-            $invoices[] = $reader->read($textExtractor->extract($contents));
+            $invoices[] = $textExtractor->read($contents, $reader);
             $fileNames[] = basename($path);
         }
 
         try {
             $this->activeStage = 'validating';
             $validator->validate($invoices);
+            foreach ($invoices as $index => $invoice) {
+                if (in_array('invoice_billing_total_mismatch', $invoice->warnings, true)) {
+                    throw ValidationException::withMessages(["invoices.{$index}.total_paid" => 'A soma dos itens lidos difere do total. Revise e envie outra cópia da fatura.']);
+                }
+            }
         } catch (ValidationException $exception) {
             $failureRecorder->recordValidationErrors($simulation, $fileNames, $exception->errors());
             $disk->deleteDirectory($directory);

@@ -14,9 +14,9 @@ class StatusController extends Controller
     /**
      * Status da API
      *
-     * Retorna a disponibilidade e a versão da API EnerDiag.
+     * Retorna a disponibilidade e a versão da API EcoWatt.
      */
-    #[Endpoint('Status da API', 'Retorna o status operacional da API EnerDiag v1.')]
+    #[Endpoint('Status da API', 'Retorna o status operacional da API EcoWatt v1.')]
     #[Response(
         status: 200,
         content: '{"status":"ok","version":"v1","environment":"local"}',

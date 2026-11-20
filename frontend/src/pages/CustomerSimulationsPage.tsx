@@ -57,7 +57,7 @@ export function CustomerSimulationsPage() {
     setError('')
     try {
       await apiRequest(`/simulations/${id}`, { method: 'DELETE' }, { notifyGlobalError: false })
-      if (window.localStorage.getItem('enerdiag_invoice_import_id') === String(id)) window.localStorage.removeItem('enerdiag_invoice_import_id')
+      if (window.localStorage.getItem('ecowatt_invoice_import_id') === String(id)) window.localStorage.removeItem('ecowatt_invoice_import_id')
       setConfirmation(null)
       setNotice(`Simulação nº ${id} excluída.`)
       setResult((current) => current ? {

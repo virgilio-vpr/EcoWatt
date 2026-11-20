@@ -21,7 +21,7 @@ class PdfReportGeneratorTest extends TestCase
         $this->assertStringContainsString('avaliação detalhada por engenheiro consultor', $text);
         $this->assertStringContainsString('medição específica por analisador de energia', $text);
         $this->assertStringContainsString('Transforme sua análise em um plano de economia', $text);
-        $this->assertStringContainsString('Fale com a equipe EnerDiag', $text);
+        $this->assertStringContainsString('Fale com a equipe EcoWatt', $text);
         $this->assertStringNotContainsString('confirme esses valores com a distribuidora', $text);
         $this->assertStringNotContainsString('Os componentes de PIS e COFINS', $text);
         $this->assertStringNotContainsString('divergência de calibração tributária', $text);
@@ -53,7 +53,7 @@ class PdfReportGeneratorTest extends TestCase
         $this->assertSame($pdf, app(PdfReportGenerator::class)->generate($report));
         $this->assertStringContainsString('[6 4] 0 d', $pdf);
         $this->assertStringContainsString('/Subtype /Image', $pdf);
-        $this->assertStringContainsString('contato@enerdiag.example', $text);
+        $this->assertStringContainsString('contato@ecowatt.example', $text);
         $this->assertStringContainsString('Telefone: +55 (11) 00000-0000', $text);
         $this->assertStringContainsString('WhatsApp: +55 (11) 00000-0000', $text);
         $this->assertStringContainsString('mesmas tarifas da fatura de 02/2026', $text);
@@ -85,8 +85,11 @@ class PdfReportGeneratorTest extends TestCase
         $report->forceFill(['chart_series' => $series]);
         $text = $this->text(app(PdfReportGenerator::class)->generate($report));
 
-        $this->assertStringContainsString('Os planos Azul e Verde são comparados com as tarifas da distribuidora', $text);
-        $this->assertStringContainsString('incluindo os tributos', $text);
+        $this->assertStringContainsString('Os planos Azul e Verde são comparados com as tarifas vigentes da ANEEL', $text);
+        $this->assertStringContainsString('específicas de cada modalidade', $text);
+        $this->assertStringContainsString('fator proporcional apurado na fatura mais recente', $text);
+        $this->assertStringContainsString('Na Verde, a demanda tem tarifa única', $text);
+        $this->assertStringNotContainsString('mesma referência tarifária nos dois planos', $text);
         $this->assertStringNotContainsString('mercado livre', $text);
     }
 
@@ -128,7 +131,7 @@ class PdfReportGeneratorTest extends TestCase
         $this->assertStringContainsString('FIM DA CONFERÊNCIA DO RELATÓRIO', $text);
         foreach ($pages as $index => $page) {
             $this->assertStringContainsString('Página '.($index + 1).' de '.count($pages), $this->normalize($page->getText()));
-            $this->assertStringContainsString('contato@enerdiag.example', $this->normalize($page->getText()));
+            $this->assertStringContainsString('contato@ecowatt.example', $this->normalize($page->getText()));
         }
         preg_match_all('/1 0 0 1 (-?\d+\.\d+) (-?\d+\.\d+) Tm/', $pdf, $positions, PREG_SET_ORDER);
         foreach ($positions as $position) {

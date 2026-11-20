@@ -19,7 +19,7 @@ class QuotationReleased extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Orçamento EnerDiag '.$this->quotation->quote_number);
+        return new Envelope(subject: 'Orçamento EcoWatt '.$this->quotation->quote_number);
     }
 
     public function content(): Content

@@ -64,6 +64,18 @@ class IdleDemandRatioServiceTest extends TestCase
         $this->assertSame(IdleDemandRatioService::FULL_CHARGE_SOURCE, $entry->source);
     }
 
+    public function test_simulated_idle_demand_excludes_icms_even_when_the_original_invoice_has_no_idle_charge(): void
+    {
+        $normal = $this->item('measured_demand', 'unique', '100.000', '10.00000', '1000.00', '40.00', '0.1800', '1000.00');
+        $month = $this->month('2025-09', '2025-01-01', ['unique' => '100.000'], ['unique' => '100.000'], ['unique' => $normal]);
+
+        $entry = $this->service()->resolve([$month], true)->forMonthAndTimeSlot('2025-09', 'unique');
+
+        $this->assertSame('0.820000', $entry->ratio);
+        $this->assertSame(IdleDemandRatioService::TAXATION_SOURCE, $entry->source);
+        $this->assertSame([], $entry->warnings);
+    }
+
     public function test_unrevealed_series_uses_regulatory_fallback_and_warns(): void
     {
         RegulatoryParameter::create([

@@ -14,7 +14,7 @@ const tariffComponents: Record<string, string> = {
   TE: 'Energia (TE)', TUSD: 'Uso da rede (TUSD)', other: 'Outros encargos', not_applicable: 'Não se aplica',
 }
 const invoiceItems: Record<string, string> = {
-  contracted_demand: 'Demanda contratada', measured_demand: 'Demanda medida', idle_demand: 'Demanda ociosa',
+  contracted_demand: 'Demanda contratada', measured_demand: 'Demanda medida', metered_demand: 'Demanda do quadro de medição', idle_demand: 'Demanda ociosa',
   demand_overrun: 'Ultrapassagem de demanda', reactive_energy_excess: 'Energia reativa excedente',
   reactive_demand_excess: 'Demanda reativa excedente', other_charge: 'Outros encargos e ajustes',
 }

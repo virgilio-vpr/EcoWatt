@@ -29,8 +29,7 @@ final class ReportTariffMigrationService
         $latest = $invoices[array_key_last($invoices)];
         $distributorId = $simulation->user?->profile?->distributor_id;
         $minimum = $this->parameters->resolve('minimum_contracted_demand', $latest->referenceMonth.'-01');
-        // Green invoices do not necessarily provide separate measured demands for both Blue slots.
-        if ($latest->tariffModality !== 'blue' || $distributorId === null || $minimum === null
+        if (! in_array($latest->tariffModality, ['blue', 'green'], true) || $distributorId === null || $minimum === null
             || bccomp($minimum->value, '0', 5) <= 0 || bccomp($minimum->value, '1000000', 5) > 0
             || bccomp($minimum->value, bcadd($minimum->value, '0', 0), 5) !== 0) {
             return $unavailable;
@@ -40,24 +39,29 @@ final class ReportTariffMigrationService
         $migrationMonths = [];
         $referenceFactor = $this->calibration->calculateFactor($latest)->factor;
         foreach ($invoices as $index => $invoice) {
-            if ($invoice->tariffModality !== 'blue' || $invoice->subgroup !== $latest->subgroup) {
+            if ($invoice->tariffModality !== $latest->tariffModality || $invoice->subgroup !== $latest->subgroup) {
                 return $unavailable;
             }
             $month = $months[$index];
             $measured = $month->measuredDemandByTimeSlot;
-            $peak = $measured['peak'] ?? null;
-            $offPeak = $measured['off_peak'] ?? null;
+            $peak = $month->meteredDemandByTimeSlot['peak'] ?? $measured['peak'] ?? null;
+            $offPeak = $month->meteredDemandByTimeSlot['off_peak'] ?? $measured['off_peak'] ?? $measured['unique'] ?? null;
             $peakRate = $month->normalDemandItemsByTimeSlot['peak']->unitPriceTaxed ?? null;
             $offPeakRate = $month->normalDemandItemsByTimeSlot['off_peak']->unitPriceTaxed ?? null;
             $peakRatio = $ratios->forMonthAndTimeSlot($invoice->referenceMonth, 'peak')?->ratio;
             $offPeakRatio = $ratios->forMonthAndTimeSlot($invoice->referenceMonth, 'off_peak')?->ratio;
-            if ($peak === null || $offPeak === null || $peakRate === null || $offPeakRate === null
-                || $peakRatio === null || $offPeakRatio === null || bccomp($peakRatio, $offPeakRatio, 6) !== 0
+            $uniqueRatio = $ratios->forMonthAndTimeSlot($invoice->referenceMonth, 'unique')?->ratio;
+            if ($invoice->tariffModality === 'green') {
+                $peakRatio = $uniqueRatio;
+                $offPeakRatio = $uniqueRatio;
+            }
+            if ($peak === null || $offPeak === null
+                || $peakRatio === null || $offPeakRatio === null
                 || bccomp($peak, '0', 3) < 0 || bccomp($offPeak, '0', 3) < 0
                 || bccomp($peak, '1000000', 3) > 0 || bccomp($offPeak, '1000000', 3) > 0) {
                 return $unavailable;
             }
-            $single = bccomp($peak, $offPeak, 3) > 0 ? $peak : $offPeak;
+            $single = $offPeak;
             $maximum = max($maximum, (int) bcadd($peak, '0.999', 0), (int) bcadd($offPeak, '0.999', 0));
             $energy = [];
             $consumption = [];
@@ -76,13 +80,15 @@ final class ReportTariffMigrationService
                 $invoice->referenceMonth,
                 ['blue' => ['peak' => $peak, 'off_peak' => $offPeak], 'green' => ['unique' => $single]],
                 ['blue' => ['peak' => $peakRatio, 'off_peak' => $offPeakRatio], 'green' => ['unique' => $offPeakRatio]],
-                ['peak' => $peakRate, 'off_peak' => $offPeakRate],
+                $invoice->tariffModality === 'green'
+                    ? ['unique' => $month->normalDemandItemsByTimeSlot['unique']->unitPriceTaxed ?? null]
+                    : ['peak' => $peakRate, 'off_peak' => $offPeakRate],
                 $consumption,
                 $energy,
                 $referenceFactor,
             );
         }
 
-        return $this->migration->compare($distributorId, $latest->subgroup, 'blue', $migrationMonths, $min, $maximum, true, today()->toDateString());
+        return $this->migration->compare($distributorId, $latest->subgroup, $latest->tariffModality, $migrationMonths, $min, $maximum, true, today()->toDateString());
     }
 }

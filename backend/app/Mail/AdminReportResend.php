@@ -18,7 +18,7 @@ class AdminReportResend extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Seu relatório EnerDiag');
+        return new Envelope(subject: 'Seu relatório EcoWatt');
     }
 
     public function content(): Content

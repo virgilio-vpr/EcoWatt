@@ -26,7 +26,7 @@ final class PdfDocument
     {
         $this->pages[] = [];
         $this->pages[array_key_last($this->pages)][] = 'q 40 0 0 40 42 782 cm /CompanyLogo Do Q';
-        $this->textAt(92, 25, 12, 'ENERDIAG', '#0b8f6a', true);
+        $this->pages[array_key_last($this->pages)][] = $this->brandCommand(92, 25, 12);
         $label = 'Protocolo '.$this->protocol;
         $this->textAt(self::WIDTH - self::MARGIN - $this->textWidth($label, 9), 27, 9, $label, '#64748b');
         $contactLines = $this->contact === '' ? [] : $this->wrap($this->contact, self::CONTENT_WIDTH - 50, 8);
@@ -225,6 +225,12 @@ final class PdfDocument
         return 'q '.$this->color($color).' rg BT /'.($bold ? 'F2' : 'F1').' '.self::number($size).' Tf 1 0 0 1 '.self::number($x).' '.self::number(self::HEIGHT - $top - $size).' Tm ('.$escaped.') Tj ET Q';
     }
 
+    private function brandCommand(float $x, float $top, float $size): string
+    {
+        return 'q BT /F2 '.self::number($size).' Tf 1 0 0 1 '.self::number($x).' '.self::number(self::HEIGHT - $top - $size).' Tm '
+            .$this->color('#18283b').' rg (Eco) Tj '.$this->color('#0f766e').' rg (Watt) Tj ET Q';
+    }
+
     public function rectangle(float $x, float $top, float $width, float $height, string $color): void
     {
         $this->pages[array_key_last($this->pages)][] = 'q '.$this->color($color).' rg '.self::number($x).' '.self::number(self::HEIGHT - $top - $height).' '.self::number($width).' '.self::number($height).' re f Q';
@@ -257,7 +263,8 @@ final class PdfDocument
         $kids = [];
         foreach ($this->pages as $index => $commands) {
             $commands[] = 'q 0.85 0.9 0.88 RG 0.5 w 42 43 m 553 43 l S Q';
-            $commands[] = $this->textCommand(42, 811, 8, 'EnerDiag · Relatório de energia', '#64748b');
+            $commands[] = $this->brandCommand(42, 811, 8);
+            $commands[] = $this->textCommand(42 + $this->textWidth('EcoWatt', 8, true), 811, 8, ' · Relatório de energia', '#64748b');
             $commands[] = $this->textCommand(470, 811, 8, 'Página '.($index + 1).' de '.count($this->pages), '#64748b');
             $stream = implode("\n", $commands)."\n";
             $pageId = count($objects) + 1;
@@ -284,7 +291,7 @@ final class PdfDocument
 
     private function logoObject(): string
     {
-        $png = file_get_contents(resource_path('enerdiag-logo.png'));
+        $png = file_get_contents(resource_path('ecowatt-logo.png'));
         $header = unpack('Nwidth/Nheight/Cdepth/Ctype/Ccompression/Cfilter/Cinterlace', substr($png, 16, 13));
         if (substr($png, 0, 8) !== "\x89PNG\r\n\x1a\n" || $header['depth'] !== 8 || $header['type'] !== 2 || $header['interlace'] !== 0) {
             throw new \RuntimeException('The report logo must be a non-interlaced 8-bit RGB PNG.');

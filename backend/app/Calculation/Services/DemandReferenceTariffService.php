@@ -26,8 +26,7 @@ final class DemandReferenceTariffService
         $latest = $invoices[array_key_last($invoices)];
         $latestMonth = $months[array_key_last($months)];
         if ($distributorId !== null) {
-            $tariff = $this->tariffs->resolve($distributorId, $latest->subgroup, $latest->tariffModality, 'demand', $slot === 'unique' ? 'single' : $slot, today(), false, true)->tariff
-                ?? $this->tariffs->resolve($distributorId, $latest->subgroup, $latest->tariffModality, 'demand', $slot === 'unique' ? 'single' : $slot, today(), true, true)->tariff;
+            $tariff = $this->tariffs->resolve($distributorId, $latest->subgroup, $latest->tariffModality, 'demand', $slot === 'unique' ? 'single' : $slot, today(), false, true, 'aneel_import')->tariff;
             if ($tariff !== null && bccomp($tariff->rate, '0', 5) > 0) {
                 $item = $latestMonth->normalDemandItemsByTimeSlot[$slot] ?? null;
                 $canCalibrate = $item !== null && (($item->tariffRate !== null && bccomp($item->tariffRate, '0', 5) > 0)
@@ -48,6 +47,8 @@ final class DemandReferenceTariffService
                     ];
                 }
             }
+
+            return null;
         }
 
         $reference = null;

@@ -97,7 +97,7 @@ class StoreSimulationTest extends TestCase
 
         $this->withHeader('Accept', 'application/json')->withToken($token)->post('/api/v1/simulations', $input)
             ->assertUnprocessable()
-            ->assertJsonPath('errors.invoices.0', 'Envie de 1 a 12 faturas em PDF.');
+            ->assertJsonPath('errors.invoices.0', 'Envie de 1 a 12 faturas em PDF, PNG ou JPEG.');
 
         $this->assertDatabaseCount('simulations', 0);
         $this->assertSame([], Storage::disk('invoice_temp')->allFiles());

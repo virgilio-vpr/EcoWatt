@@ -93,6 +93,20 @@ class PdfReportGenerator
         }
 
         $chartSeries = $report->chart_series ?? [];
+        $measurements = [];
+        foreach ($chartSeries['demand_measurements'] ?? [] as $point) {
+            $measurements[$point['reference_month']][$point['time_slot']] = $point['measured'];
+        }
+        if ($measurements !== []) {
+            $document->heading('Demandas do quadro de medição');
+            $document->paragraph($texts['measurement_reference_note'], 9);
+            $rows = [];
+            foreach ($measurements as $month => $values) {
+                $rows[] = [$this->monthLabel($month), $this->decimal($values['peak'] ?? null, 3), $this->decimal($values['off_peak'] ?? null, 3)];
+            }
+            $document->table(['Mês', 'Ponta (kW)', 'Fora de ponta indutiva (kW)'], $rows, [111, 150, 250]);
+            $document->paragraph($texts['demand_tax_note'], 9);
+        }
         $demand = $chartSeries['demand'] ?? [];
         $slots = array_filter($demand, static fn (array $point): bool => in_array($point['time_slot'] ?? 'unique', ['peak', 'off_peak'], true)) !== []
             ? ['peak' => 'ponta', 'off_peak' => 'fora de ponta'] : ['unique' => 'única'];

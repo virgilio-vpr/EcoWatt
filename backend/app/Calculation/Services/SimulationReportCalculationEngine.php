@@ -162,15 +162,14 @@ final class SimulationReportCalculationEngine implements ReportCalculationEngine
                 chartValuesByKey: [],
             );
 
-            $contracted = [];
-            $measured = [];
-            foreach ($invoice->items as $item) {
-                if ($item->itemType === 'contracted_demand') {
-                    $contracted[$item->timeSlot] = $item->quantity;
-                }
-                if ($item->itemType === 'measured_demand') {
-                    $measured[$item->timeSlot] = $item->quantity;
-                }
+            $contracted = $demandMonth?->contractedDemandByTimeSlot ?? [];
+            $measured = $demandMonth?->measuredDemandByTimeSlot ?? [];
+            foreach ($demandMonth?->meteredDemandByTimeSlot ?? [] as $slot => $quantity) {
+                $chartSeries['demand_measurements'][] = [
+                    'reference_month' => $invoice->referenceMonth,
+                    'time_slot' => $slot,
+                    'measured' => $quantity,
+                ];
             }
             foreach (array_unique(array_merge(array_keys($contracted), array_keys($measured))) as $slot) {
                 $tolerance = $this->parameterService->resolve('overrun_tolerance', $invoice->referenceMonth.'-01');
@@ -217,7 +216,7 @@ final class SimulationReportCalculationEngine implements ReportCalculationEngine
                 'r_values' => $rValues,
                 'k_values' => $kValues,
             ],
-            algorithmVersion: '1.4',
+            algorithmVersion: '1.5',
             tariffVersionIds: array_values(array_unique(array_merge($demandOptimization['tariff_ids'], $migration->tariffVersionIds))),
             regulatoryParameterVersionIds: array_values(array_unique($regulatoryParameterIds)),
         );

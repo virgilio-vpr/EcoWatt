@@ -78,7 +78,7 @@ class SubmitSimulation
 
                 foreach ($files as $index => $file) {
                     $originalName = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-                    $storedName = sprintf('%02d-%s-%s.pdf', $index + 1, Str::uuid(), $originalName !== '' ? $originalName : 'invoice');
+                    $storedName = sprintf('%02d-%s-%s.'.$file->guessExtension(), $index + 1, Str::uuid(), $originalName !== '' ? $originalName : 'invoice');
                     $storedPath = $file->storeAs($directory, $storedName, 'invoice_temp');
                     if ($storedPath === false) {
                         throw new \RuntimeException('Não foi possível armazenar uma fatura temporariamente.');

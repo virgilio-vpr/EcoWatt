@@ -5,14 +5,14 @@ import { InvoiceImportTable, type ImportedInvoice } from '../components/InvoiceI
 
 const MAX_FILE_BYTES = 20 * 1024 * 1024
 const MAX_FILES = 12
-const IMPORT_SESSION_KEY = 'enerdiag_invoice_import_id'
+const IMPORT_SESSION_KEY = 'ecowatt_invoice_import_id'
 
-function readPdfSignature(file: File): Promise<string> {
+function readInvoiceSignature(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(String(reader.result ?? ''))
-    reader.onerror = () => reject(new Error('Não foi possível abrir este arquivo. Selecione o PDF novamente.'))
-    reader.readAsText(file.slice(0, 1024))
+    reader.onerror = () => reject(new Error('Não foi possível abrir este arquivo. Selecione a fatura novamente.'))
+    reader.readAsBinaryString(file.slice(0, 1024))
   })
 }
 
@@ -220,8 +220,8 @@ export function InvoiceUploadPage() {
       for (const [index, file] of filesToUpload.entries()) {
         setNotice(`Lendo e salvando a fatura ${index + 1} de ${filesToUpload.length}…`)
 
-        if (!file.name.toLowerCase().endsWith('.pdf') || (file.type && file.type !== 'application/pdf')) {
-          failures.push(`${file.name}: selecione um arquivo PDF.`)
+        if (!/\.(pdf|png|jpe?g)$/i.test(file.name) || (file.type && !['application/pdf', 'image/png', 'image/jpeg'].includes(file.type))) {
+          failures.push(`${file.name}: selecione um arquivo PDF, PNG ou JPEG.`)
           continue
         }
         if (file.size > MAX_FILE_BYTES) {
@@ -229,9 +229,9 @@ export function InvoiceUploadPage() {
           continue
         }
         try {
-          const signature = await readPdfSignature(file)
-          if (!/%PDF-\d\.\d/.test(signature)) {
-            failures.push(`${file.name}: o conteúdo não é um PDF válido.`)
+          const signature = await readInvoiceSignature(file)
+          if (!/%PDF-\d\.\d/.test(signature) && !signature.startsWith('\x89PNG\r\n\x1a\n') && !signature.startsWith('\xff\xd8\xff')) {
+            failures.push(`${file.name}: o conteúdo não é um PDF, PNG ou JPEG válido.`)
             continue
           }
           const formData = new FormData()
@@ -329,8 +329,8 @@ export function InvoiceUploadPage() {
       <h1 id="upload-title">Envie suas faturas</h1>
       <p><NavigationLink direction="back" href="/minhas-simulacoes">Voltar para minhas simulações</NavigationLink></p>
       <p className="access-intro">Envie de 1 a {MAX_FILES} faturas. Você pode selecionar várias de uma vez; cada conta será lida e salva individualmente, em sequência. Organizaremos da mais antiga para a mais recente usando o mês da LEITURA ATUAL, não o mês de emissão. Avisaremos se uma conta ou mês de medição já tiver sido enviado. Você pode simular quando quiser, depois de salvar pelo menos uma fatura.</p>
-      {errorMessage && <p className="field-error" role="alert">{errorMessage}</p>}
-      {notice && <p className="form-success" role="status">{notice}</p>}
+      {!importSession && errorMessage && <p className="field-error" role="alert">{errorMessage}</p>}
+      {!importSession && notice && <p className="form-success" role="status">{notice}</p>}
       <form className="upload-form" onSubmit={startImport}>
         <div className="upload-grid">
           <label>Nome da empresa<input autoComplete="organization" value={companyName} onChange={(event) => setCompanyName(event.target.value)} required disabled={!!importSession} /></label>
@@ -350,7 +350,9 @@ export function InvoiceUploadPage() {
           {importSession && <>
             <p aria-live="polite">{importSession.invoice_count} de {MAX_FILES} faturas lidas e salvas</p>
             <InvoiceImportTable invoices={importSession.invoices} onRemove={removeInvoice} disabled={submitting} />
-            {importSession.invoice_count < MAX_FILES && <label className="upload-field invoice-picker">Selecionar faturas <input type="file" accept="application/pdf,.pdf" multiple disabled={submitting} onChange={uploadInvoice} aria-describedby="invoice-help" /><span id="invoice-help" className="password-hint">Você pode selecionar várias faturas. Cada PDF será enviado, lido e salvo individualmente, em sequência. Até 20 MB por arquivo.</span></label>}
+            {importSession.invoice_count < MAX_FILES && <label className="upload-field invoice-picker">Selecionar faturas <input type="file" accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg" multiple disabled={submitting} onChange={uploadInvoice} aria-describedby="invoice-help" /><span id="invoice-help" className="password-hint">Você pode selecionar várias faturas. Cada PDF, PNG ou JPEG será enviado, lido e salvo individualmente, em sequência. Até 20 MB por arquivo. Imagens: 300 a 10.000 pixels por lado e até 20 MP. OCR: até 4 páginas e 40 segundos por fatura; envie imagens nítidas e na orientação correta.</span></label>}
+            {errorMessage && <p className="field-error" role="alert">{errorMessage}</p>}
+            {notice && <p className="form-success" role="status">{notice}</p>}
             {needsInvoiceReview && <div className="field-error" role="alert"><p>A soma dos itens lidos ainda não confere com o total nestas faturas:</p><ul>{invoicesNeedingReview.map((invoice) => <li key={invoice.id}>{invoice.reference_month.slice(5, 7)}/{invoice.reference_month.slice(0, 4)}{invoice.source_filename ? ` · ${invoice.source_filename}` : ''}</li>)}</ul><p>Encargos de bandeira tarifária ou outros ajustes podem explicar a diferença. A leitura precisa ser revisada antes da simulação para identificar esses valores.</p></div>}
             <button className="button access-submit" type="button" disabled={submitting || importSession.invoice_count < 1 || needsInvoiceReview} onClick={completeImport}>{submitting ? 'Aguarde…' : importSession.invoice_count < 1 ? 'Envie ao menos uma fatura' : 'Simular relatório'}</button>
           </>}

@@ -125,7 +125,7 @@ class AdminAccountAccessTest extends TestCase
         $email = $admin->email;
         $this->withToken($token)->postJson('/api/v1/me/email-change', $this->emailRequest())->assertOk();
         $code = Mail::sent(EmailVerificationCode::class)->last()->verificationCode;
-        for ($attempt = 0; $attempt < config('enerdiag.verification_code_max_attempts'); $attempt++) {
+        for ($attempt = 0; $attempt < config('ecowatt.verification_code_max_attempts'); $attempt++) {
             try {
                 app(AdminAccountAccessService::class)->confirmEmailChange($admin, '000000', $admin->tokens()->first()->id);
                 $this->fail('An invalid code was accepted');

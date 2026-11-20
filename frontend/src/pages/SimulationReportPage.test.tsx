@@ -1,7 +1,7 @@
 import { CompanyContactDetails } from '../components/CompanyContactDetails'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { SimulationReportPage } from './SimulationReportPage'
+import { SimulationReportPage, type Report } from './SimulationReportPage'
 import { setAuthToken } from '../services/api/client'
 
 const report = {
@@ -42,7 +42,7 @@ const report = {
   r_values: [{ reference_month: '2026-01', time_slot: 'peak', ratio: '0.820000' as string | null, source: 'fallback', inherited: false }],
 }
 
-function setupFetch(responses: Record<string, Response | Blob> = {}, reportData = report) {
+function setupFetch(responses: Record<string, Response | Blob> = {}, reportData: Report = report) {
   const reportResponse = new Response(JSON.stringify({ data: reportData }), { status: 200, headers: { 'Content-Type': 'application/json' } })
   const fetchMock = vi.fn((input: RequestInfo | URL) => Promise.resolve(responses[String(input)] ?? reportResponse))
   vi.stubGlobal('fetch', fetchMock)
@@ -93,7 +93,11 @@ describe('simulation report', () => {
     expect(await screen.findByText(/Precisamos completar os dados de consumo ou atualizar as tarifas/)).toBeInTheDocument()
     expect(screen.getByText(/avaliação detalhada por engenheiro consultor/)).toBeInTheDocument()
     expect(screen.queryByText(/mercado livre/i)).not.toBeInTheDocument()
-    expect(screen.getByText(/Os planos Azul e Verde são comparados com as tarifas da distribuidora/)).toBeInTheDocument()
+    expect(screen.getByText(/Os planos Azul e Verde são comparados com as tarifas vigentes da ANEEL/)).toBeInTheDocument()
+    expect(screen.getByText(/Os planos Azul e Verde são comparados/)).toHaveTextContent('específicas de cada modalidade')
+    expect(screen.getByText(/Os planos Azul e Verde são comparados/)).toHaveTextContent('fator proporcional apurado na fatura mais recente')
+    expect(screen.getByText(/Cada modalidade utiliza suas próprias tarifas com tributos/)).toHaveTextContent('demanda única na Verde e demandas de ponta e fora de ponta na Azul')
+    expect(screen.queryByText(/mesma referência tarifária/)).not.toBeInTheDocument()
     expect(screen.queryByText(/recálculo histórico/)).not.toBeInTheDocument()
     expect(screen.queryByText(/energia ACL/)).not.toBeInTheDocument()
   })
@@ -127,7 +131,7 @@ describe('simulation report', () => {
     expect(await screen.findByText('Com os dados analisados, trocar entre os planos Azul e Verde não reduz os custos.')).toBeInTheDocument()
     expect(screen.getByText(/avaliação detalhada por engenheiro consultor/)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Transforme sua análise em um plano de economia' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Fale com a equipe EnerDiag' })).toHaveAttribute('href', '#enerdiag-contact')
+    expect(screen.queryByRole('link', { name: 'Fale com a equipe EcoWatt' })).not.toBeInTheDocument()
     expect(screen.queryByText(/Os componentes de PIS e COFINS/)).not.toBeInTheDocument()
     expect(screen.queryByText(/divergência de calibração tributária/)).not.toBeInTheDocument()
   })
@@ -172,6 +176,77 @@ describe('simulation report', () => {
     expect(screen.queryByTestId('demand-chart-peak')).not.toBeInTheDocument()
   })
 
+  it('shows metered peak and inductive off-peak without replacing the green unique-demand chart', async () => {
+    setAuthToken('customer-token')
+    const meteredReport = { ...report, chart_series: { ...report.chart_series,
+      demand: [{ reference_month: '2026-01', time_slot: 'unique', measured: '51.072', contracted: '57.000' }],
+      demand_measurements: [
+        { reference_month: '2026-01', time_slot: 'peak', measured: '40.488' },
+        { reference_month: '2026-01', time_slot: 'off_peak', measured: '51.072' },
+      ],
+    } }
+    setupFetch({}, meteredReport)
+    render(<SimulationReportPage simulationId="12" />)
+
+    await screen.findByRole('heading', { name: 'Seu relatório de energia' })
+    fireEvent.click(screen.getByText('Detalhes da análise'))
+    const measurements = await screen.findByRole('region', { name: 'Demandas medidas por mês' })
+    expect(within(measurements).getByText('40,488')).toBeInTheDocument()
+    expect(within(measurements).getByText('51,072')).toBeInTheDocument()
+    expect(screen.getByText(/mantidos PIS e COFINS e excluído o ICMS/)).toBeInTheDocument()
+    expect(screen.getByTestId('demand-chart-unique')).toBeInTheDocument()
+    expect(screen.queryByTestId('demand-chart-peak')).not.toBeInTheDocument()
+  })
+
+  it('identifies the consumer unit and period while preserving zero savings', async () => {
+    setAuthToken('customer-token')
+    setupFetch({}, { ...report, consumer_unit: 'MTE0012345', period_start: '2025-08', period_end: '2026-07', total_monthly_savings: '0.00' })
+    render(<SimulationReportPage simulationId="12" />)
+    expect(await screen.findByText('MTE0012345')).toBeInTheDocument()
+    expect(screen.getByText(/ago.*2025.*jul.*2026/)).toBeInTheDocument()
+    expect(within(screen.getByRole('region', { name: 'Indicadores principais' })).getByText((_, element) => element?.tagName === 'STRONG' && Boolean(element.textContent?.includes('0,00')))).toBeInTheDocument()
+  })
+
+  it('keeps material warnings visible with technical details collapsed', async () => {
+    setAuthToken('customer-token')
+    setupFetch()
+    render(<SimulationReportPage simulationId="12" />)
+    await screen.findByRole('heading', { name: 'Seu relatório de energia' })
+    const details = screen.getByText('Detalhes da análise').closest('details')!
+    expect(details).not.toHaveAttribute('open')
+    expect(screen.getByRole('region', { name: 'Avisos da análise' })).toBeVisible()
+    expect(screen.getByText(/avaliação detalhada por engenheiro consultor/)).toBeVisible()
+    fireEvent.click(screen.getByText('Detalhes da análise'))
+    expect(details).toHaveAttribute('open')
+    expect(screen.getByText(/r = 82%/)).toBeVisible()
+  })
+
+  it('shows the reported migration gain beside a full-width comparison for green demand', async () => {
+    setAuthToken('customer-token')
+    setupFetch({}, { ...report, warnings: [], months_count: 12, recommended_modality: 'green', migration_savings_monthly: '125.00', migration_savings_yearly: '1500.00',
+      chart_series: { ...report.chart_series, demand: [{ reference_month: '2026-01', time_slot: 'unique', measured: '450', contracted: '500' }], modality: [{ reference_month: '2026-01', blue: '12000', green: '10500' }] },
+    })
+    render(<SimulationReportPage simulationId="12" />)
+    const summary = await screen.findByRole('complementary', { name: 'Conclusão da comparação de modalidades' })
+    expect(within(summary).getByText('Modalidade indicada: Verde')).toBeInTheDocument()
+    expect(within(summary).getByText(/125,00/)).toBeInTheDocument()
+    expect(within(summary).getByText(/1.500,00/)).toBeInTheDocument()
+    expect(summary.closest('article')).toHaveClass('report-chart--wide')
+    expect(screen.getByRole('region', { name: 'Gráficos do relatório' }).compareDocumentPosition(screen.getByRole('region', { name: 'Transforme sua análise em um plano de economia' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('does not recommend a modality when the comparison is unavailable', async () => {
+    setAuthToken('customer-token')
+    setupFetch({}, { ...report, recommended_modality: 'green', migration_savings_monthly: '125.00', warnings: ['migration_unavailable'],
+      chart_series: { ...report.chart_series, modality: [{ reference_month: '2026-01', blue: null, green: '10500' }] },
+    })
+    render(<SimulationReportPage simulationId="12" />)
+    const summary = await screen.findByRole('complementary', { name: 'Conclusão da comparação de modalidades' })
+    expect(within(summary).getByText('Comparação ainda não disponível')).toBeInTheDocument()
+    expect(within(summary).queryByText(/125,00/)).not.toBeInTheDocument()
+    expect(screen.queryByText('Modalidade indicada: Verde')).not.toBeInTheDocument()
+  })
+
   it('escapes untrusted recommendations instead of creating executable markup', async () => {
     const payload = '<img src=x onerror="alert(document.cookie)">'
     setAuthToken('customer-token')
@@ -200,15 +275,21 @@ describe('simulation report', () => {
     })))
   })
 
-  it('shows direct company contacts without an extra icon or contact request button', async () => {
+  it('uses a decorative energy illustration while keeping direct footer contacts accessible', async () => {
     setAuthToken('customer-token')
+    window.history.replaceState({}, '', '/simulations/12/report')
     setupFetch()
     render(<><SimulationReportPage simulationId="12" /><CompanyContactDetails /></>)
 
     await screen.findByRole('heading', { name: 'Seu relatório de energia' })
-    expect(screen.getByRole('link', { name: /contato@enerdiag.example/ })).toHaveAttribute('href', 'mailto:contato@enerdiag.example')
-    expect(screen.queryByRole('img', { name: 'Ícone da EnerDiag' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /contato@ecowatt.example/ })).toHaveAttribute('href', 'mailto:contato@ecowatt.example')
+    expect(screen.queryByRole('img', { name: 'Ícone da EcoWatt' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Solicitar contato comercial' })).not.toBeInTheDocument()
+    const consultation = screen.getByRole('region', { name: 'Transforme sua análise em um plano de economia' })
+    expect(within(consultation).queryByRole('link')).not.toBeInTheDocument()
+    expect(within(consultation).queryByRole('button')).not.toBeInTheDocument()
+    expect(consultation.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(consultation.querySelector('svg')).toHaveAttribute('focusable', 'false')
   })
 
   it('renders the Azul and Verde comparison when the report has both series', async () => {

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Invoices\Ocr\InvoiceOcr;
 use App\Invoices\Pdf\PdfPageCounter;
 use App\Invoices\Pdf\PdfTextParser;
 use App\Jobs\ProcessSimulation;
@@ -151,6 +152,40 @@ class SequentialInvoiceImportTest extends TestCase
         $this->postJson("/api/v1/invoice-imports/{$id}/complete")->assertOk()->assertJsonPath('data.status', 'completed');
         Queue::assertNotPushed(ProcessSimulation::class);
         Mail::assertQueued(SimulationCompleted::class, 1);
+    }
+
+    public function test_it_imports_a_real_image_through_ocr_and_rejects_duplicate_content(): void
+    {
+        $id = $this->startImport();
+        $this->mock(InvoiceOcr::class)->shouldReceive('extract')->once()
+            ->andReturn(file_get_contents(base_path('tests/Fixtures/ocr/expected.txt')));
+        $image = new UploadedFile(base_path('tests/Fixtures/ocr/invoice.png'), 'invoice.png', 'image/png', null, true);
+        $this->postJson("/api/v1/invoice-imports/{$id}/invoices", ['invoice' => $image])
+            ->assertCreated()->assertJsonPath('data.invoices.0.consumer_unit', 'MTE0015497')
+            ->assertJsonPath('data.invoices.0.total_paid', '1189.75');
+        $this->postJson("/api/v1/invoice-imports/{$id}/invoices", ['invoice' => $image])->assertUnprocessable();
+        $this->assertDatabaseCount('invoices', 1);
+        $this->assertDatabaseHas('invoice_items', ['amount' => '-10.25']);
+        $this->assertSame([], Storage::disk('invoice_temp')->allFiles());
+    }
+
+    public function test_it_reads_the_provided_color_image_through_the_real_ocr_upload_flow(): void
+    {
+        $path = base_path('../docs/Code_Generated_Image.png');
+        if (! is_file($path)) {
+            $this->markTestSkipped('Imagem local privada não versionada.');
+        }
+        $id = $this->startImport();
+        $image = new UploadedFile($path, 'invoice.png', 'image/png', null, true);
+        $response = $this->postJson("/api/v1/invoice-imports/{$id}/invoices", ['invoice' => $image]);
+        $response->assertCreated()->assertJsonPath('data.invoices.0.consumer_unit', 'MTE0015497')
+            ->assertJsonPath('data.invoices.0.reference_month', '2026-01')
+            ->assertJsonPath('data.invoices.0.total_paid', '15737.88')
+            ->assertJsonPath('data.invoices.0.warnings', [])
+            ->assertJsonCount(13, 'data.invoices.0.items');
+        $sum = collect($response->json('data.invoices.0.items'))->reduce(fn ($sum, $item) => bcadd($sum, $item['amount'], 2), '0.00');
+        $this->assertSame('15737.88', $sum);
+        $this->assertSame([], Storage::disk('invoice_temp')->allFiles());
     }
 
     private function startImport(): int

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 export type Theme = 'light' | 'dark'
 
-const STORAGE_KEY = 'enerdiag-theme'
+const STORAGE_KEY = 'ecowatt-theme'
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {

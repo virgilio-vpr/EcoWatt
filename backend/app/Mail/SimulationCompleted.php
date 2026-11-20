@@ -25,7 +25,7 @@ class SimulationCompleted extends Mailable
      */
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Seu relatório EnerDiag está pronto');
+        return new Envelope(subject: 'Seu relatório EcoWatt está pronto');
     }
 
     /**
@@ -53,7 +53,7 @@ class SimulationCompleted extends Mailable
 
         return [Attachment::fromData(
             fn (): string => app(PdfReportGenerator::class)->generate($report),
-            'relatorio-enerdiag.pdf',
+            'relatorio-ecowatt.pdf',
         )->withMime('application/pdf')];
     }
 }

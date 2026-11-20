@@ -1,6 +1,6 @@
 # Introduction
 
-API do EnerDiag para análise de faturas de energia do Grupo A.
+API do EcoWatt para análise de faturas de energia do Grupo A.
 
 <aside>
     <strong>Base URL</strong>: <code>http://localhost:8000</code>

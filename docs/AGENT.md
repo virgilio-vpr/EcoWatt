@@ -1,4 +1,4 @@
-# EnerDiag
+# EcoWatt
 
 Sistema web que lê faturas de energia do Grupo A (ENEL) e simula a economia. API Laravel 13 + SPA React/TypeScript.
 
@@ -22,13 +22,13 @@ O "como testar" de cada tarefa está na linha `Teste:` do spec. Regras gerais:
 
 ## Comandos (confirmar na tarefa 0.7)
 - No Codespace atual, o PHP 8.5 está em `$HOME/.config/herd-lite/bin`; se `php -v` mostrar PHP 8.4, execute `export PATH="$HOME/.config/herd-lite/bin:$PATH"` e confira `php -v` antes dos comandos PHP/Composer.
-- Banco (na raiz): `docker compose up -d`; verificar: `docker compose ps` e `docker compose exec -T postgres pg_isready -U enerdiag -d enerdiag`
+- Banco (na raiz): `docker compose up -d`; verificar: `docker compose ps` e `docker compose exec -T postgres pg_isready -U ecowatt -d ecowatt`
 - API (em `backend/`): `php artisan scribe:generate` gera a documentação em `/docs`; `php artisan serve --host=0.0.0.0` inicia a API.
 - Testes da API (em `backend/`): `php artisan test` (um teste: `--filter=Nome`); formatar: `./vendor/bin/pint`
 - Reset destrutivo do banco (em `backend/`; apaga todas as tabelas e dados): `php artisan migrate:fresh --seed`. Só executar com autorização explícita e após confirmar que não há dados a preservar.
 - Front: `cd frontend && npm run dev -- --host 0.0.0.0`
 - Testes do front (em `frontend/`): `npm run test` (um arquivo: `npx vitest run caminho`); lint: `npm run lint`; build: `npm run build`
-- Teste de ponta a ponta (em `frontend/`, Node 24+): instalar Chromium e bibliotecas do sistema uma vez com `npx playwright install --with-deps chromium`; executar `npm run test:e2e`. Usa build de produção, API/worker reais, SQLite e arquivos em `/tmp/enerdiag-e2e-*` e SMTP local, sem usar o `.env` ou o banco restaurado. Portas locais reservadas: 18761–18764; os processos e temporários são removidos ao terminar.
+- Teste de ponta a ponta (em `frontend/`, Node 24+): instalar Chromium e bibliotecas do sistema uma vez com `npx playwright install --with-deps chromium`; executar `npm run test:e2e`. Usa build de produção, API/worker reais, SQLite e arquivos em `/tmp/ecowatt-e2e-*` e SMTP local, sem usar o `.env` ou o banco restaurado. Portas locais reservadas: 18761–18764; os processos e temporários são removidos ao terminar.
 - Auditoria: `cd backend && composer audit`; `cd frontend && npm audit`
 
 ## Regras fixas

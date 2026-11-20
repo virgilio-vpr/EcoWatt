@@ -60,7 +60,7 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'Criar simulação'
-      description: 'Valida os dados da empresa e as faturas PDF e registra uma simulação na fila.'
+      description: 'Valida os dados da empresa e as faturas PDF, PNG ou JPEG e registra uma simulação na fila.'
       authenticated: true
       deprecated: false
     headers:
@@ -175,7 +175,7 @@ endpoints:
       'invoices[]':
         custom: []
         name: 'invoices[]'
-        description: 'Faturas PDF (de 1 a 12 arquivos).'
+        description: 'Faturas PDF, PNG ou JPEG (de 1 a 12 arquivos).'
         required: true
         example: null
         type: file

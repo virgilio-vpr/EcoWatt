@@ -1,10 +1,12 @@
+name: ecowatt
+
 services:
   postgres:
     image: postgres:18.6
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-enerdiag}
-      POSTGRES_USER: ${DB_USERNAME:-enerdiag}
+      POSTGRES_DB: ${DB_DATABASE:-ecowatt}
+      POSTGRES_USER: ${DB_USERNAME:-ecowatt}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     ports:
       - "127.0.0.1:${DB_PORT:-5432}:5432"

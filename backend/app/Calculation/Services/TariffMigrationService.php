@@ -47,7 +47,7 @@ final class TariffMigrationService
         $resolveTariff = function (string $modality, string $component, string $slot, string $date) use ($distributorId, $subgroup, $tariffReferenceDate, &$tariffCache): TariffResolution {
             $key = implode('|', [$modality, $component, $slot, $date]);
 
-            return $tariffCache[$key] ??= $this->tariffService->resolve($distributorId, $subgroup, $modality, $component, $slot, $date, false, $tariffReferenceDate !== null);
+            return $tariffCache[$key] ??= $this->tariffService->resolve($distributorId, $subgroup, $modality, $component, $slot, $date, false, $tariffReferenceDate !== null, $tariffReferenceDate !== null ? 'aneel_import' : null);
         };
 
         foreach ($months as $month) {

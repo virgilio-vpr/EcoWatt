@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, within, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { ForgotPasswordPage, LoginPage, RegistrationPage, ResetPasswordPage, VerifyEmailPage } from './CustomerAccessPage'
@@ -43,7 +43,7 @@ describe('customer registration', () => {
     fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 'Abcd12!x' } })
     fireEvent.change(screen.getByLabelText('Confirme sua senha'), { target: { value: 'Abcd12!x' } })
     fireEvent.click(screen.getByRole('checkbox', { name: /Li e aceito/ }))
-    fireEvent.click(screen.getByRole('button', { name: 'Criar conta' }))
+    fireEvent.click(within(screen.getByRole('main')).getByRole('button', { name: 'Criar conta' }))
 
     expect(await screen.findByRole('heading', { name: 'Verifique seu e-mail' })).toBeInTheDocument()
     expect(window.location.pathname).toBe('/verify-email')

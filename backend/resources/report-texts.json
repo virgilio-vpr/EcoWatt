@@ -25,7 +25,7 @@
   },
   "fallback_warning": "A análise identificou um ponto que merece atenção.",
   "consultation_title": "Transforme sua análise em um plano de economia",
-  "consultation_contact": "Fale com a equipe EnerDiag",
+  "consultation_contact": "Fale com a equipe EcoWatt",
   "demand_comparison_note": "Na comparação de demanda, o contrato atual e o simulado usam as mesmas tarifas da fatura de {month}. A mudança de tarifa ao longo do histórico não é contabilizada como economia da redução de demanda.",
   "internal_warnings": [
     "idle_demand_post_matching_unresolved",
@@ -38,5 +38,7 @@
     "registered_tariff": "Tarifa vigente cadastrada, com tributos",
     "series_maximum": "Maior tarifa unitária com tributos da série"
   },
-  "modality_reference_note": "Os planos Azul e Verde são comparados com as tarifas da distribuidora para demanda e consumo de energia, incluindo os tributos e usando a mesma referência tarifária nos dois planos."
+  "modality_reference_note": "Os planos Azul e Verde são comparados com as tarifas vigentes da ANEEL específicas de cada modalidade, cadastradas para a distribuidora e o subgrupo. As tarifas são convertidas em valores com tributos pelo fator proporcional apurado na fatura mais recente. Na Verde, a demanda tem tarifa única; na Azul, são aplicadas as tarifas de demanda de ponta e fora de ponta. O consumo também utiliza as tarifas correspondentes de cada modalidade e posto horário.",
+  "measurement_reference_note": "As demandas de ponta e fora de ponta indutiva vêm do quadro de medição. Na modalidade verde, a fora de ponta indutiva corresponde à demanda única; a ponta permite simular a modalidade azul.",
+  "demand_tax_note": "A tarifa de demanda inclui os tributos da fatura. Na demanda ociosa, são mantidos PIS e COFINS e excluído o ICMS."
 }

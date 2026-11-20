@@ -31,7 +31,7 @@ final class InvoiceUploadValidator
         $fileCount = count($files);
         if ($fileCount < self::MIN_FILES || $fileCount > self::MAX_FILES) {
             throw ValidationException::withMessages([
-                'invoices' => 'Envie de 1 a 12 faturas em PDF.',
+                'invoices' => 'Envie de 1 a 12 faturas em PDF, PNG ou JPEG.',
             ]);
         }
 
@@ -61,15 +61,15 @@ final class InvoiceUploadValidator
         }
 
         foreach ($files as $index => $file) {
-            if (! $this->hasPdfSignature($file)) {
-                throw new UnsupportedMediaTypeHttpException("O arquivo de índice {$index} não é um PDF válido.");
+            if (! $this->hasPdfSignature($file) && ! $this->hasImageSignature($file)) {
+                throw new UnsupportedMediaTypeHttpException("O arquivo de índice {$index} não é um PDF, PNG ou JPEG válido.");
             }
         }
 
         $totalPages = 0;
         foreach ($files as $index => $file) {
             try {
-                $totalPages += $this->pageCounter->count($file->getRealPath());
+                $totalPages += $this->pageCount($file);
             } catch (Throwable) {
                 throw ValidationException::withMessages([
                     "invoices.{$index}" => 'Não foi possível ler as páginas do PDF enviado.',
@@ -80,6 +80,32 @@ final class InvoiceUploadValidator
                 throw new HttpException(413, 'O conjunto de faturas deve ter no máximo 600 páginas.');
             }
         }
+    }
+
+    public function pageCount(UploadedFile $file): int
+    {
+        return $this->hasImageSignature($file) ? 1 : $this->pageCounter->count($file->getRealPath());
+    }
+
+    private function hasImageSignature(UploadedFile $file): bool
+    {
+        $path = $file->getRealPath();
+        if ($path === false) {
+            return false;
+        }
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($path);
+        if (! in_array($mime, ['image/png', 'image/jpeg'], true)) {
+            return false;
+        }
+        $size = @getimagesize($path);
+        if ($size === false || ! in_array($size[2], [IMAGETYPE_PNG, IMAGETYPE_JPEG], true)) {
+            return false;
+        }
+        if (min($size[0], $size[1]) < 300 || max($size[0], $size[1]) > 10000 || $size[0] * $size[1] > 20000000) {
+            throw new HttpException(413, 'Imagens devem ter ao menos 300 pixels por lado, até 10.000 por lado e até 20 megapixels.');
+        }
+
+        return true;
     }
 
     private function hasPdfSignature(UploadedFile $file): bool

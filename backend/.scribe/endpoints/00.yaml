@@ -13,7 +13,7 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'Status da API'
-      description: 'Retorna o status operacional da API EnerDiag v1.'
+      description: 'Retorna o status operacional da API EcoWatt v1.'
       authenticated: false
       deprecated: false
     headers:

@@ -155,7 +155,7 @@ export async function apiRequest<T>(
     }
     return payload as T
   } catch (error) {
-    if (error instanceof ApiError && error.status !== 401 && config.notifyGlobalError !== false) window.dispatchEvent(new CustomEvent('enerdiag:api-error', { detail: error }))
+    if (error instanceof ApiError && error.status !== 401 && config.notifyGlobalError !== false) window.dispatchEvent(new CustomEvent('ecowatt:api-error', { detail: error }))
     throw error
   }
 }

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: 'EnerDiag — Documentação da API'
-  description: 'API do EnerDiag para análise de faturas de energia do Grupo A.'
+  title: 'EcoWatt — Documentação da API'
+  description: 'API do EcoWatt para análise de faturas de energia do Grupo A.'
   version: 1.0.0
 servers:
   -
@@ -3566,7 +3566,7 @@ paths:
     get:
       summary: 'Status da API'
       operationId: statusDaAPI
-      description: 'Retorna o status operacional da API EnerDiag v1.'
+      description: 'Retorna o status operacional da API EcoWatt v1.'
       parameters: []
       responses:
         200:

@@ -27,6 +27,7 @@ export type ImportedInvoice = {
 }
 
 const warningMessages: Record<string, string> = {
+  ocr_support_unavailable: 'O OCR de apoio não concluiu a leitura. Confira os campos lidos e envie outra cópia se necessário.',
   idle_demand_post_matching_unresolved: 'Há demanda ociosa cujo posto precisa ser conferido.',
   invoice_billing_total_mismatch: 'A soma dos itens lidos difere do total. Revise esta fatura antes de simular.',
 }
@@ -45,7 +46,7 @@ function slotLabel(slot: string) {
 
 export function InvoiceImportTable({ invoices, onRemove, disabled = false }: { invoices: ImportedInvoice[]; onRemove?: (id: number) => void; disabled?: boolean }) {
   const ordered = [...invoices].sort((left, right) => left.reference_month.localeCompare(right.reference_month)).map((invoice) => ({ ...invoice, warnings: invoice.warnings.filter((warning) => !reportTexts.internal_warnings.includes(warning)) }))
-  if (ordered.length === 0) return <p>Nenhuma fatura salva. Selecione os PDFs para começar a leitura.</p>
+  if (ordered.length === 0) return <p>Nenhuma fatura salva. Selecione PDFs, PNG ou JPEG para começar a leitura.</p>
 
   return <section className="invoice-review" aria-labelledby="invoice-review-title">
     <h2 id="invoice-review-title">Confira as faturas lidas</h2>

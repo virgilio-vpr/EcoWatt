@@ -54,7 +54,7 @@ describe('customer simulation management', () => {
       return Promise.resolve(response(payload(rows)))
     })
     vi.stubGlobal('fetch', fetchMock)
-    window.localStorage.setItem('enerdiag_invoice_import_id', '1')
+    window.localStorage.setItem('ecowatt_invoice_import_id', '1')
     render(<CustomerSimulationsPage />)
     fireEvent.click(await screen.findByRole('button', { name: 'Excluir simulação nº 1' }))
     expect(fetchMock.mock.calls.filter(([, options]) => options?.method === 'DELETE')).toHaveLength(0)
@@ -63,7 +63,7 @@ describe('customer simulation management', () => {
     expect(await screen.findByRole('link', { name: 'Nova simulação' })).toHaveAttribute('href', '/upload-faturas?new=1')
     expect(screen.queryByRole('heading', { name: 'Simulação nº 1' })).not.toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Simulação nº 1 excluída.')
-    expect(window.localStorage.getItem('enerdiag_invoice_import_id')).toBeNull()
+    expect(window.localStorage.getItem('ecowatt_invoice_import_id')).toBeNull()
   })
 
   it('resumes a queued calculation directly from saved invoices', async () => {

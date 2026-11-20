@@ -165,6 +165,8 @@ class ReportDemandOptimizationServiceTest extends TestCase
         $tariff = $this->tariff('8.00000', false);
         $taxedAlternative = $tariff->replicate();
         $taxedAlternative->fill(['includes_taxes' => true, 'rate' => '99.00000'])->save();
+        $manualAlternative = $tariff->replicate();
+        $manualAlternative->fill(['source' => 'manual', 'rate' => '99.00000', 'valid_from' => '2026-11-06'])->save();
         $invoices = [
             $this->invoice('2026-01', 'green', ['unique' => ['contracted' => '100.000', 'measured' => '80.000', 'rate' => '25.00000']]),
             $this->invoice('2026-02', 'green', ['unique' => ['contracted' => '100.000', 'measured' => '80.000', 'rate' => '12.50000', 'untaxed_rate' => '10.00000', 'icms_rate' => '0.1800']]),
@@ -182,7 +184,7 @@ class ReportDemandOptimizationServiceTest extends TestCase
         $this->assertSame(['2026-01' => '164.00', '2026-02' => '164.00'], $result['savings']);
     }
 
-    public function test_taxed_registered_tariff_is_not_taxed_again(): void
+    public function test_taxed_registration_does_not_replace_the_required_aneel_base(): void
     {
         $this->travelTo(now()->setDate(2026, 11, 6));
         $tariff = $this->tariff('10.00000', true);
@@ -190,11 +192,11 @@ class ReportDemandOptimizationServiceTest extends TestCase
             $this->invoice('2026-02', 'green', ['unique' => ['contracted' => '100.000', 'measured' => '80.000', 'rate' => '25.00000']]),
         ], $tariff->distributor_id);
 
-        $this->assertSame('10.00000', $result['comparison']['2026-02']['unique']['reference_tariff']);
-        $this->assertSame('164.00', $result['savings']['2026-02']);
+        $this->assertSame([], $result['comparison']);
+        $this->assertContains(ReportDemandOptimizationService::UNAVAILABLE_WARNING, $result['warnings']);
     }
 
-    public function test_expired_and_future_tariffs_do_not_replace_the_series_maximum(): void
+    public function test_expired_and_future_tariffs_make_the_current_reference_unavailable(): void
     {
         $this->travelTo(now()->setDate(2026, 11, 6));
         $tariff = $this->tariff('8.00000', true);
@@ -206,8 +208,8 @@ class ReportDemandOptimizationServiceTest extends TestCase
             $this->invoice('2026-02', 'green', ['unique' => ['contracted' => '100.000', 'measured' => '80.000', 'rate' => '12.50000']]),
         ], $tariff->distributor_id);
 
-        $this->assertSame('25.00000', $result['comparison']['2026-02']['unique']['reference_tariff']);
-        $this->assertSame('series_maximum', $result['comparison']['2026-02']['unique']['tariff_reference_source']);
+        $this->assertSame([], $result['comparison']);
+        $this->assertContains(ReportDemandOptimizationService::UNAVAILABLE_WARNING, $result['warnings']);
         $this->assertSame([], $result['tariff_ids']);
     }
 
@@ -220,11 +222,12 @@ class ReportDemandOptimizationServiceTest extends TestCase
             $this->invoice('2026-02', 'green', ['unique' => ['contracted' => '100.000', 'measured' => '80.000', 'rate' => '25.00000']]),
         ], $tariff->distributor_id);
 
-        $this->assertSame('series_maximum', $result['comparison']['2026-02']['unique']['tariff_reference_source']);
+        $this->assertSame([], $result['comparison']);
+        $this->assertContains(ReportDemandOptimizationService::UNAVAILABLE_WARNING, $result['warnings']);
         $this->assertSame([], $result['tariff_ids']);
     }
 
-    public function test_missing_tax_calibration_uses_the_series_maximum_instead_of_an_untaxed_tariff(): void
+    public function test_missing_tax_calibration_does_not_use_an_untaxed_or_historical_tariff(): void
     {
         $this->travelTo(now()->setDate(2026, 11, 6));
         $tariff = $this->tariff('8.00000', false);
@@ -232,8 +235,8 @@ class ReportDemandOptimizationServiceTest extends TestCase
             $this->invoice('2026-02', 'green', ['unique' => ['contracted' => '100.000', 'measured' => '80.000', 'rate' => '25.00000']]),
         ], $tariff->distributor_id);
 
-        $this->assertSame('25.00000', $result['comparison']['2026-02']['unique']['reference_tariff']);
-        $this->assertSame('series_maximum', $result['comparison']['2026-02']['unique']['tariff_reference_source']);
+        $this->assertSame([], $result['comparison']);
+        $this->assertContains(ReportDemandOptimizationService::UNAVAILABLE_WARNING, $result['warnings']);
         $this->assertSame([], $result['tariff_ids']);
     }
 

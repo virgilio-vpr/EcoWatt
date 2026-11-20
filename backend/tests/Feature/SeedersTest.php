@@ -55,7 +55,7 @@ class SeedersTest extends TestCase
         // Users in non-production
         $admin = User::where('role', 'admin')->first();
         $this->assertNotNull($admin);
-        $this->assertSame('admin@enerdiag.com.br', $admin->email);
+        $this->assertSame('admin@ecowatt.com.br', $admin->email);
 
         $clients = User::where('role', 'customer')->get();
         $this->assertCount(2, $clients);

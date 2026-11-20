@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Http;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 
-$directory = getenv('ENERDIAG_E2E_DIRECTORY');
-if (! is_string($directory) || ! preg_match('~\A/tmp/enerdiag-e2e-[a-zA-Z0-9]+\z~', $directory) || ! is_dir($directory)) {
+$directory = getenv('ECOWATT_E2E_DIRECTORY');
+if (! is_string($directory) || ! preg_match('~\A/tmp/ecowatt-e2e-[a-zA-Z0-9]+\z~', $directory) || ! is_dir($directory)) {
     throw new RuntimeException('E2E requires its own temporary directory.');
 }
 
@@ -19,7 +19,7 @@ $environment = [
     'CACHE_STORE' => 'array', 'SESSION_DRIVER' => 'array', 'QUEUE_CONNECTION' => 'database',
     'MAIL_MAILER' => 'smtp', 'MAIL_URL' => 'smtp://127.0.0.1:18763', 'MAIL_SCHEME' => 'smtp',
     'MAIL_HOST' => '127.0.0.1', 'MAIL_PORT' => '18763', 'MAIL_USERNAME' => '(null)', 'MAIL_PASSWORD' => '(null)',
-    'MAIL_FROM_ADDRESS' => 'enerdiag@example.test', 'MAIL_FROM_NAME' => 'EnerDiag E2E',
+    'MAIL_FROM_ADDRESS' => 'ecowatt@example.test', 'MAIL_FROM_NAME' => 'EcoWatt E2E',
     'BCRYPT_ROUNDS' => '4', 'LOG_CHANNEL' => 'single',
     'APP_CONFIG_CACHE' => $directory.'/bootstrap/config.php',
     'APP_ROUTES_CACHE' => $directory.'/bootstrap/routes.php',
@@ -27,6 +27,11 @@ $environment = [
     'APP_SERVICES_CACHE' => $directory.'/bootstrap/services.php',
     'APP_PACKAGES_CACHE' => $directory.'/bootstrap/packages.php',
 ];
+$localOcrPython = dirname(__DIR__, 2).'/storage/ocr-local/bin/python3';
+if (! getenv('OCR_PYTHON') && is_executable($localOcrPython)) {
+    $environment['OCR_PYTHON'] = $localOcrPython;
+}
+
 foreach ($environment as $key => $value) {
     putenv($key.'='.$value);
     $_ENV[$key] = $_SERVER[$key] = $value;

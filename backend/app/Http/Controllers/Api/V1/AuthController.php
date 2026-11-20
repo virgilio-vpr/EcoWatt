@@ -130,7 +130,7 @@ class AuthController extends Controller
             }
         }
 
-        $accessToken = $user->createToken('enerdiag-api', ['*'], now()->addHours(2));
+        $accessToken = $user->createToken('ecowatt-api', ['*'], now()->addHours(2));
 
         return response()->json([
             'token' => $accessToken->plainTextToken,

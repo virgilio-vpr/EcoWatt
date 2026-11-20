@@ -15,8 +15,8 @@ export function ApiErrorHandler() {
       setError(apiError)
     }
 
-    window.addEventListener('enerdiag:api-error', handleApiError)
-    return () => window.removeEventListener('enerdiag:api-error', handleApiError)
+    window.addEventListener('ecowatt:api-error', handleApiError)
+    return () => window.removeEventListener('ecowatt:api-error', handleApiError)
   }, [])
 
   if (!error) return null

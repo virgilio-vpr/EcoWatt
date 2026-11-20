@@ -44,7 +44,7 @@ class RegisterCustomer
 
             Consent::create([
                 'user_id' => $user->id,
-                'terms_version' => config('enerdiag.terms_version'),
+                'terms_version' => config('ecowatt.terms_version'),
                 'accepted_at' => now(),
                 'ip_address' => $ipAddress,
             ]);

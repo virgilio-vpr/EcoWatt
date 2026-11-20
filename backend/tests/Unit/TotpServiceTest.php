@@ -37,7 +37,7 @@ class TotpServiceTest extends TestCase
         $secret = $service->generateSecret();
         $this->assertMatchesRegularExpression('/\A[A-Z2-7]{32}\z/', $secret);
         $uri = $service->provisioningUri('admin+test@example.com', $secret);
-        $this->assertStringContainsString(rawurlencode('EnerDiag:admin+test@example.com'), $uri);
+        $this->assertStringContainsString(rawurlencode('EcoWatt:admin+test@example.com'), $uri);
         parse_str(parse_url($uri, PHP_URL_QUERY), $query);
         $this->assertSame($secret, $query['secret']);
         $this->assertSame('6', $query['digits']);

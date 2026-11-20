@@ -113,6 +113,8 @@ class SimulationController extends Controller
             ], 409);
         }
 
+        $invoices = $simulation->invoices()->orderBy('reference_month')->get(['reference_month', 'consumer_unit']);
+
         return response()->json(['data' => array_merge($simulation->report->only([
             'id',
             'simulation_id',
@@ -137,7 +139,12 @@ class SimulationController extends Controller
             'recommendations',
             'r_values',
             'k_values',
-        ]), ['months_count' => $simulation->months_count])]);
+        ]), [
+            'months_count' => $simulation->months_count,
+            'consumer_unit' => $invoices->first()?->consumer_unit,
+            'period_start' => $invoices->first()?->reference_month,
+            'period_end' => $invoices->last()?->reference_month,
+        ])]);
     }
 
     #[Authenticated]
@@ -160,7 +167,7 @@ class SimulationController extends Controller
 
         return response($generator->generate($simulation->report), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="relatorio-enerdiag-'.$simulation->id.'.pdf"',
+            'Content-Disposition' => 'attachment; filename="relatorio-ecowatt-'.$simulation->id.'.pdf"',
         ]);
     }
 
@@ -263,13 +270,13 @@ class SimulationController extends Controller
      * Submit invoices for asynchronous processing.
      */
     #[Authenticated]
-    #[Endpoint('Criar simulação', 'Valida os dados da empresa e as faturas PDF e registra uma simulação na fila.')]
+    #[Endpoint('Criar simulação', 'Valida os dados da empresa e as faturas PDF, PNG ou JPEG e registra uma simulação na fila.')]
     #[BodyParam('company_name', 'string', 'Nome da empresa.', example: 'Empresa Exemplo Ltda.')]
     #[BodyParam('distributor_id', 'integer', 'Identificador da distribuidora atendida.', example: 1)]
     #[BodyParam('distributor_name', 'string', 'Nome de uma distribuidora ainda não atendida.', example: 'Distribuidora Exemplo')]
     #[BodyParam('address_details', 'string', 'Endereço da empresa.', example: 'Rua Exemplo, 100, São Paulo/SP')]
     #[BodyParam('substation_same_address', 'boolean', 'Indica se o endereço da subestação é o mesmo da fatura.', example: true)]
-    #[BodyParam('invoices[]', 'file', 'Faturas PDF (de 1 a 12 arquivos).')]
+    #[BodyParam('invoices[]', 'file', 'Faturas PDF, PNG ou JPEG (de 1 a 12 arquivos).')]
     #[Response(status: 202, content: '{"data":{"id":1,"status":"queued","created_at":"2026-10-24T12:00:00Z"}}', description: 'Simulação registrada')]
     #[Response(status: 401, content: '{"message":"Não autenticado.","code":"UNAUTHENTICATED","errors":null}', description: 'Token ausente ou inválido')]
     #[Response(status: 422, content: '{"message":"A distribuidora selecionada ainda não possui leitor disponível.","code":"DISTRIBUTOR_UNSUPPORTED","errors":null}', description: 'Distribuidora sem leitor')]

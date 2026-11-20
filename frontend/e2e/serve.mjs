@@ -11,7 +11,7 @@ import { apiPort, frontendPort, smtpPort, mailboxPort } from './runtime.ts'
 
 const frontend = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const backend = resolve(frontend, '../backend')
-const directory = mkdtempSync('/tmp/enerdiag-e2e-')
+const directory = mkdtempSync('/tmp/ecowatt-e2e-')
 const children = []
 const messages = []
 let stopping = false
@@ -20,7 +20,7 @@ for (const path of ['bootstrap', 'storage/app/private', 'storage/framework/cache
   mkdirSync(resolve(directory, path), { recursive: true })
 }
 writeFileSync(resolve(directory, 'database.sqlite'), '')
-const env = { ...process.env, ENERDIAG_E2E_DIRECTORY: directory, APP_KEY: `base64:${randomBytes(32).toString('base64')}` }
+const env = { ...process.env, ECOWATT_E2E_DIRECTORY: directory, APP_KEY: `base64:${randomBytes(32).toString('base64')}` }
 
 const smtp = new SMTPServer({
   disabledCommands: ['AUTH', 'STARTTLS'],
@@ -79,7 +79,7 @@ try {
   if (exitCode !== 0) throw new Error('Could not prepare the isolated E2E environment.')
   const api = start('php', ['-S', `127.0.0.1:${apiPort}`, '-t', 'public', 'tests/E2E/server.php'], backend)
   const worker = start('php', ['tests/E2E/console.php', 'worker'], backend)
-  const vite = start(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', String(frontendPort), '--strictPort'], frontend, { ENERDIAG_E2E_API_ORIGIN: `http://127.0.0.1:${apiPort}` })
+  const vite = start(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', String(frontendPort), '--strictPort'], frontend, { ECOWATT_E2E_API_ORIGIN: `http://127.0.0.1:${apiPort}` })
   for (const child of [api, worker, vite]) child.on('exit', () => { if (!stopping) void stop(1) })
 } catch (error) {
   console.error(error.message)

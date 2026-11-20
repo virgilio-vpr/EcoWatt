@@ -2,8 +2,7 @@
 
 namespace App\Services;
 
-use App\Invoices\Pdf\PdfPageCounter;
-use App\Invoices\Pdf\TemporaryPdfTextExtractor;
+use App\Invoices\InvoiceDocumentReader;
 use App\Invoices\Readers\InvoiceReaderResolver;
 use App\Invoices\Validation\InvoiceExtractionValidator;
 use App\Invoices\Validation\InvoiceUploadValidator;
@@ -18,10 +17,9 @@ final class ImportInvoiceIntoSimulation
 {
     public function __construct(
         private readonly InvoiceReaderResolver $readerResolver,
-        private readonly TemporaryPdfTextExtractor $textExtractor,
+        private readonly InvoiceDocumentReader $textExtractor,
         private readonly InvoiceUploadValidator $uploadValidator,
         private readonly InvoiceExtractionValidator $extractionValidator,
-        private readonly PdfPageCounter $pageCounter,
     ) {}
 
     /** @return array{reference_month: string, invoice_count: int, invoices: list<array<string, mixed>>} */
@@ -37,7 +35,7 @@ final class ImportInvoiceIntoSimulation
         $this->uploadValidator->validate([$file]);
         $contents = file_get_contents($file->getRealPath());
         if (! is_string($contents)) {
-            throw ValidationException::withMessages(['invoice' => 'Não foi possível ler o PDF enviado.']);
+            throw ValidationException::withMessages(['invoice' => 'Não foi possível ler o arquivo enviado.']);
         }
 
         $hash = hash('sha256', $contents);
@@ -52,7 +50,7 @@ final class ImportInvoiceIntoSimulation
         }
 
         try {
-            $extracted = $this->readerResolver->resolve($distributor)->read($this->textExtractor->extract($contents));
+            $extracted = $this->textExtractor->read($contents, $this->readerResolver->resolve($distributor));
         } catch (InvalidArgumentException $exception) {
             throw ValidationException::withMessages(['invoice' => $exception->getMessage()]);
         }
@@ -69,10 +67,10 @@ final class ImportInvoiceIntoSimulation
             ]);
         }
 
-        $pageCount = $this->pageCounter->count($file->getRealPath());
+        $pageCount = $this->uploadValidator->pageCount($file);
         $fileBytes = $file->getSize();
         if (! is_int($fileBytes)) {
-            throw ValidationException::withMessages(['invoice' => 'Não foi possível identificar o tamanho do PDF enviado.']);
+            throw ValidationException::withMessages(['invoice' => 'Não foi possível identificar o tamanho do arquivo enviado.']);
         }
         $existingPages = (int) $simulation->invoices()->sum('page_count');
         if ($existingPages + $pageCount > InvoiceUploadValidator::MAX_PAGES) {

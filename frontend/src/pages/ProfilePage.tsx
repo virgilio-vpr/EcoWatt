@@ -128,7 +128,7 @@ export function ProfilePage() {
   if (!account) return <section className="access-page" aria-labelledby="profile-error-title"><h1 id="profile-error-title">Perfil indisponível</h1><p className="field-error" role="alert">{errorMessage || 'Não foi possível carregar seu perfil.'}</p></section>
 
   return <section className="profile-page" aria-labelledby="profile-title">
-    <p className="section-eyebrow">Sua conta EnerDiag</p>
+    <p className="section-eyebrow">Sua conta EcoWatt</p>
     <h1 id="profile-title">Meu perfil</h1>
     <p className="access-intro">{account.role === 'admin' ? 'Atualize seus dados pessoais e de acesso à administração.' : 'Atualize seus dados e as informações da unidade consumidora.'}</p>
     {errorMessage && <p className="field-error" role="alert">{errorMessage}</p>}

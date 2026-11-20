@@ -6,9 +6,16 @@ use App\Calculation\Data\ExtractedInvoiceData;
 use App\Calculation\Services\IdleDemandTariffMatcher;
 use InvalidArgumentException;
 
-final class EnelInvoiceReader implements InvoiceReader
+final class EnelInvoiceReader implements InvoiceReader, OcrInvoiceReader
 {
     private const IDLE_MATCH_TOLERANCE = '0.02';
+
+    public function __construct(private readonly bool $ocrDecimals = false) {}
+
+    public function readOcr(string $text): ExtractedInvoiceData
+    {
+        return (new self(ocrDecimals: true))->read($text);
+    }
 
     public function parserKey(): string
     {
@@ -63,9 +70,11 @@ final class EnelInvoiceReader implements InvoiceReader
                 continue;
             }
 
-            $parsed = $row['kind'] === 'short_charge'
-                ? $this->parseIdleRow($row['content'])
-                : $this->parseRegularRow($row['content']);
+            $parsed = match ($row['kind']) {
+                'short_charge' => $this->parseIdleRow($row['content']),
+                'credit' => $this->parseIdleRow($row['content'], allowAmountOnly: true),
+                default => $this->parseRegularRow($row['content']),
+            };
             if ($parsed === null) {
                 throw new InvalidArgumentException("A linha '{$row['source_label']}' do quadro de faturamento da ENEL está incompleta.");
             }
@@ -102,6 +111,24 @@ final class EnelInvoiceReader implements InvoiceReader
         $data['items'] = array_merge($data['items'], $matchedIdleRows);
         $data['warnings'] = array_merge($data['warnings'], $matchingWarnings);
 
+        foreach ($this->meteredDemands($text) as $slot => $quantity) {
+            $data['items'][] = $this->item(
+                itemType: 'metered_demand',
+                tariffComponent: 'demand',
+                timeSlot: $slot,
+                quantity: $quantity,
+                unit: 'kW',
+                unitPriceTaxed: null,
+                tariffRate: null,
+                amount: '0.00',
+                pisCofins: '0.00',
+                icmsBase: '0.00',
+                icmsRate: '0.0000',
+                icmsAmount: '0.00',
+                sourceLabel: $slot === 'peak' ? 'Dados de medição: demanda ponta' : 'Dados de medição: demanda fora de ponta indutiva',
+            );
+        }
+
         if (preg_match('/Subtotal\s+Faturamento/iu', $text) === 1 && preg_match('/Subtotal\s+Outros/iu', $text) === 1) {
             $sum = '0.00';
             foreach ($data['items'] as $item) {
@@ -119,6 +146,7 @@ final class EnelInvoiceReader implements InvoiceReader
     private function billingRows(string $text): array
     {
         $specifications = [
+            ['kind' => 'regular', 'pattern' => '~(?<!\p{L})DEMANDA\s+(?:ÚNICA\s+)?KW\s*(?=\d[\d.]*[,.]\d{3})~iu', 'item_type' => 'measured_demand', 'tariff_component' => 'demand', 'time_slot' => 'unique', 'unit' => 'kW', 'reactive_nature' => 'not_applicable', 'source_label' => 'DEMANDA'],
             ['kind' => 'idle_demand', 'pattern' => '~DEMANDA\s+LEI\s+ESTADUAL\s+16\.886/18\s+(?:KW\s*)?~iu', 'item_type' => 'idle_demand', 'tariff_component' => 'demand', 'time_slot' => 'unresolved', 'unit' => 'kW', 'reactive_nature' => 'not_applicable', 'source_label' => 'DEMANDA LEI ESTADUAL 16.886/18'],
             ['kind' => 'regular', 'pattern' => '~DEMANDA\s+(?:DE\s+)?ULTRAPASSAGEM\s+PONTA\s+KW\s*~iu', 'item_type' => 'demand_overrun', 'tariff_component' => 'demand', 'time_slot' => 'peak', 'unit' => 'kW', 'reactive_nature' => 'not_applicable', 'source_label' => 'Demanda de Ultrapassagem Ponta'],
             ['kind' => 'regular', 'pattern' => '~DEMANDA\s+(?:DE\s+)?ULTRAPASSAGEM\s+(?:FORA\s+(?:DE\s+)?PONTA|F\.?\s*PONTA)\s+KW\s*~iu', 'item_type' => 'demand_overrun', 'tariff_component' => 'demand', 'time_slot' => 'off_peak', 'unit' => 'kW', 'reactive_nature' => 'not_applicable', 'source_label' => 'Demanda de Ultrapassagem Fora de Ponta'],
@@ -140,6 +168,7 @@ final class EnelInvoiceReader implements InvoiceReader
             ['~ENCARGO\s+(?:CONTA\s+)?ESCASSEZ\s+H[IÍ]DRICA\s+KWH\s*~iu', 'regular', 'kWh'],
             ['~BENEF[IÍ]CIO\s+TARIF[AÁ]RIO\s+(?:BRUTO|L[IÍ]QUIDO)\s*~iu', 'regular', null],
             ['~COSIP\s*-\s*S[AÃ]O\s+PAULO\s*-\s*MUNICIPAL\s*~iu', 'short_charge', null],
+            ['~(?<!\p{L})DIC\s+(?:[A-ZÇ]{3,9}|0?[1-9]|1[0-2])\s*/\s*20\d{2}\s*(?=-?\d)~iu', 'credit', null],
         ] as [$pattern, $kind, $unit]) {
             $specifications[] = ['kind' => $kind, 'pattern' => $pattern, 'item_type' => 'other_charge', 'tariff_component' => 'other', 'time_slot' => 'not_applicable', 'unit' => $unit, 'reactive_nature' => 'not_applicable', 'source_label' => ''];
         }
@@ -212,7 +241,7 @@ final class EnelInvoiceReader implements InvoiceReader
     }
 
     /** @return array{amount: string, pis_cofins_amount: string, icms_base: string, icms_rate: string, icms_amount: string, quantity: ?string, unit_price_taxed: ?string, tariff_rate: ?string} */
-    private function parseIdleRow(string $content): array
+    private function parseIdleRow(string $content, bool $allowAmountOnly = false): array
     {
         $offset = 0;
         $quantity = $this->takeDecimal($content, $offset, 3);
@@ -231,6 +260,13 @@ final class EnelInvoiceReader implements InvoiceReader
         $icmsAmount = $this->takeDecimal($content, $offset, 2);
         $tariffRate = $quantity === null ? null : $this->takeDecimal($content, $offset, 5);
 
+        if ($allowAmountOnly && $amount !== null && $pisCofins === null && $icmsBase === null && $icmsRate === null && $icmsAmount === null) {
+            $pisCofins = '0.00';
+            $icmsBase = '0.00';
+            $icmsRate = '0.0000';
+            $icmsAmount = '0.00';
+        }
+
         if (in_array(null, [$amount, $pisCofins, $icmsBase, $icmsRate, $icmsAmount], true)) {
             throw new InvalidArgumentException('A linha de demanda ociosa da ENEL está incompleta.');
         }
@@ -245,6 +281,26 @@ final class EnelInvoiceReader implements InvoiceReader
             'unit_price_taxed' => $unitPrice,
             'tariff_rate' => $tariffRate,
         ];
+    }
+
+    /** @return array<string, string> */
+    private function meteredDemands(string $text): array
+    {
+        $integer = '(?:\d{1,3}(?:\.\d{3})+|\d+)';
+        $separator = $this->ocrDecimals ? '[,.]' : ',';
+        $pattern = '~^\h*\d+\h+DEMANDA\h+(PONTA(?:\h+INDU(?:TIVA|TIVO)?)?|(?:FORA\h+(?:DE\h+)?PONTA|F\.?\h*PONTA)\h+INDU(?:TIVA|TIVO)?)\h+'
+            .$integer.'\h+'.$integer.'\h+\d+'.$separator.'\d{5}\h+('.$integer.$separator.'\d{3})~imu';
+        preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
+        $demands = [];
+        foreach ($matches as $match) {
+            $slot = preg_match('/^PONTA/iu', $match[1]) === 1 ? 'peak' : 'off_peak';
+            $quantity = $this->normalizeLocaleDecimal($match[2]);
+            if (! isset($demands[$slot]) || bccomp($quantity, $demands[$slot], 3) > 0) {
+                $demands[$slot] = $quantity;
+            }
+        }
+
+        return $demands;
     }
 
     /** @return array<string, string> */
@@ -443,6 +499,25 @@ final class EnelInvoiceReader implements InvoiceReader
             return $match[2].'-'.$months[$month];
         }
 
+        if (preg_match('~\bM[ÊEÉ]S\h*/\h*ANO\b~iu', substr($text, 0, 4096), $label, PREG_OFFSET_CAPTURE) === 1) {
+            $start = $label[0][1] + strlen($label[0][0]);
+            $block = preg_split('~VENCIMENTO|DADOS\s+DE\s+MEDI[CÇ][AÃ]O|HIST[OÓ]RICO~iu', substr($text, $start, 512), 2)[0];
+            preg_match_all('~(?<![\d/])(0[1-9]|1[0-2])\h*/\h*(20\d{2})(?![\d/])~u', $block, $candidates, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+            $months = [];
+            foreach ($candidates as $candidate) {
+                if (preg_match('~\d{1,2}\h*/\h*$~u', substr($block, 0, $candidate[0][1])) !== 1) {
+                    $months[] = $candidate[2][0].'-'.$candidate[1][0];
+                }
+            }
+            $months = array_values(array_unique($months));
+            if (count($months) === 1) {
+                return $months[0];
+            }
+            if (count($months) > 1) {
+                throw new InvalidArgumentException('O quadro Mês/Ano contém referências diferentes. Confira a fatura antes de enviar.');
+            }
+        }
+
         if (preg_match('~^\h*(0[1-9]|1[0-2])/(20\d{2})\h*$~mu', $text, $match) === 1) {
             return $match[2].'-'.$match[1];
         }
@@ -452,8 +527,12 @@ final class EnelInvoiceReader implements InvoiceReader
 
     private function consumerUnit(string $text): string
     {
-        if (preg_match('/(?:unidade\s+consumidora|instala[cç][aã]o|\bUC)\s*[:#\-]?\s*(\d{5,})/iu', $text, $match) === 1) {
-            return $match[1];
+        if (preg_match('/(?:unidade\s+consumidora|instala[cç][aã]o|\bUC|\bMTE\b)\s*[:#\-]?\s*(MTE\h*\d{5,}|\d{5,})\b/iu', $text, $match) === 1) {
+            return preg_replace('/\h+/', '', $match[1]);
+        }
+
+        if (preg_match('~^\h*(MTE\h*\d{5,})(?=\h*(?:/|\r?$))~imu', substr($text, 0, 4096), $match) === 1) {
+            return preg_replace('/\h+/', '', $match[1]);
         }
 
         if (preg_match('/^\s*(\d{8,})\s+(?:ENRG|DEMANDA|CONSUMO)\b/imu', $text, $match) === 1) {
@@ -494,7 +573,8 @@ final class EnelInvoiceReader implements InvoiceReader
 
     private function totalPaid(string $text): string
     {
-        $number = '(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2}';
+        $separator = $this->ocrDecimals ? '[,.]' : ',';
+        $number = '(?:\d{1,3}(?:\.\d{3})+|\d+)'.$separator.'\d{2}';
         if (preg_match('/(?<!\p{L})TOTAL(?:\s+A\s+PAGAR|\s+DA\s+FATURA|\s+GERAL)?\s*[:\t ]+('.$number.')/iu', $text, $match) === 1) {
             return $this->normalizeLocaleDecimal($match[1]);
         }
@@ -541,7 +621,8 @@ final class EnelInvoiceReader implements InvoiceReader
     {
         $this->skipSeparators($text, $offset);
         $integer = '(?:\d{1,3}(?:\.\d{3})+|\d+)';
-        $pattern = '/^(-?'.$integer.',\d{'.$scale.'})/';
+        $separator = $this->ocrDecimals ? '[,.]' : ',';
+        $pattern = '/^(-?'.$integer.$separator.'\d{'.$scale.'})/';
 
         if (preg_match($pattern, substr($text, $offset), $match) !== 1) {
             return null;
@@ -567,13 +648,20 @@ final class EnelInvoiceReader implements InvoiceReader
     private function skipSeparators(string $text, int &$offset): void
     {
         $length = strlen($text);
-        while ($offset < $length && (ctype_space($text[$offset]) || str_contains('|:;', $text[$offset]))) {
+        while ($offset < $length && (ctype_space($text[$offset]) || str_contains($this->ocrDecimals ? '|:;=' : '|:;', $text[$offset]))) {
             $offset++;
         }
     }
 
     private function normalizeLocaleDecimal(string $value): string
     {
+        if ($this->ocrDecimals && ! str_contains($value, ',')) {
+            $position = strrpos($value, '.');
+            if ($position !== false) {
+                return str_replace('.', '', substr($value, 0, $position)).substr($value, $position);
+            }
+        }
+
         return str_replace(',', '.', str_replace('.', '', $value));
     }
 

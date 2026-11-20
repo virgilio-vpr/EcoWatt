@@ -27,7 +27,7 @@ final class AdminAccountAccessService
     public function requestEmailChange(User $user, string $email): void
     {
         $code = (string) random_int(100000, 999999);
-        $expiresAt = now()->addMinutes(config('enerdiag.verification_code_ttl_minutes'));
+        $expiresAt = now()->addMinutes(config('ecowatt.verification_code_ttl_minutes'));
         Mail::to($email)->send(new EmailVerificationCode($code));
         Cache::put($this->emailChangeKey($user), [
             'email' => $email,
@@ -44,7 +44,7 @@ final class AdminAccountAccessService
         $email = Cache::lock($key.':lock', 10)->block(2, function () use ($key, $user, $code, $currentTokenId): ?string {
             $pending = Cache::get($key);
             if (! is_array($pending) || $pending['expires_at'] <= now()->timestamp
-                || $pending['attempts'] >= config('enerdiag.verification_code_max_attempts')) {
+                || $pending['attempts'] >= config('ecowatt.verification_code_max_attempts')) {
                 return null;
             }
             if (! Hash::check($code, $pending['code_hash'])) {

@@ -93,7 +93,7 @@ final readonly class ExtractedInvoiceData
                 }
 
                 foreach (['quantity', 'unit_price_taxed'] as $field) {
-                    if (($item['item_type'] ?? null) === 'contracted_demand' && $field === 'unit_price_taxed') {
+                    if (in_array($item['item_type'] ?? null, ['contracted_demand', 'metered_demand'], true) && $field === 'unit_price_taxed') {
                         continue;
                     }
 

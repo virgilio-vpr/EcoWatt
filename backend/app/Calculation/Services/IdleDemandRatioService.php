@@ -138,10 +138,11 @@ final class IdleDemandRatioService
                     && bccomp($item->icmsRate, '0', 4) === 0,
             );
 
-            if ($idleTaxRows !== [] && bccomp($normalItem->icmsRate, '0', 4) > 0) {
+            if (($idleTaxRows !== [] || ($readerRecognizesIdleDemand && $month->idleDemandItems === []))
+                && bccomp($normalItem->icmsRate, '0', 4) > 0) {
                 $ratio = bcsub('1', $normalItem->icmsRate, 6);
                 if ($this->isValidRatio($ratio)) {
-                    $warnings = $this->pisCofinsIsConsistent($month->idleDemandItems, $normalItem, $ratio)
+                    $warnings = $month->idleDemandItems === [] || $this->pisCofinsIsConsistent($month->idleDemandItems, $normalItem, $ratio)
                         ? []
                         : [self::PIS_COFINS_WARNING];
 

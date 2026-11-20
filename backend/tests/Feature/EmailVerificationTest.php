@@ -66,7 +66,7 @@ class EmailVerificationTest extends TestCase
     public function test_code_is_blocked_after_the_maximum_number_of_attempts(): void
     {
         [$user, $storedCode] = $this->createPendingUser();
-        $maxAttempts = (int) config('enerdiag.verification_code_max_attempts');
+        $maxAttempts = (int) config('ecowatt.verification_code_max_attempts');
 
         for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
             if ($attempt > 0 && $attempt % 3 === 0) {
@@ -135,7 +135,7 @@ class EmailVerificationTest extends TestCase
         $user = User::factory()->unverified()->create();
         $storedCode = $user->verificationCodes()->create([
             'code_hash' => Hash::make('123456'),
-            'expires_at' => now()->addMinutes(config('enerdiag.verification_code_ttl_minutes')),
+            'expires_at' => now()->addMinutes(config('ecowatt.verification_code_ttl_minutes')),
             'attempts' => 0,
         ]);
 

@@ -58,6 +58,18 @@ class TemporaryPdfTextExtractorTest extends TestCase
         $this->assertTrue($disk->exists('recent.pdf'));
     }
 
+    public function test_it_removes_old_ocr_intermediates_and_their_directories(): void
+    {
+        $disk = Storage::fake(TemporaryPdfTextExtractor::DISK);
+        $disk->put('ocr-orphan/page.png', 'old');
+        $disk->put('ocr-active/page.png', 'recent');
+        touch($disk->path('ocr-orphan/page.png'), now()->subHours(2)->timestamp);
+        touch($disk->path('ocr-orphan'), now()->subHours(2)->timestamp);
+        $this->assertSame(1, app(OrphanedInvoicePdfCleaner::class)->clean());
+        $this->assertDirectoryDoesNotExist($disk->path('ocr-orphan'));
+        $this->assertTrue($disk->exists('ocr-active/page.png'));
+    }
+
     public function test_the_smalot_parser_is_registered_in_the_container(): void
     {
         $this->assertInstanceOf(SmalotPdfTextParser::class, app(PdfTextParser::class));

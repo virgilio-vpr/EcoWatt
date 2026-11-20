@@ -82,6 +82,12 @@ class SimulationReadApiTest extends TestCase
         $customer = User::factory()->create();
         $otherCustomer = User::factory()->create();
         $simulation = $this->simulation($customer, 'completed');
+        foreach (['2025-09', '2025-08'] as $month) {
+            $simulation->invoices()->create([
+                'reference_month' => $month, 'consumer_unit' => 'MTE0012345',
+                'subgroup' => 'A4', 'tariff_modality' => 'green', 'total_paid' => '1000.00',
+            ]);
+        }
         $report = Report::query()->create([
             'simulation_id' => $simulation->id,
             'total_monthly_savings' => '54.42',
@@ -102,6 +108,9 @@ class SimulationReadApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.id', $report->id)
             ->assertJsonPath('data.months_count', $simulation->months_count)
+            ->assertJsonPath('data.consumer_unit', 'MTE0012345')
+            ->assertJsonPath('data.period_start', '2025-08')
+            ->assertJsonPath('data.period_end', '2025-09')
             ->assertJsonPath('data.total_monthly_savings', '54.42')
             ->assertJsonPath('data.chart_series.reactive.0.value', '54.42')
             ->assertJsonPath('data.warnings.0', 'demand_optimization_unavailable_pending_section_9_limits')
@@ -146,7 +155,7 @@ class SimulationReadApiTest extends TestCase
         $response = $this->withToken($token)->get('/api/v1/simulations/'.$simulation->id.'/pdf')
             ->assertOk()
             ->assertHeader('Content-Type', 'application/pdf')
-            ->assertHeader('Content-Disposition', 'attachment; filename="relatorio-enerdiag-'.$simulation->id.'.pdf"');
+            ->assertHeader('Content-Disposition', 'attachment; filename="relatorio-ecowatt-'.$simulation->id.'.pdf"');
         $this->assertStringStartsWith('%PDF-1.4', $response->getContent());
         $pdfText = (new Parser)->parseContent($response->getContent())->getText();
         $this->assertStringContainsString('54,42', $pdfText);

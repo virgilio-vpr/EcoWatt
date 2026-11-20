@@ -14,7 +14,7 @@ return [
     'title' => config('app.name').' — Documentação da API',
 
     // A short description of your API. Will be included in the docs webpage, Postman collection and OpenAPI spec.
-    'description' => 'API do EnerDiag para análise de faturas de energia do Grupo A.',
+    'description' => 'API do EcoWatt para análise de faturas de energia do Grupo A.',
 
     // Text to place in the "Introduction" section, right after the `description`. Markdown and HTML are supported.
     'intro_text' => <<<'INTRO'

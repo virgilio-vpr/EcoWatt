@@ -9,6 +9,7 @@ final readonly class DemandMonthData
      * @param  array<string, string>  $measuredDemandByTimeSlot
      * @param  array<string, ExtractedInvoiceItemData>  $normalDemandItemsByTimeSlot
      * @param  list<ExtractedInvoiceItemData>  $idleDemandItems
+     * @param  array<string, string>  $meteredDemandByTimeSlot
      */
     public function __construct(
         public string $referenceMonth,
@@ -17,6 +18,7 @@ final readonly class DemandMonthData
         public array $measuredDemandByTimeSlot,
         public array $normalDemandItemsByTimeSlot,
         public array $idleDemandItems,
+        public array $meteredDemandByTimeSlot = [],
     ) {}
 
     public static function fromInvoice(ExtractedInvoiceData $invoice, string $tariffPeriod): self
@@ -25,6 +27,7 @@ final readonly class DemandMonthData
         $measured = [];
         $normalItems = [];
         $idleItems = [];
+        $metered = [];
 
         foreach ($invoice->items as $item) {
             if ($item->itemType === 'contracted_demand' && $item->quantity !== null) {
@@ -39,6 +42,16 @@ final readonly class DemandMonthData
             if ($item->itemType === 'idle_demand') {
                 $idleItems[] = $item;
             }
+            if ($item->itemType === 'metered_demand' && $item->quantity !== null) {
+                $metered[$item->timeSlot] = $item->quantity;
+            }
+        }
+
+        foreach (array_keys($contracted) as $slot) {
+            $meterSlot = $slot === 'unique' ? 'off_peak' : $slot;
+            if (isset($metered[$meterSlot])) {
+                $measured[$slot] = $metered[$meterSlot];
+            }
         }
 
         return new self(
@@ -48,6 +61,7 @@ final readonly class DemandMonthData
             measuredDemandByTimeSlot: $measured,
             normalDemandItemsByTimeSlot: $normalItems,
             idleDemandItems: $idleItems,
+            meteredDemandByTimeSlot: $metered,
         );
     }
 }

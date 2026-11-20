@@ -38,3 +38,8 @@ Thumbs.db
 frontend/test-results/
 frontend/playwright-report/
 enerdiag_backup.dump
+ecowatt_backup.dump
+
+/backend/storage/ocr-local/
+/docs/*[Ff]atura*.pdf
+/docs/Code_Generated_Image.png
