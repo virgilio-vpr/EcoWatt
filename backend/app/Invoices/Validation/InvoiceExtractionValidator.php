@@ -8,7 +8,9 @@ use Illuminate\Validation\ValidationException;
 
 final class InvoiceExtractionValidator
 {
-    public const string AMOUNT_TOLERANCE = '1.00';
+    public const string AMOUNT_TOLERANCE = '5.00';
+
+    public const string TOTAL_TOLERANCE = '5.00';
 
     public const string ICMS_TOLERANCE = '0.01';
 
@@ -37,8 +39,11 @@ final class InvoiceExtractionValidator
                 $errors["invoices.{$invoiceIndex}.consumer_unit"][] = 'As faturas devem pertencer à mesma unidade consumidora.';
             }
 
+            $sum = array_reduce($invoice->items, static fn (string $sum, ExtractedInvoiceItemData $item): string => bcadd($sum, $item->amount, 2), '0.00');
+            $balanced = bccomp($this->absolute(bcsub($sum, $invoice->totalPaid, 2)), self::TOTAL_TOLERANCE, 2) <= 0;
+            $offsetEnergyItems = $balanced ? $this->offsetEnergyItems($invoice) : [];
             foreach ($invoice->items as $itemIndex => $item) {
-                $this->validateItem($item, $invoiceIndex, $itemIndex, $errors);
+                $this->validateItem($item, $invoiceIndex, $itemIndex, $errors, isset($offsetEnergyItems[$itemIndex]));
             }
         }
 
@@ -48,10 +53,10 @@ final class InvoiceExtractionValidator
     }
 
     /** @param array<string, list<string>> $errors */
-    private function validateItem(ExtractedInvoiceItemData $item, int $invoiceIndex, int $itemIndex, array &$errors): void
+    private function validateItem(ExtractedInvoiceItemData $item, int $invoiceIndex, int $itemIndex, array &$errors, bool $offsetEnergy = false): void
     {
         $lumpSum = $item->itemType === 'other_charge' && $item->quantity !== null && bccomp($item->quantity, '0', 3) === 0;
-        if (! $lumpSum && $item->quantity !== null && $item->unitPriceTaxed !== null) {
+        if (! $offsetEnergy && ! $lumpSum && $item->quantity !== null && $item->unitPriceTaxed !== null) {
             $expectedAmount = $this->roundHalfUp(bcmul($item->quantity, $item->unitPriceTaxed, 10));
             if ($item->itemType === 'other_charge' && bccomp($item->amount, '0', 2) < 0) {
                 $expectedAmount = bcsub('0', $this->absolute($expectedAmount), 2);
@@ -59,7 +64,7 @@ final class InvoiceExtractionValidator
             $amountDifference = $this->absolute(bcsub($expectedAmount, $item->amount, 2));
 
             if (bccomp($amountDifference, self::AMOUNT_TOLERANCE, 2) > 0) {
-                $errors["invoices.{$invoiceIndex}.items.{$itemIndex}.amount"][] = 'A quantidade multiplicada pelo preço unitário difere em mais de R$ 1,00 do valor faturado.';
+                $errors["invoices.{$invoiceIndex}.items.{$itemIndex}.amount"][] = 'A quantidade multiplicada pelo preço unitário difere em mais de R$ 5,00 do valor faturado.';
             }
         }
 
@@ -68,6 +73,47 @@ final class InvoiceExtractionValidator
         if (bccomp($icmsDifference, self::ICMS_TOLERANCE, 2) > 0) {
             $errors["invoices.{$invoiceIndex}.items.{$itemIndex}.icms_amount"][] = 'A base e a alíquota de ICMS não conferem com o valor do imposto.';
         }
+    }
+
+    /** @return array<int, true> */
+    private function offsetEnergyItems(ExtractedInvoiceData $invoice): array
+    {
+        $charges = [];
+        $deductions = [];
+        foreach ($invoice->items as $index => $item) {
+            if ($item->itemType !== 'other_charge' || $item->quantity === null || $item->unitPriceTaxed === null
+                || bccomp($item->icmsBase, '0', 2) !== 0 || bccomp($item->icmsRate, '0', 4) !== 0
+                || bccomp($item->icmsAmount, '0', 2) !== 0
+                || preg_match('~^(DEDU[CÇ][AÃ]O\s+)?ENERGIA\s+ACL$~iu', $item->sourceLabel ?? '', $label) !== 1) {
+                continue;
+            }
+            $deduction = ! empty($label[1]);
+            if (($deduction && bccomp($item->amount, '0', 2) >= 0) || (! $deduction && bccomp($item->amount, '0', 2) <= 0)) {
+                continue;
+            }
+            $key = implode('|', [
+                bcadd($item->quantity, '0', 3), bcadd($item->unitPriceTaxed, '0', 5),
+                $item->tariffRate === null ? '' : bcadd($item->tariffRate, '0', 5),
+                bcadd($this->absolute($item->amount), '0', 2), bcadd($item->pisCofinsAmount, '0', 2),
+                $item->tariffComponent, $item->timeSlot, $item->unit ?? '',
+            ]);
+            if ($deduction) {
+                $deductions[$key][] = $index;
+            } else {
+                $charges[$key][] = $index;
+            }
+        }
+        $matched = [];
+        foreach ($charges as $key => $indexes) {
+            foreach ($indexes as $position => $index) {
+                if (isset($deductions[$key][$position])) {
+                    $matched[$index] = true;
+                    $matched[$deductions[$key][$position]] = true;
+                }
+            }
+        }
+
+        return $matched;
     }
 
     private function roundHalfUp(string $value): string

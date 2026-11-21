@@ -198,6 +198,8 @@ class SimulationController extends Controller
             ])->all();
             $report = $simulation->report;
             $data['report'] = $report ? [
+                'company_name' => $simulation->user?->profile?->company_name,
+                'consumer_unit' => $simulation->invoices->first()?->consumer_unit,
                 ...$report->only([
                     'id', 'total_monthly_savings', 'total_yearly_savings', 'savings_percentage',
                     'demand_savings_monthly', 'demand_savings_yearly', 'overrun_savings_monthly',

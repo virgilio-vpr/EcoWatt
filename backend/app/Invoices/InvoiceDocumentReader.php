@@ -63,7 +63,7 @@ final class InvoiceDocumentReader
             foreach ($result->items as $item) {
                 $sum = bcadd($sum, $item->amount, 2);
             }
-            if (bccomp($sum, $result->totalPaid, 2) !== 0) {
+            if (! $this->totalMatches($sum, $result->totalPaid)) {
                 $result = $this->copy($result, $result->items, array_values(array_unique([...$result->warnings, 'invoice_billing_total_mismatch'])));
             }
             $this->validator->validate([$result]);
@@ -117,11 +117,19 @@ final class InvoiceDocumentReader
         foreach ($items as $item) {
             $sum = bcadd($sum, $item->amount, 2);
         }
-        if (bccomp($sum, $native->totalPaid, 2) === 0) {
+        if ($this->totalMatches($sum, $native->totalPaid)) {
             $warnings = array_values(array_diff($warnings, ['invoice_billing_total_mismatch']));
         }
 
         return $this->copy($native, $items, $warnings);
+    }
+
+    private function totalMatches(string $sum, string $total): bool
+    {
+        $difference = bcsub($sum, $total, 2);
+        $absolute = bccomp($difference, '0', 2) < 0 ? bcsub('0', $difference, 2) : $difference;
+
+        return bccomp($absolute, InvoiceExtractionValidator::TOTAL_TOLERANCE, 2) <= 0;
     }
 
     private function key(ExtractedInvoiceItemData $item): string

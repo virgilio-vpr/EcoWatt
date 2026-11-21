@@ -8,7 +8,7 @@ class PdfReportGenerator
 {
     public function generate(Report $report): string
     {
-        $report->loadMissing('simulation');
+        $report->loadMissing(['simulation.user.profile', 'simulation.invoices']);
         $months = (int) ($report->simulation?->months_count ?? 0);
         $warnings = $report->warnings ?? [];
         if ($months > 0 && $months < 12) {
@@ -23,7 +23,16 @@ class PdfReportGenerator
                 $contacts[] = $label.': '.$contact[$key];
             }
         }
-        $document = new PdfDocument((string) $report->simulation_id, implode(' · ', $contacts));
+        $identity = [];
+        $companyName = $report->simulation?->user?->profile?->company_name;
+        $consumerUnit = $report->simulation?->invoices->first()?->consumer_unit;
+        if (filled($companyName)) {
+            $identity[] = 'Empresa: '.$companyName;
+        }
+        if (filled($consumerUnit)) {
+            $identity[] = 'Identificação na concessionária: '.$consumerUnit;
+        }
+        $document = new PdfDocument((string) $report->simulation_id, implode(' · ', $contacts), $identity);
         $document->textAt(PdfDocument::MARGIN, $document->y, 25, 'Seu relatório de energia', '#17352d', true);
         $document->y += 38;
         $document->paragraph('Resultados calculados para '.$months.' '.($months === 1 ? 'fatura.' : 'faturas.'), 11);
@@ -36,12 +45,21 @@ class PdfReportGenerator
 
         $demandUnavailable = array_intersect($warnings, ['demand_savings_unavailable_pending_section_9_limits', 'demand_optimization_unavailable_pending_section_9_limits', 'demand_optimization_unavailable']) !== [];
         $migrationUnavailable = array_intersect($warnings, ['migration_unavailable', 'tariff_migration_unavailable_pending_section_9_rules']) !== [];
-        $rows = [];
+        $components = [];
         foreach ([['Demanda', 'demand', $demandUnavailable], ['Ultrapassagem', 'overrun', false], ['Reativos', 'reactive', false], ['Migração de modalidade', 'migration', $migrationUnavailable]] as [$label, $key, $unavailable]) {
-            $rows[] = [$label, $unavailable ? 'Indisponível' : $this->money($report->{$key.'_savings_monthly'}), $unavailable ? 'Indisponível' : $this->money($report->{$key.'_savings_yearly'})];
+            $components[] = [
+                'label' => $label,
+                'monthly' => $this->money($report->{$key.'_savings_monthly'}),
+                'yearly' => $this->money($report->{$key.'_savings_yearly'}),
+                'positive' => ! $unavailable && bccomp($report->{$key.'_savings_monthly'} ?? '0', '0', 2) > 0,
+                'unavailable' => $unavailable,
+            ];
         }
-        $document->heading('Economia por componente');
-        $document->table(['Componente', 'Por mês', 'Por ano'], $rows, [211, 150, 150]);
+        $modalitySeries = $report->chart_series['modality'] ?? $report->chart_series['blue_green'] ?? [];
+        $comparisonAvailable = ! $migrationUnavailable && $modalitySeries !== []
+            && array_filter($modalitySeries, static fn (array $point): bool => ! is_numeric($point['blue'] ?? null) || ! is_numeric($point['green'] ?? null)) === [];
+        $recommendedModality = $comparisonAvailable ? (['blue' => 'Azul', 'green' => 'Verde'][$report->recommended_modality ?? ''] ?? null) : null;
+        $document->componentSavings($components, $recommendedModality);
         $references = [];
         foreach ($report->chart_series['demand'] ?? [] as $point) {
             if (! empty($point['tariff_reference_source'])) {
@@ -63,11 +81,6 @@ class PdfReportGenerator
                 }
             }
         }
-        if ($report->recommended_modality) {
-            $modality = ['blue' => 'Azul', 'green' => 'Verde'][$report->recommended_modality] ?? $report->recommended_modality;
-            $document->paragraph('Modalidade recomendada: '.$modality);
-        }
-
         $consultationWarning = 'demand_invoice_reconciliation_mismatch';
         if (in_array($consultationWarning, $warnings, true)) {
             $document->callout(

@@ -10,6 +10,67 @@ use Tests\TestCase;
 
 class EnelInvoiceReaderTest extends TestCase
 {
+    public function test_discounted_unique_demand_preserves_the_printed_quantity_rates_and_taxes(): void
+    {
+        $text = file_get_contents(__DIR__.'/../Fixtures/enel-unique-demand-green.txt');
+        $text = str_replace("DEMANDA\tKW", "DEMANDA ÚNICA C/ DESCONTO\tKW", $text);
+        $invoice = (new EnelInvoiceReader)->read($text);
+        $demand = $this->item($invoice->items, 'measured_demand', 'unique');
+
+        $this->assertSame('DEMANDA ÚNICA C/ DESCONTO', $demand->sourceLabel);
+        $this->assertSame('51.072', $demand->quantity);
+        $this->assertSame('21.85092', $demand->unitPriceTaxed);
+        $this->assertSame('17.04000', $demand->tariffRate);
+        $this->assertSame('1115.97', $demand->amount);
+        $this->assertSame('200.87', $demand->icmsAmount);
+        $this->assertSame([], $invoice->warnings);
+        $this->assertNull((new InvoiceExtractionValidator)->validate([$invoice]));
+    }
+
+    public function test_enel_adjustments_keep_charges_and_negative_compensations_in_the_billing_total(): void
+    {
+        $text = file_get_contents(__DIR__.'/../Fixtures/enel-unique-demand-green.txt');
+        $rows = <<<'ROWS'
+DIF.FATUR.ENCA - HOMOLOG. CCEE 0,000 0,00000 12,34 0,01 0,00 0% 0,00 0,00000
+TX.ENTR.FAT.OUTRA_LOCAL. 9,53 0,01 0,00 0% 0,00
+PENAL.DIC/DMIC/FIC/DICRI ADIC. -100,00 0,01 0,00 0% 0,00
+REV FATURA JUROS MORA ART. 323 -20,00 0,01 0,00 0% 0,00
+ROWS;
+        $text = str_replace('Subtotal Faturamento', $rows."\nSubtotal Faturamento", $text);
+        $text = str_replace('15.737,88', '15.639,75', $text);
+        $text = str_replace(["Subtotal Faturamento\t14.712,45", "Subtotal Outros\t1.025,43"], ["Subtotal Faturamento\t14.724,79", "Subtotal Outros\t914,96"], $text);
+        $invoice = (new EnelInvoiceReader)->read($text);
+        $adjustments = collect($invoice->items)->where('itemType', 'other_charge')->keyBy('sourceLabel');
+
+        $this->assertSame('12.34', $adjustments['DIF.FATUR.ENCA - HOMOLOG. CCEE']->amount);
+        $this->assertSame('9.53', $adjustments['TX.ENTR.FAT.OUTRA_LOCAL.']->amount);
+        $this->assertSame('-100.00', $adjustments['PENAL.DIC/DMIC/FIC/DICRI ADIC.']->amount);
+        $this->assertSame('-20.00', $adjustments['REV FATURA JUROS MORA ART. 323']->amount);
+        $sum = collect($invoice->items)->reduce(fn ($sum, $item) => bcadd($sum, $item->amount, 2), '0.00');
+        $this->assertSame('15639.75', $invoice->totalPaid);
+        $this->assertSame($invoice->totalPaid, $sum);
+        $this->assertNotContains('invoice_billing_total_mismatch', $invoice->warnings);
+        $this->assertNull((new InvoiceExtractionValidator)->validate([$invoice]));
+    }
+
+    public function test_zero_payable_invoice_preserves_the_printed_credit_balance_instead_of_inventing_a_total(): void
+    {
+        $text = file_get_contents(__DIR__.'/../Fixtures/enel-unique-demand-green.txt');
+        $rows = "REV FATURA JUROS MORA ART. 323 -16.000,00 0,01 0,00 0% 0,00\nVALOR A SER CREDITADO 262,12\n";
+        $text = str_replace('Subtotal Faturamento', $rows.'Subtotal Faturamento', $text);
+        $text = str_replace('15.737,88', '0,00', $text);
+        $text = str_replace("Subtotal Outros\t1.025,43", "Subtotal Outros\t-14.712,45", $text);
+        $invoice = (new EnelInvoiceReader)->read($text);
+        $balance = collect($invoice->items)->firstWhere('sourceLabel', 'VALOR A SER CREDITADO');
+
+        $this->assertSame('0.00', $invoice->totalPaid);
+        $this->assertSame('262.12', $balance->amount);
+        $this->assertNull($balance->quantity);
+        $this->assertSame('0.00', collect($invoice->items)->reduce(fn ($sum, $item) => bcadd($sum, $item->amount, 2), '0.00'));
+        $this->assertNotContains('invoice_billing_total_mismatch', $invoice->warnings);
+        $this->assertNull((new InvoiceExtractionValidator)->validate([$invoice]));
+    }
+
     public function test_it_reads_green_invoices_with_an_alphanumeric_consumer_unit_and_unique_demand(): void
     {
         $invoice = (new EnelInvoiceReader)->read(file_get_contents(__DIR__.'/../Fixtures/enel-unique-demand-green.txt'));

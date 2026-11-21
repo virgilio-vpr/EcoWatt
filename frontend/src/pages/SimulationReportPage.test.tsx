@@ -198,11 +198,13 @@ describe('simulation report', () => {
     expect(screen.queryByTestId('demand-chart-peak')).not.toBeInTheDocument()
   })
 
-  it('identifies the consumer unit and period while preserving zero savings', async () => {
+  it.each(['MTE0012345', '0000123456', 'UC-987654'])('identifies the company, distributor identifier %s and period while preserving zero savings', async (identifier) => {
     setAuthToken('customer-token')
-    setupFetch({}, { ...report, consumer_unit: 'MTE0012345', period_start: '2025-08', period_end: '2026-07', total_monthly_savings: '0.00' })
+    setupFetch({}, { ...report, company_name: 'Indústria Exemplo Ltda.', consumer_unit: identifier, period_start: '2025-08', period_end: '2026-07', total_monthly_savings: '0.00' })
     render(<SimulationReportPage simulationId="12" />)
-    expect(await screen.findByText('MTE0012345')).toBeInTheDocument()
+    expect(await screen.findByText(identifier)).toBeInTheDocument()
+    expect(screen.getByText('Indústria Exemplo Ltda.')).toBeInTheDocument()
+    expect(screen.getByText('Identificação na concessionária')).toBeInTheDocument()
     expect(screen.getByText(/ago.*2025.*jul.*2026/)).toBeInTheDocument()
     expect(within(screen.getByRole('region', { name: 'Indicadores principais' })).getByText((_, element) => element?.tagName === 'STRONG' && Boolean(element.textContent?.includes('0,00')))).toBeInTheDocument()
   })

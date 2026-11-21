@@ -34,6 +34,7 @@ export type Report = {
   id: number
   simulation_id: number
   months_count: number
+  company_name?: string | null
   consumer_unit?: string | null
   period_start?: string | null
   period_end?: string | null
@@ -247,8 +248,9 @@ export function SimulationReportView({ report, simulationId, backHref = '/minhas
   return <section className="report-page" aria-labelledby="report-title">
     <div className="report-heading">
       <div><p className="section-eyebrow">Análise concluída · Protocolo {simulationId}</p><h1 id="report-title">Seu relatório de energia</h1><p className="access-intro">Resultados calculados para {report.months_count} {report.months_count === 1 ? 'fatura' : 'faturas'}.</p>
-        {(report.consumer_unit || period) && <dl className="report-context">
-          {report.consumer_unit && <div><dt>Unidade consumidora</dt><dd>{report.consumer_unit}</dd></div>}
+        {(report.company_name || report.consumer_unit || period) && <dl className="report-context">
+          {report.company_name && <div><dt>Empresa</dt><dd>{report.company_name}</dd></div>}
+          {report.consumer_unit && <div><dt>Identificação na concessionária</dt><dd>{report.consumer_unit}</dd></div>}
           {period && <div><dt>Período analisado</dt><dd>{period}</dd></div>}
         </dl>}
       </div>

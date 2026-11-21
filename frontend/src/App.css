@@ -714,3 +714,17 @@
 @media (max-width: 480px) {
   .admin-demand-actions .button { flex: 1 1 100%; width: 100%; }
 }
+
+.invoice-upload-queue { min-width: 0; margin-block: 1rem; }
+.invoice-upload-queue h2 { margin-bottom: 0.5rem; font-size: 1.1rem; }
+.invoice-upload-queue > p { font-size: 0.85rem; }
+.invoice-upload-queue ul { display: grid; gap: 0.65rem; padding: 0; list-style: none; }
+.invoice-upload-queue li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0.6rem 1rem; padding: 0.85rem; border: 1px solid var(--border); border-radius: 0.75rem; background: var(--code-bg); }
+.invoice-upload-file { display: grid; gap: 0.25rem; min-width: 0; overflow-wrap: anywhere; }
+.invoice-upload-status { color: var(--text); font-size: 0.8rem; }
+.invoice-upload-queue li > .field-error { grid-column: 1 / -1; margin: 0; overflow-wrap: anywhere; }
+.invoice-source-filename { display: block; margin-top: 0.25rem; color: var(--text); font-size: 0.78rem; font-weight: 400; line-height: 1.35; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .invoice-upload-queue li { grid-template-columns: minmax(0, 1fr); }
+  .invoice-upload-queue .invoice-remove-button { justify-self: start; }
+}

@@ -141,6 +141,7 @@ class SimulationController extends Controller
             'k_values',
         ]), [
             'months_count' => $simulation->months_count,
+            'company_name' => $simulation->user?->profile?->company_name,
             'consumer_unit' => $invoices->first()?->consumer_unit,
             'period_start' => $invoices->first()?->reference_month,
             'period_end' => $invoices->last()?->reference_month,

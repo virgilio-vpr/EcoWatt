@@ -57,7 +57,7 @@ export function InvoiceImportTable({ invoices, onRemove, disabled = false }: { i
         <caption>Faturas em ordem do mês da medição</caption>
         <thead><tr><th scope="col">Mês da medição</th><th scope="col">Unidade</th><th scope="col">Total da conta (R$)</th><th scope="col">Observações</th>{onRemove && <th scope="col">Ações</th>}</tr></thead>
         <tbody>{ordered.map((invoice) => <tr key={invoice.reference_month}>
-          <th scope="row">{monthLabel(invoice.reference_month)}</th>
+          <th scope="row">{monthLabel(invoice.reference_month)}{invoice.source_filename && <span className="invoice-source-filename">{invoice.source_filename}</span>}</th>
           <td>{invoice.consumer_unit}</td>
           <td>{decimal(invoice.total_paid)}</td>
           <td>{invoice.warnings.length ? invoice.warnings.map((warning) => <p key={warning}>{warningMessages[warning] ?? 'Esta fatura precisa de conferência.'}</p>) : 'Sem alertas de leitura.'}</td>

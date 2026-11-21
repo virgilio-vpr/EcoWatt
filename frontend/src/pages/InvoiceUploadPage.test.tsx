@@ -60,14 +60,54 @@ describe('sequential invoice import', () => {
     expect(fetchMock.mock.calls.some(([url, options]) => url.endsWith('/invoices/3') && options?.method === 'DELETE')).toBe(true)
   })
 
+  it('lists all twelve selected files immediately while the first invoice is still being read', async () => {
+    let finishFirst!: (response: Response) => void
+    const first = new Promise<Response>((resolve) => { finishFirst = resolve })
+    const months = Array.from({ length: 12 }, (_, index) => `2026-${String(index + 1).padStart(2, '0')}`)
+    let requests = 0
+    setupFetch(() => ++requests === 1 ? first : json(201, { data: session(months.slice(0, requests)) }))
+    const picker = await startImport()
+
+    fireEvent.change(picker, { target: { files: months.map((month) => pdf(`${month}.pdf`)) } })
+
+    const queue = await screen.findByRole('region', { name: 'Arquivos selecionados' })
+    expect(within(queue).getAllByRole('listitem')).toHaveLength(12)
+    expect(within(queue).getByRole('button', { name: 'Retirar 2026-01.pdf da seleção' })).toBeDisabled()
+    expect(within(queue).getByRole('button', { name: 'Retirar 2026-12.pdf da seleção' })).toBeEnabled()
+    expect(screen.queryByText(/Nenhuma fatura salva. Selecione/)).not.toBeInTheDocument()
+    await waitFor(() => expect(requests).toBe(1))
+    await act(async () => { finishFirst(json(201, { data: session([months[0]!]) })) })
+    await screen.findByText('12 de 12 faturas lidas e salvas')
+    expect(screen.queryByRole('region', { name: 'Arquivos selecionados' })).not.toBeInTheDocument()
+  })
+
+  it('does not upload a pending file removed while another file is being read', async () => {
+    let finishFirst!: (response: Response) => void
+    const first = new Promise<Response>((resolve) => { finishFirst = resolve })
+    let requests = 0
+    const fetchMock = setupFetch(() => ++requests === 1 ? first : json(201, { data: session(['2026-01', '2026-03']) }))
+    const picker = await startImport()
+    fireEvent.change(picker, { target: { files: [pdf('january.pdf'), pdf('february.pdf'), pdf('march.pdf')] } })
+    await waitFor(() => expect(requests).toBe(1))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retirar february.pdf da seleção' }))
+    await act(async () => { finishFirst(json(201, { data: session(['2026-01']) })) })
+
+    await screen.findByText('2 de 12 faturas lidas e salvas')
+    const uploads = fetchMock.mock.calls.filter(([url]) => url.endsWith('/invoices'))
+    expect(uploads.map(([, options]) => ((options?.body as FormData).get('invoice') as File).name)).toEqual(['january.pdf', 'march.pdf'])
+  })
+
   it('sends one PDF per request and waits for each invoice to be saved before sending the next', async () => {
     let finishFirst!: (response: Response) => void
     const first = new Promise<Response>((resolve) => { finishFirst = resolve })
+    let finishSecond!: (response: Response) => void
+    const second = new Promise<Response>((resolve) => { finishSecond = resolve })
     let requests = 0
     const fetchMock = setupFetch((url) => {
       if (url.endsWith('/invoices')) {
         requests++
-        return requests === 1 ? first : json(201, { data: session(['2026-03', '2026-04']) })
+        return requests === 1 ? first : second
       }
       return json(500, {})
     })
@@ -77,6 +117,10 @@ describe('sequential invoice import', () => {
     await waitFor(() => expect(requests).toBe(1))
     expect(screen.getByRole('button', { name: 'Aguarde…' })).toBeDisabled()
     await act(async () => { finishFirst(json(201, { data: session(['2026-04']) })) })
+    await screen.findByText('1 de 12 faturas lidas e salvas')
+    expect(within(screen.getByRole('region', { name: 'Resumo das faturas salvas' })).getByText('2026-04.pdf')).toBeInTheDocument()
+    await waitFor(() => expect(requests).toBe(2))
+    await act(async () => { finishSecond(json(201, { data: session(['2026-03', '2026-04']) })) })
     await screen.findByText('2 de 12 faturas lidas e salvas')
     const uploads = fetchMock.mock.calls.filter(([url]) => url.endsWith('/invoices'))
     expect(uploads).toHaveLength(2)
@@ -89,11 +133,17 @@ describe('sequential invoice import', () => {
 
   it('continues with the next file after a duplicate is rejected and keeps the saved table', async () => {
     let requests = 0
+    let finishSecond!: (response: Response) => void
+    const second = new Promise<Response>((resolve) => { finishSecond = resolve })
     setupFetch(() => ++requests === 1
       ? json(422, { message: 'Fatura repetida.', errors: { invoice: ['Esta fatura já foi enviada.'] } })
-      : json(201, { data: session(['2026-04']) }))
+      : second)
     const picker = await startImport()
     fireEvent.change(picker, { target: { files: [pdf('duplicate.pdf'), pdf('april.pdf')] } })
+    expect(await screen.findByRole('alert')).toHaveTextContent('duplicate.pdf: Esta fatura já foi enviada.')
+    expect(screen.getByText('0 de 12 faturas lidas e salvas')).toBeInTheDocument()
+    await waitFor(() => expect(requests).toBe(2))
+    await act(async () => { finishSecond(json(201, { data: session(['2026-04']) })) })
     await screen.findByText('1 de 12 faturas lidas e salvas')
     expect(screen.getByRole('alert')).toHaveTextContent('duplicate.pdf: Esta fatura já foi enviada.')
     expect(screen.getByRole('button', { name: 'Simular relatório' })).toBeEnabled()
