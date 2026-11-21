@@ -236,3 +236,81 @@ Mapa inicial de chamadas e consultas para as próximas tarefas:
 - `RegulatoryParameterService` já reutiliza resoluções na instância; `TariffService` consulta por resolução. `ReportTariffMigrationService` e o motor chamam a calibração, e otimização/conciliação chamam o faturamento várias vezes. O mapa registra os pontos a investigar, sem introduzir cache ou mudar os cálculos.
 
 Para repetir apenas um formato em um processo novo, acrescente `ECOWATT_BASELINE_SCENARIO=native.pdf` (ou `invoice.png`, `scanned.pdf`, `hybrid.pdf`). O campo `application_boot_ms` registra a inicialização da aplicação nesse processo separadamente do primeiro uso e das repetições aquecidas. O ambiente medido contém o OCR configurado localmente; outra instalação precisa dos executáveis e idiomas descritos na seção de OCR.
+
+## Preparação da cópia para o WSL — tarefa 12.2
+
+**Preparação entregue; validação da instalação copiada pendente.** A pasta original continua em `/mnt/c/Users/virgi/Documents/projetos/EcoWatt`. O destino sugerido é `$HOME/projetos/EcoWatt`, em um sistema de arquivos Linux. A cópia real exige escolher e autorizar esse destino; não é executada automaticamente pela tarefa. Somente PostgreSQL permanece no Docker.
+
+A ferramenta [docs/wsl_workspace.py](docs/wsl_workspace.py) usa Python 3 e `findmnt` (util-linux). Por padrão, ela apenas faz o inventário e apresenta um plano, sem criar o destino, iniciar processos ou acessar o banco. Na raiz do projeto:
+
+```bash
+python3 docs/wsl_workspace.py --destination "$HOME/projetos/EcoWatt"
+```
+
+O plano informa a quantidade de arquivos, o sistema de arquivos de destino, locks do Git, originais pendentes e as **chaves** de OCR a ajustar. Não imprime segredos ou conteúdo dos arquivos. Para esta instalação, os wrappers em `backend/storage/ocr-local/bin/` localizam o runtime por caminhos relativos; a pasta `backend/storage/ocr-local/` precisa acompanhar a cópia inteira.
+
+O modo explícito de cópia preserva `.git` (incluindo index/staging), arquivos alterados, não rastreados e ignorados, dependências, documentos privados e backups. O destino é privado, com permissões 0700 nos diretórios e 0600 nos arquivos de ambiente. Somente os valores de `OCR_TESSERACT`, `OCR_PDFTOPPM`, `OCR_PDFINFO`, `OCR_PYTHON` e `OCR_LOCK_PATH` que começam com o caminho absoluto da origem são redirecionados no **backend/.env copiado**; caminhos externos são mantidos. Variações de maiúsculas/minúsculas no caminho Windows são aceitas quando apontam comprovadamente para o mesmo diretório. `APP_KEY`, credenciais do banco e as demais linhas dos arquivos de ambiente são preservadas. Valores com aspas e finais de linha são conservados. Outros caminhos absolutos personalizados exigem revisão privada no destino.
+
+Caches PHP gerados em `backend/bootstrap/cache`, dados de cache/sessões/views/testes em `backend/storage/framework`, `frontend/dist` e o lock padrão do OCR são regenerados no destino. A pasta de documentos temporários não é copiada; a ferramenta bloqueia a execução enquanto houver originais nela. Links internos são preservados, com redirecionamento dos links absolutos para a cópia. Links externos, `.env` vinculado por symlink, worktrees com `.git` externo e locks do Git exigem revisão antes de copiar. Não há sobrescrita de destino existente. Arquivos regulares são conferidos por SHA-256, e a origem é verificada novamente; alterações durante a operação invalidam a cópia. Uma cópia incompleta é mantida para inspeção e não é reutilizada automaticamente.
+
+### Antes da cópia real
+
+1. Confirme o destino novo e espaço suficiente para todo o projeto, incluindo dependências, OCR e backups (`df -h "$HOME"` e `du -sh .`). Confira que o plano aponta para um sistema Linux local suportado, como `ext4`.
+2. Aguarde a conclusão dos envios e dos jobs, interrompa os servidores e o worker de forma ordenada e pause as gravações do editor e de outras ferramentas. A origem permanece disponível para retomada. A confirmação `--source-paused` não interrompe processos por conta própria.
+3. Preserve um backup lógico e confira que ele pode ser listado. Execute o bloco abaixo na origem, verificando o sucesso antes de continuar. Ele grava somente em `backend/storage/app/private/backups/`, com permissões privadas; não altera o banco.
+
+```bash
+(
+  set -euo pipefail
+  umask 077
+  mkdir -p backend/storage/app/private/backups
+  ecowatt_backup="backend/storage/app/private/backups/wsl-$(date +%Y%m%d-%H%M%S).dump"
+  docker compose exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > "$ecowatt_backup"
+  test -s "$ecowatt_backup"
+  docker compose exec -T postgres pg_restore --list < "$ecowatt_backup" > /dev/null
+)
+```
+
+4. Registre localmente o commit, o `git status --short`, o container/volume em uso e o resultado de `php artisan db:show --counts` em `backend/`. Mantenha esses registros e backups privados. O Compose fixa `name: ecowatt` e o volume `ecowatt_postgres_data`; a mesma configuração na cópia deve apontar para esse banco existente. A etapa não recria tabelas, não roda seeders, não restaura o dump e não remove volumes.
+5. Depois da autorização do destino, execute a cópia a partir da raiz original. O diretório pai pode ser criado; a pasta final precisa continuar inexistente. Só use `--source-paused` depois de cumprir o passo 2.
+
+```bash
+mkdir -p "$HOME/projetos"
+python3 docs/wsl_workspace.py \
+  --destination "$HOME/projetos/EcoWatt" \
+  --copy --source-paused
+```
+
+O resultado deve conter `"mode": "copied"` e `"verified": true`. Isso verifica a cópia dos arquivos; funcionamento da aplicação e desempenho ainda precisam dos passos seguintes. Em falha, preserve a origem e revise o destino incompleto antes de escolher uma nova pasta.
+
+### Verificação no destino
+
+Abra a pasta Linux com o editor conectado ao WSL. Antes de executar a aplicação, confira o mesmo commit e estado local do Git, a existência dos backups, os executáveis de OCR e os caminhos personalizados; mantenha segredos fora de saídas compartilhadas. Confirme PHP 8.5.12+, Node 24+ e os mesmos idiomas/versões do OCR. As dependências acompanham a cópia; reinstalações, se necessárias, devem respeitar os lockfiles existentes.
+
+Em `backend/`, confira o banco somente em leitura com `php artisan db:show --counts` e compare os registros anteriores. Em `docker compose ps`, confirme o mesmo serviço PostgreSQL. A chave da aplicação e as credenciais permanecem as existentes. Inicie API, frontend e worker pelos comandos de desenvolvimento deste README, com a origem parada; confira a navegação e a disponibilidade dos dados já existentes. Para a jornada sintética sem e-mail real ou alteração do banco restaurado, use o teste E2E isolado.
+
+Execute no destino, nesta ordem, com cada comando aprovado antes do próximo:
+
+```bash
+cd backend
+php artisan test --compact
+ECOWATT_RUN_BASELINE=1 /usr/bin/time -v vendor/bin/phpunit tests/Feature/PerformanceBaselineTest.php
+cd ../frontend
+npm run test
+npm run test:e2e
+```
+
+O E2E inicia API, frontend compilado e worker reais com SQLite e SMTP temporários. Os caminhos locais do OCR podem ser passados como no roteiro de OCR deste README. `scribe:generate`, executado pela suíte, pode atualizar arquivos gerados; compare com o estado registrado e preserve o trabalho local.
+
+Compare o JSON `ECOWATT_BASELINE=` com [a referência da 12.1](docs/performance-baseline-12.1.json), mantendo as mesmas fixtures, versões, OPcache, limites e número de workers. Execute as medições sem outras suítes simultâneas; separe bootstrap, primeiro uso e repetições aquecidas. Registre tempos por etapa, CPU, memória e eventual ganho ou ausência dele. O teste usa um disco temporário exclusivo dentro do projeto, portanto acompanha o sistema de arquivos do destino.
+
+Somente após validar arquivos, dados existentes, API, OCR, worker, testes/build e comparação de desempenho, considere a instalação copiada aprovada. A pasta e o banco originais permanecem disponíveis. A recuperação consiste em parar os processos da cópia e retomar a origem, que utiliza o mesmo banco preservado; mudanças futuras no banco precisam de avaliação própria e não são desfeitas por alternar pastas.
+
+Teste automatizado da ferramenta, com projetos e segredos sintéticos em `/tmp`, sem copiar esta instalação nem acessar PostgreSQL:
+
+```bash
+cd backend
+vendor/bin/phpunit tests/Unit/WslWorkspaceCopyTest.php
+```
+
+A 12.2 permanece desmarcada até executar e validar a instalação real no destino autorizado. A preparação e os testes sintéticos não comprovam ganho no Linux nem substituem essa validação.
