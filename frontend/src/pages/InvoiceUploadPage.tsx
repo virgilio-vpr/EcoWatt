@@ -1,7 +1,8 @@
 import { NavigationLink } from '../components/NavigationControl'
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { ApiError, apiRequest, getAuthToken } from '../services/api/client'
 import { InvoiceImportTable, type ImportedInvoice } from '../components/InvoiceImportTable'
+import { InvoiceUploadQueue, type QueuedInvoice } from '../components/InvoiceUploadQueue'
 
 const MAX_FILE_BYTES = 20 * 1024 * 1024
 const MAX_FILES = 12
@@ -50,6 +51,9 @@ export function InvoiceUploadPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [notice, setNotice] = useState('')
+  const [uploadQueue, setUploadQueue] = useState<QueuedInvoice[]>([])
+  const uploadQueueRef = useRef<QueuedInvoice[]>([])
+  const nextUploadId = useRef(0)
   const [errorMessage, setErrorMessage] = useState('')
   const [queuedSimulation, setQueuedSimulation] = useState<{ id: number; status: SimulationStatus } | null>(null)
   const [processingErrors, setProcessingErrors] = useState<ProcessingFileError[]>([])
@@ -200,38 +204,53 @@ export function InvoiceUploadPage() {
     }
   }
 
+  function updateUploadQueue(update: (entries: QueuedInvoice[]) => QueuedInvoice[]) {
+    const entries = update(uploadQueueRef.current)
+    uploadQueueRef.current = entries
+    setUploadQueue(entries)
+  }
+
+  function removeQueuedInvoice(id: number) {
+    updateUploadQueue((entries) => entries.filter((entry) => entry.id !== id || entry.status === 'reading'))
+  }
+
   async function uploadInvoice(event: ChangeEvent<HTMLInputElement>) {
-    const selectedFiles = Array.from(event.target.files ?? [])
-    event.target.value = ''
+    const picker = event.target
+    const selectedFiles = Array.from(picker.files ?? [])
     if (selectedFiles.length === 0 || !importSession || submitting) return
 
     const remainingSlots = MAX_FILES - importSession.invoice_count
-    const filesToUpload = selectedFiles.slice(0, remainingSlots)
-    const failures = selectedFiles.length > remainingSlots
-      ? [`O limite é de ${MAX_FILES} faturas; somente as primeiras ${remainingSlots} serão enviadas.`]
-      : []
-
+    const filesToUpload: QueuedInvoice[] = selectedFiles.slice(0, remainingSlots).map((file) => ({ id: ++nextUploadId.current, file, status: 'pending' }))
+    updateUploadQueue(() => filesToUpload)
     setSubmitting(true)
-    setErrorMessage('')
+    setErrorMessage(selectedFiles.length > remainingSlots ? `O limite é de ${MAX_FILES} faturas; somente as primeiras ${remainingSlots} serão enviadas.` : '')
     setNotice('Preparando o envio das faturas…')
     let activeSession = importSession
     let savedCount = 0
+
+    function failUpload(id: number, error: string) {
+      updateUploadQueue((entries) => entries.map((entry) => entry.id === id ? { ...entry, status: 'error', error } : entry))
+    }
+
     try {
-      for (const [index, file] of filesToUpload.entries()) {
+      for (const [index, queued] of filesToUpload.entries()) {
+        if (!uploadQueueRef.current.some((entry) => entry.id === queued.id)) continue
+        const { file } = queued
+        updateUploadQueue((entries) => entries.map((entry) => entry.id === queued.id ? { ...entry, status: 'reading' } : entry))
         setNotice(`Lendo e salvando a fatura ${index + 1} de ${filesToUpload.length}…`)
 
         if (!/\.(pdf|png|jpe?g)$/i.test(file.name) || (file.type && !['application/pdf', 'image/png', 'image/jpeg'].includes(file.type))) {
-          failures.push(`${file.name}: selecione um arquivo PDF, PNG ou JPEG.`)
+          failUpload(queued.id, 'selecione um arquivo PDF, PNG ou JPEG.')
           continue
         }
         if (file.size > MAX_FILE_BYTES) {
-          failures.push(`${file.name}: cada fatura pode ter no máximo 20 MB.`)
+          failUpload(queued.id, 'cada fatura pode ter no máximo 20 MB.')
           continue
         }
         try {
           const signature = await readInvoiceSignature(file)
           if (!/%PDF-\d\.\d/.test(signature) && !signature.startsWith('\x89PNG\r\n\x1a\n') && !signature.startsWith('\xff\xd8\xff')) {
-            failures.push(`${file.name}: o conteúdo não é um PDF, PNG ou JPEG válido.`)
+            failUpload(queued.id, 'o conteúdo não é um PDF, PNG ou JPEG válido.')
             continue
           }
           const formData = new FormData()
@@ -242,18 +261,19 @@ export function InvoiceUploadPage() {
           }, { notifyGlobalError: false })
           activeSession = { ...activeSession, ...response.data }
           setImportSession(activeSession)
+          updateUploadQueue((entries) => entries.filter((entry) => entry.id !== queued.id))
           savedCount++
         } catch (error) {
           const validationMessage = error instanceof ApiError && error.errors ? Object.values(error.errors).flat()[0] : undefined
-          failures.push(`${file.name}: ${validationMessage ?? (error instanceof Error ? error.message : 'não foi possível ler a fatura.')}`)
+          failUpload(queued.id, validationMessage ?? (error instanceof Error ? error.message : 'não foi possível ler a fatura.'))
         }
       }
 
       setNotice(savedCount > 0
         ? `${savedCount} ${savedCount === 1 ? 'fatura foi lida e salva' : 'faturas foram lidas e salvas'}; a lista está em ordem do mês de medição.`
-        : 'Nenhuma fatura desta seleção foi salva.')
-      setErrorMessage(failures.join(' '))
+        : '')
     } finally {
+      picker.value = ''
       setSubmitting(false)
     }
   }
@@ -349,8 +369,9 @@ export function InvoiceUploadPage() {
           </>}
           {importSession && <>
             <p aria-live="polite">{importSession.invoice_count} de {MAX_FILES} faturas lidas e salvas</p>
-            <InvoiceImportTable invoices={importSession.invoices} onRemove={removeInvoice} disabled={submitting} />
+            {(importSession.invoices.length > 0 || uploadQueue.length === 0) && <InvoiceImportTable invoices={importSession.invoices} onRemove={removeInvoice} disabled={submitting} />}
             {importSession.invoice_count < MAX_FILES && <label className="upload-field invoice-picker">Selecionar faturas <input type="file" accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg" multiple disabled={submitting} onChange={uploadInvoice} aria-describedby="invoice-help" /><span id="invoice-help" className="password-hint">Você pode selecionar várias faturas. Cada PDF, PNG ou JPEG será enviado, lido e salvo individualmente, em sequência. Até 20 MB por arquivo. Imagens: 300 a 10.000 pixels por lado e até 20 MP. OCR: até 4 páginas e 40 segundos por fatura; envie imagens nítidas e na orientação correta.</span></label>}
+            <InvoiceUploadQueue entries={uploadQueue} onRemove={removeQueuedInvoice} />
             {errorMessage && <p className="field-error" role="alert">{errorMessage}</p>}
             {notice && <p className="form-success" role="status">{notice}</p>}
             {needsInvoiceReview && <div className="field-error" role="alert"><p>A soma dos itens lidos ainda não confere com o total nestas faturas:</p><ul>{invoicesNeedingReview.map((invoice) => <li key={invoice.id}>{invoice.reference_month.slice(5, 7)}/{invoice.reference_month.slice(0, 4)}{invoice.source_filename ? ` · ${invoice.source_filename}` : ''}</li>)}</ul><p>Encargos de bandeira tarifária ou outros ajustes podem explicar a diferença. A leitura precisa ser revisada antes da simulação para identificar esses valores.</p></div>}

@@ -81,6 +81,7 @@ class SimulationReadApiTest extends TestCase
     {
         $customer = User::factory()->create();
         $otherCustomer = User::factory()->create();
+        $customer->profile()->create(['company_name' => 'Indústria Exemplo Ltda.']);
         $simulation = $this->simulation($customer, 'completed');
         foreach (['2025-09', '2025-08'] as $month) {
             $simulation->invoices()->create([
@@ -108,6 +109,7 @@ class SimulationReadApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.id', $report->id)
             ->assertJsonPath('data.months_count', $simulation->months_count)
+            ->assertJsonPath('data.company_name', 'Indústria Exemplo Ltda.')
             ->assertJsonPath('data.consumer_unit', 'MTE0012345')
             ->assertJsonPath('data.period_start', '2025-08')
             ->assertJsonPath('data.period_end', '2025-09')

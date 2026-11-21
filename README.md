@@ -2,6 +2,18 @@
 
 Sistema web para análise de faturas de energia do Grupo A. O repositório contém a API Laravel em `backend/`, a SPA React/TypeScript em `frontend/`, e a especificação em `docs/PROJECT_SPEC.md`.
 
+## Roteiro de continuidade
+
+A fonte da verdade é [docs/PROJECT_SPEC.md](docs/PROJECT_SPEC.md); as instruções de execução ficam em [docs/AGENT.md](docs/AGENT.md).
+
+Em 21/11/2026, a **Fase 11 foi encerrada no escopo local entregue até 11.5**. Isso registra a implementação disponível, sem declarar implantação, homologação de todos os layouts ou capacidade de carga. A sequência é **Fase 12 — desempenho e concorrência**, começando em **12.1**, seguida da **Fase 13 — implantação e pendências finais**. A implantação antes incluída em 11.5 foi para 13.1, a antiga 11.6 para 13.2 e a antiga 11.7 para 13.3; validações funcionais ainda abertas do leitor ficam em 13.4. Os detalhes de tarefas e testes estão somente no spec.
+
+No estado atual, o envio individual lê cada documento durante a requisição e o cálculo das faturas salvas também ocorre pela API. O OCR permite uma leitura por vez por host/volume e pode responder que está ocupado. A fila `database` já existe para o fluxo antigo em lote e o e-mail do fluxo atual. A Fase 12 prevê instrumentação, melhoria do ambiente WSL, leitura assíncrona, concorrência controlada, eliminação de trabalho repetido, avaliação do cálculo, cache, testes com 1/3/5 usuários simultâneos e preparação de desempenho para produção. Esses pontos ainda são planejamento; não houve teste de carga que comprove cinco usuários simultâneos.
+
+Para retomar em outro chat:
+
+> Leia docs/AGENT.md e a seção 0 de docs/PROJECT_SPEC.md. Inicie a Fase 12 pela tarefa 12.1, seguindo as referências e os critérios de teste; preserve o trabalho local existente e as regras de cálculo.
+
 ## Atualização de EnerDiag para EcoWatt
 
 O nome foi atualizado na interface, nos e-mails, relatórios e documentação. O ícone foi preservado; apenas os nomes dos arquivos de imagem foram atualizados. O navegador migra automaticamente o tema e a identificação do envio de faturas em andamento para as novas chaves, no mesmo domínio.
@@ -128,7 +140,9 @@ npm run build
 npm audit
 ```
 
-## OCR de faturas — etapa 11.5
+## OCR de faturas — entrega local da etapa 11.5
+
+A Fase 11 está encerrada nesse recorte. As instruções abaixo descrevem a instalação e as limitações locais atuais; otimizações pertencem à Fase 12 e implantação/validação funcional restante à Fase 13, conforme o [spec](docs/PROJECT_SPEC.md).
 
 O seletor aceita PDF, PNG e JPEG. PDFs mantêm a leitura nativa pelo Smalot; Tesseract local apoia leituras incompletas e processa imagens. Instale no Ubuntu/Debian antes de iniciar a API e o worker:
 

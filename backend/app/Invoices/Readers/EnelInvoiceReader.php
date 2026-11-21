@@ -4,6 +4,7 @@ namespace App\Invoices\Readers;
 
 use App\Calculation\Data\ExtractedInvoiceData;
 use App\Calculation\Services\IdleDemandTariffMatcher;
+use App\Invoices\Validation\InvoiceExtractionValidator;
 use InvalidArgumentException;
 
 final class EnelInvoiceReader implements InvoiceReader, OcrInvoiceReader
@@ -134,7 +135,7 @@ final class EnelInvoiceReader implements InvoiceReader, OcrInvoiceReader
             foreach ($data['items'] as $item) {
                 $sum = bcadd($sum, $item['amount'], 2);
             }
-            if (bccomp($this->absolute(bcsub($sum, $data['total_paid'], 2)), '0.02', 2) > 0) {
+            if (bccomp($this->absolute(bcsub($sum, $data['total_paid'], 2)), InvoiceExtractionValidator::TOTAL_TOLERANCE, 2) > 0) {
                 $data['warnings'][] = 'invoice_billing_total_mismatch';
             }
         }
@@ -146,7 +147,7 @@ final class EnelInvoiceReader implements InvoiceReader, OcrInvoiceReader
     private function billingRows(string $text): array
     {
         $specifications = [
-            ['kind' => 'regular', 'pattern' => '~(?<!\p{L})DEMANDA\s+(?:ÚNICA\s+)?KW\s*(?=\d[\d.]*[,.]\d{3})~iu', 'item_type' => 'measured_demand', 'tariff_component' => 'demand', 'time_slot' => 'unique', 'unit' => 'kW', 'reactive_nature' => 'not_applicable', 'source_label' => 'DEMANDA'],
+            ['kind' => 'regular', 'pattern' => '~(?<!\p{L})DEMANDA\s+(?:ÚNICA\s+)?(?:C/\s*DESCONTO\s+)?KW\s*(?=\d[\d.]*[,.]\d{3})~iu', 'item_type' => 'measured_demand', 'tariff_component' => 'demand', 'time_slot' => 'unique', 'unit' => 'kW', 'reactive_nature' => 'not_applicable', 'source_label' => 'DEMANDA'],
             ['kind' => 'idle_demand', 'pattern' => '~DEMANDA\s+LEI\s+ESTADUAL\s+16\.886/18\s+(?:KW\s*)?~iu', 'item_type' => 'idle_demand', 'tariff_component' => 'demand', 'time_slot' => 'unresolved', 'unit' => 'kW', 'reactive_nature' => 'not_applicable', 'source_label' => 'DEMANDA LEI ESTADUAL 16.886/18'],
             ['kind' => 'regular', 'pattern' => '~DEMANDA\s+(?:DE\s+)?ULTRAPASSAGEM\s+PONTA\s+KW\s*~iu', 'item_type' => 'demand_overrun', 'tariff_component' => 'demand', 'time_slot' => 'peak', 'unit' => 'kW', 'reactive_nature' => 'not_applicable', 'source_label' => 'Demanda de Ultrapassagem Ponta'],
             ['kind' => 'regular', 'pattern' => '~DEMANDA\s+(?:DE\s+)?ULTRAPASSAGEM\s+(?:FORA\s+(?:DE\s+)?PONTA|F\.?\s*PONTA)\s+KW\s*~iu', 'item_type' => 'demand_overrun', 'tariff_component' => 'demand', 'time_slot' => 'off_peak', 'unit' => 'kW', 'reactive_nature' => 'not_applicable', 'source_label' => 'Demanda de Ultrapassagem Fora de Ponta'],
@@ -164,9 +165,13 @@ final class EnelInvoiceReader implements InvoiceReader, OcrInvoiceReader
         foreach ([
             ['~(?:DEDU[CÇ][AÃ]O\s+)?ENERGIA\s+ACL\s+KWH\s*~iu', 'regular', 'kWh'],
             ['~(?:ADICIONAL|ADIC\.?)\s+(?:DE\s+)?BANDEIRA(?:\s+TARIF[AÁ]RIA)?(?:\s+(?:AMARELA|VERMELHA)(?:\s+PATAMAR\s+[12])?)?(?:\s+(?:FORA\s+(?:DE\s+)?PONTA|F\.?\s*PONTA|PONTA|FP|PT))?\s*(?:KWH\s*)?(?=[+-]?\d)~iu', 'short_charge', null],
-            ['~DIF\.?\s*FATUR\.?\s*TUSD\s*[-–]\s*HOMOLOG\.?\s*CCEE\s*(?:KWH\s*)?~iu', 'short_charge', null],
+            ['~DIF\.?\s*FATUR\.?\s*(?:TUSD|ENCA)\s*[-–]\s*HOMOLOG\.?\s*CCEE\s*(?:KWH\s*)?~iu', 'short_charge', null],
             ['~ENCARGO\s+(?:CONTA\s+)?ESCASSEZ\s+H[IÍ]DRICA\s+KWH\s*~iu', 'regular', 'kWh'],
             ['~BENEF[IÍ]CIO\s+TARIF[AÁ]RIO\s+(?:BRUTO|L[IÍ]QUIDO)\s*~iu', 'regular', null],
+            ['~TX\.?\s*ENTR\.?\s*FAT\.?\s*OUTRA[_\s]+LOCAL\.?\s*~iu', 'short_charge', null],
+            ['~REV\s+FATURA\s+JUROS\s+MORA\s+ART\.?\s*323\s*~iu', 'short_charge', null],
+            ['~PENAL\.?\s*DIC\s*/\s*DMIC\s*/\s*FIC\s*/\s*DICRI\s+ADIC\.?\s*~iu', 'short_charge', null],
+            ['~VALOR\s+A\s+SER\s+CREDITADO\s*~iu', 'credit', null],
             ['~COSIP\s*-\s*S[AÃ]O\s+PAULO\s*-\s*MUNICIPAL\s*~iu', 'short_charge', null],
             ['~(?<!\p{L})DIC\s+(?:[A-ZÇ]{3,9}|0?[1-9]|1[0-2])\s*/\s*20\d{2}\s*(?=-?\d)~iu', 'credit', null],
         ] as [$pattern, $kind, $unit]) {

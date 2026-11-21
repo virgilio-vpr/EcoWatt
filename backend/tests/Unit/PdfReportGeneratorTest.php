@@ -2,14 +2,79 @@
 
 namespace Tests\Unit;
 
+use App\Models\CustomerProfile;
+use App\Models\Invoice;
 use App\Models\Report;
 use App\Models\Simulation;
+use App\Models\User;
 use App\Reports\PdfReportGenerator;
 use Smalot\PdfParser\Parser;
 use Tests\TestCase;
 
 class PdfReportGeneratorTest extends TestCase
 {
+    public function test_component_panel_keeps_all_four_components_and_recommendation_on_the_same_page(): void
+    {
+        $pdf = app(PdfReportGenerator::class)->generate($this->report());
+        $pages = (new Parser)->parseContent($pdf)->getPages();
+        $panelPages = array_filter($pages, fn ($page): bool => str_contains($page->getText(), 'Economia por componente'));
+        $this->assertCount(1, $panelPages);
+        $text = $this->normalize(array_values($panelPages)[0]->getText());
+        foreach ([
+            'Veja onde estão as oportunidades de economia.', 'Modalidade recomendada: Verde',
+            'Demanda R$ 100,11 / mês R$ 1.201,32 / ano',
+            'Ultrapassagem R$ 20,22 / mês R$ 242,64 / ano',
+            'Reativos R$ 30,33 / mês R$ 363,96 / ano',
+            'Migração de modalidade R$ 40,44 / mês R$ 485,28 / ano',
+        ] as $expected) {
+            $this->assertStringContainsString($expected, $text);
+        }
+    }
+
+    public function test_component_panel_preserves_zero_and_missing_values_and_only_recommends_a_valid_comparison(): void
+    {
+        foreach ([
+            [[], [], null],
+            [['modality' => [['blue' => '900', 'green' => null]]], [], null],
+            [['modality' => [['blue' => '900', 'green' => '1000']]], ['migration_unavailable'], null],
+            [['blue_green' => [['blue' => '900', 'green' => '1000']]], [], 'Azul'],
+        ] as [$series, $warnings, $modality]) {
+            $report = $this->report();
+            $report->forceFill([
+                'demand_savings_monthly' => '0.00', 'demand_savings_yearly' => '0.00',
+                'reactive_savings_monthly' => null, 'reactive_savings_yearly' => null,
+                'recommended_modality' => 'blue', 'chart_series' => $series, 'warnings' => $warnings,
+            ]);
+            $text = $this->text(app(PdfReportGenerator::class)->generate($report));
+            $this->assertStringContainsString('Demanda R$ 0,00 / mês R$ 0,00 / ano', $text);
+            $this->assertStringContainsString('Reativos — / mês — / ano', $text);
+            if ($modality === null) {
+                $this->assertStringNotContainsString('Modalidade recomendada:', $text);
+            } else {
+                $this->assertStringContainsString('Modalidade recomendada: '.$modality, $text);
+            }
+        }
+    }
+
+    public function test_every_page_identifies_the_company_and_preserves_distributor_identifiers(): void
+    {
+        foreach (['MTE0012345', '0000123456', 'UC-987654'] as $identifier) {
+            $report = $this->report();
+            $user = new User;
+            $user->setRelation('profile', new CustomerProfile(['company_name' => 'Indústria Exemplo Ltda.']));
+            $report->simulation->setRelation('user', $user);
+            $report->simulation->setRelation('invoices', collect([new Invoice(['consumer_unit' => $identifier])]));
+            $pdf = app(PdfReportGenerator::class)->generate($report);
+            $pages = (new Parser)->parseContent($pdf)->getPages();
+            $this->assertGreaterThan(1, count($pages));
+            foreach ($pages as $page) {
+                $text = $this->normalize($page->getText());
+                $this->assertStringContainsString('Empresa: Indústria Exemplo Ltda.', $text);
+                $this->assertStringContainsString('Identificação na concessionária: '.$identifier, $text);
+            }
+        }
+    }
+
     public function test_customer_warnings_exclude_internal_tax_diagnostics_without_removing_saved_warnings(): void
     {
         $warnings = ['no_migration_savings', 'idle_demand_pis_cofins_inconsistent', 'tax_calibration_factor_divergence', 'demand_invoice_reconciliation_mismatch'];
@@ -104,8 +169,9 @@ class PdfReportGeneratorTest extends TestCase
             'r_values' => [['reference_month' => '2026-01', 'source' => 'fallback', 'ratio' => null]],
         ]);
         $text = $this->text(app(PdfReportGenerator::class)->generate($report));
-        $this->assertStringContainsString('Demanda Indisponível Indisponível', $text);
-        $this->assertStringContainsString('Migração de modalidade Indisponível Indisponível', $text);
+        $this->assertStringContainsString('Demanda Indisponível', $text);
+        $this->assertStringContainsString('Migração de modalidade Indisponível', $text);
+        $this->assertStringNotContainsString('Modalidade recomendada:', $text);
         $this->assertStringContainsString('01/2026 — 0 0 — —', $text);
         $this->assertStringContainsString('A série de reativos não está disponível neste relatório.', $text);
         $this->assertStringContainsString('A comparação não está disponível sem tarifas válidas', $text);
@@ -115,7 +181,7 @@ class PdfReportGeneratorTest extends TestCase
     public function test_long_content_is_paginated_without_losing_the_last_recommendation_or_overflowing_the_page(): void
     {
         $report = $this->report();
-        $report->setRelation('simulation', new Simulation(['months_count' => 5]));
+        $report->simulation->forceFill(['months_count' => 5]);
         $recommendations = [];
         for ($index = 1; $index <= 60; $index++) {
             $recommendations[] = 'Recomendação '.$index.': conferir as condições de fornecimento, os valores contratados e as medições de energia nos meses avaliados.';
@@ -193,7 +259,10 @@ class PdfReportGeneratorTest extends TestCase
                 'modality' => [['reference_month' => 'Período', 'blue' => '9000.00', 'green' => '8000.00']],
             ],
         ]);
-        $report->setRelation('simulation', new Simulation(['months_count' => 12]));
+        $simulation = new Simulation(['months_count' => 12]);
+        $simulation->setRelation('user', null);
+        $simulation->setRelation('invoices', collect());
+        $report->setRelation('simulation', $simulation);
 
         return $report;
     }

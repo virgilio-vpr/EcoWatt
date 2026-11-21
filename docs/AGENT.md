@@ -7,6 +7,12 @@ Sistema web que lê faturas de energia do Grupo A (ENEL) e simula a economia. AP
 - Ao receber "faça a Fase N": leia só a seção 0, a Fase N e as seções citadas em `Ref:`. Não leia o arquivo inteiro.
 - Se este arquivo e o spec divergirem, vale o spec.
 
+## Retomada do projeto
+- Leia a seção 0 do spec e o início da fase solicitada para conferir o estado atual. A Fase 11 foi encerrada no escopo local entregue até 11.5; implantação e pendências finais foram transferidas para a Fase 13.
+- A próxima tarefa é **12.1**. A Fase 12 trata desempenho e concorrência, incluindo a preparação de desempenho para produção ao final. A Fase 13 utiliza essas entregas e fecha implantação, documentação e validações pendentes; não duplique tarefas entre as duas.
+- O estado descrito no spec distingue código existente de comportamento planejado: ainda há leitura/cálculo síncronos no fluxo individual e trava exclusiva no OCR. Não afirmar suporte a cinco usuários simultâneos sem o teste de carga previsto.
+- Em um novo chat, pode-se iniciar com: “Leia docs/AGENT.md e a seção 0 de docs/PROJECT_SPEC.md. Inicie a Fase 12 pela tarefa 12.1, seguindo as referências e os critérios de teste; preserve o trabalho local existente e as regras de cálculo.”
+
 ## Fluxo
 - Uma tarefa por vez, na ordem. Em tarefas com vários arquivos, use plan mode e espere aprovação.
 - Marque `[x]` no `PROJECT_SPEC.md` só depois de implementar **e** o teste da tarefa passar.
@@ -37,6 +43,6 @@ O "como testar" de cada tarefa está na linha `Teste:` do spec. Regras gerais:
 - PDFs de faturas nunca são salvos: ficam só em temporário e são apagados logo após a extração, também em erro.
 - SQL só com bindings; validação em Form Requests; autorização por policies; nunca commitar `.env`.
 - Laravel e React rodam sem container no desenvolvimento; só o PostgreSQL usa Docker.
-- Orçamento etapa 2 (tarefa 10.3): não iniciar sem autorização.
+- Orçamento etapa 2 (tarefa 10.3): já autorizado e concluído no spec; mudanças de escopo continuam exigindo instrução do usuário.
 - Não altere as regras de cálculo (RC) nem as decisões D1 a D19 sem confirmar com o usuário.
 - Tarifas da ANEEL são sem tributos: converter para a base da fatura só pelo fator `k` (RC-1c). Nunca usar percentual fixo entre Azul e Verde.

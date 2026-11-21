@@ -17,7 +17,8 @@ final class PdfDocument
     /** @var list<list<string>> */
     private array $pages = [];
 
-    public function __construct(private readonly string $protocol, private readonly string $contact = '')
+    /** @param list<string> $identity */
+    public function __construct(private readonly string $protocol, private readonly string $contact = '', private readonly array $identity = [])
     {
         $this->newPage();
     }
@@ -34,6 +35,15 @@ final class PdfDocument
             $this->textAt(92, 44 + $index * 12, 8, $line, '#475569');
         }
         $bottom = max(70, 50 + count($contactLines) * 12);
+        foreach ($this->identity as $entry) {
+            foreach ($this->wrap($entry, self::CONTENT_WIDTH, 9) as $line) {
+                $this->textAt(self::MARGIN, $bottom, 9, $line, '#17352d', true);
+                $bottom += 14;
+            }
+        }
+        if ($this->identity !== []) {
+            $bottom += 6;
+        }
         $this->line(self::MARGIN, $bottom, self::WIDTH - self::MARGIN, $bottom, '#dbe5e0', 0.5);
         $this->y = $bottom + 20;
     }
@@ -109,6 +119,53 @@ final class PdfDocument
             $this->textAt($x + 10, $this->y + 53, $size, $card['value'], '#087452', true);
         }
         $this->y += 105;
+    }
+
+    /** @param list<array{label: string, monthly: string, yearly: string, positive: bool, unavailable: bool}> $components */
+    public function componentSavings(array $components, ?string $recommendedModality): void
+    {
+        $height = 180.0;
+        $this->ensureSpace($height + 14);
+        $top = $this->y;
+        $this->rectangle(self::MARGIN, $top, self::CONTENT_WIDTH, $height, '#dbe5e0');
+        $this->rectangle(self::MARGIN + 1, $top + 1, self::CONTENT_WIDTH - 2, $height - 2, '#f8faf9');
+        $this->textAt(self::MARGIN + 14, $top + 14, 15, 'Economia por componente', '#17352d', true);
+        $this->textAt(self::MARGIN + 14, $top + 37, 9, 'Veja onde estão as oportunidades de economia.', '#475569');
+
+        if ($recommendedModality !== null) {
+            $badgeX = self::WIDTH - self::MARGIN - 154;
+            $this->rectangle($badgeX, $top + 12, 140, 43, '#e6f0ec');
+            $this->textAt($badgeX + 10, $top + 19, 8, 'Modalidade recomendada:', '#475569');
+            $this->textAt($badgeX + 10, $top + 32, 12, $recommendedModality, '#087452', true);
+        }
+
+        $width = (self::CONTENT_WIDTH - 28 - 24) / 4;
+        foreach ($components as $index => $component) {
+            $x = self::MARGIN + 14 + $index * ($width + 8);
+            $cardTop = $top + 66;
+            $this->rectangle($x, $cardTop, $width, 100, '#dbe5e0');
+            $this->rectangle($x + 1, $cardTop + 1, $width - 2, 98, $component['positive'] ? '#eef8f4' : '#ffffff');
+            if ($component['positive']) {
+                $this->line($x, $cardTop, $x + $width, $cardTop, '#0b8f6a', 2);
+            }
+            foreach ($this->wrap($component['label'], $width - 20, 9, true) as $lineIndex => $line) {
+                $this->textAt($x + 10, $cardTop + 12 + $lineIndex * 12, 9, $line, '#17352d', true);
+            }
+            if ($component['unavailable']) {
+                $this->textAt($x + 10, $cardTop + 45, 10, 'Indisponível', '#475569', true);
+
+                continue;
+            }
+            foreach ([['monthly', ' / mês', 16.0, 43], ['yearly', ' / ano', 10.0, 75]] as [$key, $suffix, $size, $offset]) {
+                $value = $component[$key];
+                while ($size > 7 && $this->textWidth($value, $size, true) + $this->textWidth($suffix, 8) > $width - 20) {
+                    $size--;
+                }
+                $this->textAt($x + 10, $cardTop + $offset, $size, $value, $component['positive'] ? '#087452' : '#17352d', true);
+                $this->textAt($x + 10 + $this->textWidth($value, $size, true), $cardTop + $offset + $size - 8, 8, $suffix, '#475569');
+            }
+        }
+        $this->y += $height + 14;
     }
 
     /**

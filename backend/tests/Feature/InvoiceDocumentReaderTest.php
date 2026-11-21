@@ -34,6 +34,21 @@ class InvoiceDocumentReaderTest extends TestCase
         $this->assertSame([], Storage::disk('invoice_temp')->allFiles());
     }
 
+    public function test_discounted_unique_demand_uses_complete_native_text_without_falling_back_to_ocr(): void
+    {
+        $text = file_get_contents(base_path('tests/Fixtures/enel-unique-demand-green.txt'));
+        $text = str_replace("DEMANDA\tKW", "DEMANDA ÚNICA C/ DESCONTO\tKW", $text);
+        $this->mock(PdfTextParser::class)->shouldReceive('extract')->once()->andReturn($text);
+        $this->mock(InvoiceOcr::class)->shouldNotReceive('extract');
+
+        $invoice = app(InvoiceDocumentReader::class)->read('%PDF-1.4 fixture', new EnelInvoiceReader);
+
+        $this->assertSame('2026-01', $invoice->referenceMonth);
+        $this->assertSame('15737.88', $invoice->totalPaid);
+        $this->assertSame([], $invoice->warnings);
+        $this->assertSame([], Storage::disk('invoice_temp')->allFiles());
+    }
+
     public function test_hybrid_fills_missing_metered_demands_without_duplicating_billing_rows(): void
     {
         $native = preg_replace('/^1234567.*\n/m', '', $this->text());
@@ -59,11 +74,32 @@ class InvoiceDocumentReaderTest extends TestCase
         $this->assertSame([], Storage::disk('invoice_temp')->allFiles());
     }
 
+    public function test_native_total_tolerance_is_inclusive_at_five_reais_and_keeps_all_printed_values(): void
+    {
+        foreach (['1.184,75', '1.194,75'] as $total) {
+            $text = str_replace('TOTAL A PAGAR 1.189,75', 'TOTAL A PAGAR '.$total, $this->text());
+            $this->mock(PdfTextParser::class)->shouldReceive('extract')->once()->andReturn($text);
+            $this->mock(InvoiceOcr::class)->shouldNotReceive('extract');
+            $invoice = app(InvoiceDocumentReader::class)->read('%PDF-1.4 fixture', new EnelInvoiceReader);
+            $this->assertSame(str_replace(',', '.', str_replace('.', '', $total)), $invoice->totalPaid);
+            $this->assertSame('1189.75', collect($invoice->items)->reduce(fn ($sum, $item) => bcadd($sum, $item->amount, 2), '0.00'));
+            $this->assertNotContains('invoice_billing_total_mismatch', $invoice->warnings);
+        }
+    }
+
+    public function test_ocr_total_difference_above_five_reais_remains_marked_for_review(): void
+    {
+        $this->mock(InvoiceOcr::class)->shouldReceive('extract')->once()->andReturn(str_replace('TOTAL A PAGAR 1.189,75', 'TOTAL A PAGAR 1.194,76', $this->text()));
+        $invoice = app(InvoiceDocumentReader::class)->read('image', new EnelInvoiceReader);
+        $this->assertSame('1194.76', $invoice->totalPaid);
+        $this->assertContains('invoice_billing_total_mismatch', $invoice->warnings);
+    }
+
     public function test_ocr_total_mismatch_is_preserved_for_review_without_adjusting_items(): void
     {
-        $this->mock(InvoiceOcr::class)->shouldReceive('extract')->andReturn(str_replace('TOTAL A PAGAR 1.189,75', 'TOTAL A PAGAR 1.190,75', $this->text()));
+        $this->mock(InvoiceOcr::class)->shouldReceive('extract')->andReturn(str_replace('TOTAL A PAGAR 1.189,75', 'TOTAL A PAGAR 1.195,75', $this->text()));
         $invoice = app(InvoiceDocumentReader::class)->read('image', new EnelInvoiceReader);
-        $this->assertSame('1190.75', $invoice->totalPaid);
+        $this->assertSame('1195.75', $invoice->totalPaid);
         $this->assertContains('invoice_billing_total_mismatch', $invoice->warnings);
         $this->assertSame('-10.25', collect($invoice->items)->firstWhere('itemType', 'other_charge')->amount);
     }
