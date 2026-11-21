@@ -2,6 +2,8 @@
 
 namespace App\Invoices\Pdf;
 
+use App\Services\PerformanceMetrics;
+use App\Services\PerformanceStage;
 use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Parser;
 
@@ -11,9 +13,11 @@ final class SmalotPdfTextParser implements PdfTextParser
 
     public function extract(string $path): string
     {
-        $config = new Config;
-        $config->setDecodeMemoryLimit(self::DECODE_MEMORY_LIMIT);
+        return app(PerformanceMetrics::class)->measure(PerformanceStage::NativeExtraction, function () use ($path) {
+            $config = new Config;
+            $config->setDecodeMemoryLimit(self::DECODE_MEMORY_LIMIT);
 
-        return (new Parser([], $config))->parseFile($path)->getText();
+            return (new Parser([], $config))->parseFile($path)->getText();
+        });
     }
 }

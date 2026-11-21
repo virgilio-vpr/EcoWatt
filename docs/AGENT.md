@@ -9,9 +9,9 @@ Sistema web que lê faturas de energia do Grupo A (ENEL) e simula a economia. AP
 
 ## Retomada do projeto
 - Leia a seção 0 do spec e o início da fase solicitada para conferir o estado atual. A Fase 11 foi encerrada no escopo local entregue até 11.5; implantação e pendências finais foram transferidas para a Fase 13.
-- A próxima tarefa é **12.1**. A Fase 12 trata desempenho e concorrência, incluindo a preparação de desempenho para produção ao final. A Fase 13 utiliza essas entregas e fecha implantação, documentação e validações pendentes; não duplique tarefas entre as duas.
+- A tarefa **12.1** foi concluída; métricas, linha de base e metas estão no README e em `docs/performance-baseline-12.1.json`. A próxima tarefa é **12.2**. A Fase 12 trata desempenho e concorrência, incluindo a preparação de desempenho para produção ao final. A Fase 13 utiliza essas entregas e fecha implantação, documentação e validações pendentes; não duplique tarefas entre as duas.
 - O estado descrito no spec distingue código existente de comportamento planejado: ainda há leitura/cálculo síncronos no fluxo individual e trava exclusiva no OCR. Não afirmar suporte a cinco usuários simultâneos sem o teste de carga previsto.
-- Em um novo chat, pode-se iniciar com: “Leia docs/AGENT.md e a seção 0 de docs/PROJECT_SPEC.md. Inicie a Fase 12 pela tarefa 12.1, seguindo as referências e os critérios de teste; preserve o trabalho local existente e as regras de cálculo.”
+- Em um novo chat, pode-se iniciar com: “Leia docs/AGENT.md e a seção 0 de docs/PROJECT_SPEC.md. Continue a Fase 12 pela tarefa 12.2, seguindo as referências e os critérios de teste; preserve o trabalho local existente e as regras de cálculo.”
 
 ## Fluxo
 - Uma tarefa por vez, na ordem. Em tarefas com vários arquivos, use plan mode e espere aprovação.

@@ -3,6 +3,8 @@
 namespace App\Invoices\Ocr;
 
 use App\Invoices\Pdf\TemporaryPdfTextExtractor;
+use App\Services\PerformanceMetrics;
+use App\Services\PerformanceStage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -15,6 +17,11 @@ use Throwable;
 final class LocalInvoiceOcr implements InvoiceOcr
 {
     public function extract(string $path): string
+    {
+        return app(PerformanceMetrics::class)->measure(PerformanceStage::Ocr, fn () => $this->extractDocument($path));
+    }
+
+    private function extractDocument(string $path): string
     {
         $disk = Storage::disk(TemporaryPdfTextExtractor::DISK);
         $directory = 'ocr-'.Str::uuid();
@@ -113,7 +120,13 @@ final class LocalInvoiceOcr implements InvoiceOcr
         }
         $process = new Process(array_merge(['/usr/bin/prlimit', '--as=805306368', '--cpu=40', '--fsize=104857600', '--'], $arguments), null, ['OMP_THREAD_LIMIT' => '1'], null, $remaining);
         try {
-            $process->mustRun();
+            app(PerformanceMetrics::class)->measure(match ($stage) {
+                'engine' => PerformanceStage::OcrEngine,
+                'metadata' => PerformanceStage::OcrMetadata,
+                'render' => PerformanceStage::Render,
+                'preparation' => PerformanceStage::Preparation,
+                default => PerformanceStage::Recognition,
+            }, fn () => $process->mustRun());
         } catch (ProcessTimedOutException) {
             Log::warning('invoice_ocr_failure', ['stage' => $stage, 'reason' => 'timeout']);
 

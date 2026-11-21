@@ -77,7 +77,7 @@ final class ImportInvoiceIntoSimulation
             throw new HttpException(413, 'O conjunto das faturas pode ter no máximo 600 páginas.');
         }
 
-        DB::transaction(function () use ($simulation, $extracted, $hash, $pageCount, $fileBytes, $file): void {
+        app(PerformanceMetrics::class)->measure(PerformanceStage::Persistence, fn () => DB::transaction(function () use ($simulation, $extracted, $hash, $pageCount, $fileBytes, $file): void {
             $locked = Simulation::query()->lockForUpdate()->findOrFail($simulation->id);
             if ($locked->status !== 'draft') {
                 throw ValidationException::withMessages(['invoice' => 'Este envio já foi finalizado.']);
@@ -132,7 +132,7 @@ final class ImportInvoiceIntoSimulation
                     'source_label' => $item->sourceLabel,
                 ]);
             }
-        });
+        }));
 
         return $this->summary($simulation->fresh());
     }

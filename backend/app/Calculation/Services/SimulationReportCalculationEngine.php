@@ -8,6 +8,8 @@ use App\Calculation\Data\ExtractedInvoiceData;
 use App\Calculation\Data\RecalculatedReportData;
 use App\Calculation\Data\ReportIndicatorMonthData;
 use App\Models\Simulation;
+use App\Services\PerformanceMetrics;
+use App\Services\PerformanceStage;
 
 final class SimulationReportCalculationEngine implements ReportCalculationEngine
 {
@@ -24,6 +26,11 @@ final class SimulationReportCalculationEngine implements ReportCalculationEngine
     ) {}
 
     public function calculate(Simulation $simulation, array $demandOverrides = []): RecalculatedReportData
+    {
+        return app(PerformanceMetrics::class)->measure(PerformanceStage::Calculation, fn () => $this->calculateReport($simulation, $demandOverrides));
+    }
+
+    private function calculateReport(Simulation $simulation, array $demandOverrides): RecalculatedReportData
     {
         $invoices = $simulation->invoices->sortBy('reference_month')->values()->map(
             static fn ($invoice): ExtractedInvoiceData => ExtractedInvoiceData::fromArray([

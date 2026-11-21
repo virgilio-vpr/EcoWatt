@@ -3,6 +3,8 @@
 namespace App\Invoices\Validation;
 
 use App\Invoices\Pdf\PdfPageCounter;
+use App\Services\PerformanceMetrics;
+use App\Services\PerformanceStage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -27,6 +29,11 @@ final class InvoiceUploadValidator
      * @param  list<UploadedFile>  $files
      */
     public function validate(array $files): void
+    {
+        app(PerformanceMetrics::class)->measure(PerformanceStage::UploadValidation, fn () => $this->validateFiles($files));
+    }
+
+    private function validateFiles(array $files): void
     {
         $fileCount = count($files);
         if ($fileCount < self::MIN_FILES || $fileCount > self::MAX_FILES) {
@@ -84,7 +91,9 @@ final class InvoiceUploadValidator
 
     public function pageCount(UploadedFile $file): int
     {
-        return $this->hasImageSignature($file) ? 1 : $this->pageCounter->count($file->getRealPath());
+        return app(PerformanceMetrics::class)->measure(PerformanceStage::PageCount, function () use ($file) {
+            return $this->hasImageSignature($file) ? 1 : $this->pageCounter->count($file->getRealPath());
+        });
     }
 
     private function hasImageSignature(UploadedFile $file): bool

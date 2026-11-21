@@ -1,0 +1,3027 @@
+{
+  "task": "12.1",
+  "measured_on": "2026-11-21",
+  "scope": "Sequential in-process synthetic API calls; one real database queue reservation, no concurrent load or network latency. First use is not an OS cold-cache measurement.",
+  "environment": {
+    "application_boot_ms": 6128.793,
+    "php": "8.5.12",
+    "laravel": "13.38.0",
+    "os": "Linux",
+    "filesystem": "wsl_windows_mount",
+    "opcache_cli": "0",
+    "memory_limit": "-1",
+    "database": "sqlite_memory",
+    "mail": "fake",
+    "workers": 1,
+    "kernel": "6.18.58.1-microsoft-standard-WSL2",
+    "cpu_model": "Intel Xeon E5-2678 v3 @ 2.50GHz",
+    "logical_cpus": 24,
+    "wsl_memory_mib": 7858,
+    "ocr": "Tesseract 5.3.4, Poppler 24.02.0, local wrappers, por+eng, OMP_THREAD_LIMIT=1",
+    "measurement_instrumentation": "enabled; captured to memory by the test, no log file I/O",
+    "temporary_storage": "Unique private testing disk per run, on the same /mnt/c filesystem"
+  },
+  "process": {
+    "wall_seconds": 60.35,
+    "user_cpu_seconds": 18.21,
+    "system_cpu_seconds": 4.22,
+    "max_rss_kib": 140560,
+    "application_boot_ms": 6128.793,
+    "test_assertions": 264,
+    "exit_status": 0
+  },
+  "fixture_sha256": {
+    "native.pdf": "a21b65a183236be2529a23642ec00cee3cc78eb838f0331a74112a0c29e31168",
+    "invoice.png": "8e3ab8f3451ea9e64c32a5f3e39472f8afdd6477dee252789dd3e90fbb81bdb0",
+    "scanned.pdf": "4cff2626df940a1a143fe55aa0b7e6bf45eebd6196f81d141b97a7ada3f9e883",
+    "hybrid.pdf": "738cf0bcaa1aee07e3520f3fefac4978a4945158fbc5fa56266ea4b63ee23b90",
+    "expected.txt": "c69077e3de516a6635aeb669de82a3d816ee875c91017d3fecf1b1fe7fb5b0e2"
+  },
+  "samples": [
+    {
+      "scenario": "native.pdf",
+      "state": "first_use",
+      "iteration": 0,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 780.169,
+            "cpu_ms": 75.822,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 57147392,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.51,
+            "method": null
+          },
+          {
+            "duration_ms": 1142.085,
+            "cpu_ms": 118.821,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 66588672,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 2.13,
+            "method": null
+          },
+          {
+            "duration_ms": 467.052,
+            "cpu_ms": 60.151,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 66588672,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 1.95,
+            "method": null
+          },
+          {
+            "duration_ms": 101.33,
+            "cpu_ms": 22.501,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 67633152,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.41,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 263.128,
+            "cpu_ms": 25.075,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 64491520,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 20.718,
+            "cpu_ms": 2.194,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 66588672,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 278.876,
+            "cpu_ms": 26.551,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 64491520,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "native_extraction": [
+          {
+            "duration_ms": 13.609,
+            "cpu_ms": 3.419,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 64491520,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 558.3,
+            "cpu_ms": 52.231,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 64491520,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "native"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 59.905,
+            "cpu_ms": 12.308,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 66588672,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1,
+            "method": null
+          },
+          {
+            "duration_ms": 154.343,
+            "cpu_ms": 28.932,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 66588672,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.32,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 142.661,
+            "cpu_ms": 23.421,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 66588672,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.74,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 51.16,
+            "cpu_ms": 16.01,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 67633152,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.24,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "native.pdf",
+      "state": "warm",
+      "iteration": 1,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 3.969,
+            "cpu_ms": 3.743,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 67633152,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.37,
+            "method": null
+          },
+          {
+            "duration_ms": 136.386,
+            "cpu_ms": 33.001,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 68685824,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 1.78,
+            "method": null
+          },
+          {
+            "duration_ms": 22.567,
+            "cpu_ms": 21.309,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 68685824,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 1.77,
+            "method": null
+          },
+          {
+            "duration_ms": 44.797,
+            "cpu_ms": 17.742,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.38,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 11.047,
+            "cpu_ms": 1.512,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 68685824,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 20.928,
+            "cpu_ms": 2.19,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 68685824,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 21.122,
+            "cpu_ms": 2.52,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 68685824,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "native_extraction": [
+          {
+            "duration_ms": 11.817,
+            "cpu_ms": 1.77,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 68685824,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 70.847,
+            "cpu_ms": 13.257,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 68685824,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "native"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 8.676,
+            "cpu_ms": 8.197,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 68685824,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1.03,
+            "method": null
+          },
+          {
+            "duration_ms": 18.238,
+            "cpu_ms": 17.22,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 68685824,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.29,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 13.581,
+            "cpu_ms": 12.83,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 68685824,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.73,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 43.488,
+            "cpu_ms": 16.507,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.24,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "native.pdf",
+      "state": "warm",
+      "iteration": 2,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 4.092,
+            "cpu_ms": 3.866,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.41,
+            "method": null
+          },
+          {
+            "duration_ms": 137.341,
+            "cpu_ms": 33.134,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 1.82,
+            "method": null
+          },
+          {
+            "duration_ms": 22.515,
+            "cpu_ms": 21.268,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 1.82,
+            "method": null
+          },
+          {
+            "duration_ms": 44.337,
+            "cpu_ms": 17.652,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.39,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 10.884,
+            "cpu_ms": 1.542,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 20.633,
+            "cpu_ms": 2.139,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 20.849,
+            "cpu_ms": 2.548,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "native_extraction": [
+          {
+            "duration_ms": 11.829,
+            "cpu_ms": 1.82,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 72.685,
+            "cpu_ms": 13.557,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "native"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 8.521,
+            "cpu_ms": 8.051,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1.04,
+            "method": null
+          },
+          {
+            "duration_ms": 18.207,
+            "cpu_ms": 17.199,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.34,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 13.626,
+            "cpu_ms": 12.872,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.81,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 43.052,
+            "cpu_ms": 16.439,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.25,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "invoice.png",
+      "state": "first_use",
+      "iteration": 0,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 3.726,
+            "cpu_ms": 3.522,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 69730304,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.36,
+            "method": null
+          },
+          {
+            "duration_ms": 1874.76,
+            "cpu_ms": 48.848,
+            "child_cpu_ms": 1226.543,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 1.81,
+            "method": null
+          },
+          {
+            "duration_ms": 22.447,
+            "cpu_ms": 21.177,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 1.92,
+            "method": null
+          },
+          {
+            "duration_ms": 42.107,
+            "cpu_ms": 15.559,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.41,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 14.407,
+            "cpu_ms": 2.029,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 23.577,
+            "cpu_ms": 2.456,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 46.542,
+            "cpu_ms": 6.521,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 73016,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_engine": [
+          {
+            "duration_ms": 145.505,
+            "cpu_ms": 3.021,
+            "child_cpu_ms": 24.209,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 100356,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "recognition": [
+          {
+            "duration_ms": 1502.189,
+            "cpu_ms": 1.28,
+            "child_cpu_ms": 1202.334,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr": [
+          {
+            "duration_ms": 1723.988,
+            "cpu_ms": 12.366,
+            "child_cpu_ms": 1226.543,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 1779.686,
+            "cpu_ms": 24.311,
+            "child_cpu_ms": 1226.543,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "ocr"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 8.594,
+            "cpu_ms": 8.11,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1.01,
+            "method": null
+          },
+          {
+            "duration_ms": 17.952,
+            "cpu_ms": 16.944,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.32,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 13.36,
+            "cpu_ms": 12.621,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.72,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 40.752,
+            "cpu_ms": 14.281,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.25,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "invoice.png",
+      "state": "warm",
+      "iteration": 1,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 3.879,
+            "cpu_ms": 3.666,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.36,
+            "method": null
+          },
+          {
+            "duration_ms": 1814.411,
+            "cpu_ms": 41.929,
+            "child_cpu_ms": 1220.204,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 1.96,
+            "method": null
+          },
+          {
+            "duration_ms": 22.419,
+            "cpu_ms": 21.178,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 1.82,
+            "method": null
+          },
+          {
+            "duration_ms": 44.721,
+            "cpu_ms": 17.827,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.41,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 13.637,
+            "cpu_ms": 1.77,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 23.319,
+            "cpu_ms": 2.408,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 42.379,
+            "cpu_ms": 5.489,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_engine": [
+          {
+            "duration_ms": 121.458,
+            "cpu_ms": 0.814,
+            "child_cpu_ms": 25.768,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101852,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "recognition": [
+          {
+            "duration_ms": 1490.039,
+            "cpu_ms": 1.285,
+            "child_cpu_ms": 1194.436,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr": [
+          {
+            "duration_ms": 1668.75,
+            "cpu_ms": 7.089,
+            "child_cpu_ms": 1220.204,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 1723.746,
+            "cpu_ms": 18.364,
+            "child_cpu_ms": 1220.204,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "ocr"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 8.616,
+            "cpu_ms": 8.14,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1.1,
+            "method": null
+          },
+          {
+            "duration_ms": 17.918,
+            "cpu_ms": 16.927,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.29,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 13.462,
+            "cpu_ms": 12.717,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 70782976,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.72,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 43.417,
+            "cpu_ms": 16.596,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.25,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "invoice.png",
+      "state": "warm",
+      "iteration": 2,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 3.778,
+            "cpu_ms": 3.571,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.37,
+            "method": null
+          },
+          {
+            "duration_ms": 1816.172,
+            "cpu_ms": 42.192,
+            "child_cpu_ms": 1220.755,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 1.91,
+            "method": null
+          },
+          {
+            "duration_ms": 22.699,
+            "cpu_ms": 21.442,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 1.89,
+            "method": null
+          },
+          {
+            "duration_ms": 44.674,
+            "cpu_ms": 17.816,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.41,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 13.831,
+            "cpu_ms": 1.782,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 23.686,
+            "cpu_ms": 2.57,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 41.308,
+            "cpu_ms": 5.519,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 101864,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_engine": [
+          {
+            "duration_ms": 119.55,
+            "cpu_ms": 0.718,
+            "child_cpu_ms": 25.213,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "recognition": [
+          {
+            "duration_ms": 1495.458,
+            "cpu_ms": 1.383,
+            "child_cpu_ms": 1195.542,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr": [
+          {
+            "duration_ms": 1670.204,
+            "cpu_ms": 6.937,
+            "child_cpu_ms": 1220.755,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 1725.931,
+            "cpu_ms": 18.283,
+            "child_cpu_ms": 1220.755,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "ocr"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 8.771,
+            "cpu_ms": 8.287,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1.08,
+            "method": null
+          },
+          {
+            "duration_ms": 18.208,
+            "cpu_ms": 17.2,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.33,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 13.553,
+            "cpu_ms": 12.803,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.76,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 43.276,
+            "cpu_ms": 16.497,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.25,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "scanned.pdf",
+      "state": "first_use",
+      "iteration": 0,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 4.003,
+            "cpu_ms": 3.783,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.38,
+            "method": null
+          },
+          {
+            "duration_ms": 3890.654,
+            "cpu_ms": 59.828,
+            "child_cpu_ms": 2612.28,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 1.96,
+            "method": null
+          },
+          {
+            "duration_ms": 23.442,
+            "cpu_ms": 22.126,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 1.92,
+            "method": null
+          },
+          {
+            "duration_ms": 46.611,
+            "cpu_ms": 18.538,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.41,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 51.615,
+            "cpu_ms": 5.57,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 29.127,
+            "cpu_ms": 4.437,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 70.418,
+            "cpu_ms": 8.053,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "native_extraction": [
+          {
+            "duration_ms": 15.756,
+            "cpu_ms": 4.199,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102612,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_engine": [
+          {
+            "duration_ms": 120.475,
+            "cpu_ms": 0.859,
+            "child_cpu_ms": 24.179,
+            "php_peak_bytes": 71827456,
+            "child_peak_rss_kib": 102616,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_metadata": [
+          {
+            "duration_ms": 154.472,
+            "cpu_ms": 0.926,
+            "child_cpu_ms": 29.811,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 102616,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "render": [
+          {
+            "duration_ms": 1389.89,
+            "cpu_ms": 1.206,
+            "child_cpu_ms": 1004.586,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 102616,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "recognition": [
+          {
+            "duration_ms": 1899.715,
+            "cpu_ms": 1.599,
+            "child_cpu_ms": 1553.704,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr": [
+          {
+            "duration_ms": 3640.287,
+            "cpu_ms": 11.69,
+            "child_cpu_ms": 2612.28,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 3765.593,
+            "cpu_ms": 31.262,
+            "child_cpu_ms": 2612.28,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "ocr"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 8.716,
+            "cpu_ms": 8.234,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1.09,
+            "method": null
+          },
+          {
+            "duration_ms": 18.922,
+            "cpu_ms": 17.857,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.41,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 14.186,
+            "cpu_ms": 13.386,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.76,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 45.066,
+            "cpu_ms": 17.082,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.25,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "scanned.pdf",
+      "state": "warm",
+      "iteration": 1,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 3.974,
+            "cpu_ms": 3.753,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.39,
+            "method": null
+          },
+          {
+            "duration_ms": 3855.075,
+            "cpu_ms": 55.536,
+            "child_cpu_ms": 2609.307,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 2.16,
+            "method": null
+          },
+          {
+            "duration_ms": 23.548,
+            "cpu_ms": 22.241,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 1.95,
+            "method": null
+          },
+          {
+            "duration_ms": 43.517,
+            "cpu_ms": 16.359,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.5,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 18.633,
+            "cpu_ms": 3.602,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 29.132,
+            "cpu_ms": 4.16,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 34.741,
+            "cpu_ms": 6.13,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "native_extraction": [
+          {
+            "duration_ms": 13.494,
+            "cpu_ms": 2.226,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_engine": [
+          {
+            "duration_ms": 119.175,
+            "cpu_ms": 0.846,
+            "child_cpu_ms": 24.303,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_metadata": [
+          {
+            "duration_ms": 153.523,
+            "cpu_ms": 0.808,
+            "child_cpu_ms": 29.005,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "render": [
+          {
+            "duration_ms": 1394.376,
+            "cpu_ms": 1.308,
+            "child_cpu_ms": 1002.399,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140276,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "recognition": [
+          {
+            "duration_ms": 1899.139,
+            "cpu_ms": 1.532,
+            "child_cpu_ms": 1553.6,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr": [
+          {
+            "duration_ms": 3640.906,
+            "cpu_ms": 11.201,
+            "child_cpu_ms": 2609.307,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 3764.742,
+            "cpu_ms": 28.554,
+            "child_cpu_ms": 2609.307,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "ocr"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 9.011,
+            "cpu_ms": 8.513,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1.16,
+            "method": null
+          },
+          {
+            "duration_ms": 18.91,
+            "cpu_ms": 17.861,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.33,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 13.993,
+            "cpu_ms": 13.217,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.74,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 42.124,
+            "cpu_ms": 15.044,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.34,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "scanned.pdf",
+      "state": "warm",
+      "iteration": 2,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 4.103,
+            "cpu_ms": 3.876,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.38,
+            "method": null
+          },
+          {
+            "duration_ms": 3882.181,
+            "cpu_ms": 54.024,
+            "child_cpu_ms": 2629.581,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 2.24,
+            "method": null
+          },
+          {
+            "duration_ms": 22.921,
+            "cpu_ms": 21.632,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 2.01,
+            "method": null
+          },
+          {
+            "duration_ms": 42.247,
+            "cpu_ms": 15.438,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.41,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 18.427,
+            "cpu_ms": 3.303,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 28.932,
+            "cpu_ms": 4.124,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 33.776,
+            "cpu_ms": 5.541,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "native_extraction": [
+          {
+            "duration_ms": 13.237,
+            "cpu_ms": 2.025,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_engine": [
+          {
+            "duration_ms": 120.488,
+            "cpu_ms": 0.822,
+            "child_cpu_ms": 24.811,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_metadata": [
+          {
+            "duration_ms": 154.98,
+            "cpu_ms": 0.844,
+            "child_cpu_ms": 29.696,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "render": [
+          {
+            "duration_ms": 1404.112,
+            "cpu_ms": 1.292,
+            "child_cpu_ms": 1008.008,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140556,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "recognition": [
+          {
+            "duration_ms": 1916.312,
+            "cpu_ms": 1.646,
+            "child_cpu_ms": 1567.066,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr": [
+          {
+            "duration_ms": 3671.837,
+            "cpu_ms": 11.175,
+            "child_cpu_ms": 2629.581,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 3793.671,
+            "cpu_ms": 28.191,
+            "child_cpu_ms": 2629.581,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "ocr"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 8.76,
+            "cpu_ms": 8.268,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1.16,
+            "method": null
+          },
+          {
+            "duration_ms": 18.541,
+            "cpu_ms": 17.498,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.44,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 13.737,
+            "cpu_ms": 12.965,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.83,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 40.93,
+            "cpu_ms": 14.196,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.25,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "hybrid.pdf",
+      "state": "first_use",
+      "iteration": 0,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 4.024,
+            "cpu_ms": 3.798,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.42,
+            "method": null
+          },
+          {
+            "duration_ms": 3230.717,
+            "cpu_ms": 65.008,
+            "child_cpu_ms": 2181.8,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 2.11,
+            "method": null
+          },
+          {
+            "duration_ms": 23.047,
+            "cpu_ms": 21.751,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 2.06,
+            "method": null
+          },
+          {
+            "duration_ms": 42.317,
+            "cpu_ms": 15.352,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.49,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 12.13,
+            "cpu_ms": 2.332,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 23.704,
+            "cpu_ms": 3.223,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 25.239,
+            "cpu_ms": 3.681,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "native_extraction": [
+          {
+            "duration_ms": 12.753,
+            "cpu_ms": 2.517,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_engine": [
+          {
+            "duration_ms": 119.808,
+            "cpu_ms": 0.783,
+            "child_cpu_ms": 25.549,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_metadata": [
+          {
+            "duration_ms": 158.666,
+            "cpu_ms": 0.838,
+            "child_cpu_ms": 30.606,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "render": [
+          {
+            "duration_ms": 972.783,
+            "cpu_ms": 1.029,
+            "child_cpu_ms": 741.47,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "recognition": [
+          {
+            "duration_ms": 1700.212,
+            "cpu_ms": 1.514,
+            "child_cpu_ms": 1384.175,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr": [
+          {
+            "duration_ms": 3022.115,
+            "cpu_ms": 9.84,
+            "child_cpu_ms": 2181.8,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 3157.19,
+            "cpu_ms": 42.314,
+            "child_cpu_ms": 2181.8,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "hybrid"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 8.773,
+            "cpu_ms": 8.281,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1.18,
+            "method": null
+          },
+          {
+            "duration_ms": 18.422,
+            "cpu_ms": 17.386,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.49,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 13.706,
+            "cpu_ms": 12.936,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.78,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 40.904,
+            "cpu_ms": 14.019,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.25,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "hybrid.pdf",
+      "state": "warm",
+      "iteration": 1,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 3.914,
+            "cpu_ms": 3.694,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.43,
+            "method": null
+          },
+          {
+            "duration_ms": 3259.509,
+            "cpu_ms": 64.462,
+            "child_cpu_ms": 2208.788,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 2.18,
+            "method": null
+          },
+          {
+            "duration_ms": 23.05,
+            "cpu_ms": 21.769,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 2.05,
+            "method": null
+          },
+          {
+            "duration_ms": 42.051,
+            "cpu_ms": 15.412,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.42,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 12.841,
+            "cpu_ms": 2.348,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 22.244,
+            "cpu_ms": 3.091,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 23.349,
+            "cpu_ms": 3.499,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "native_extraction": [
+          {
+            "duration_ms": 12.674,
+            "cpu_ms": 2.527,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_engine": [
+          {
+            "duration_ms": 119.891,
+            "cpu_ms": 0.764,
+            "child_cpu_ms": 25.026,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_metadata": [
+          {
+            "duration_ms": 152.367,
+            "cpu_ms": 0.823,
+            "child_cpu_ms": 30.21,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "render": [
+          {
+            "duration_ms": 975.807,
+            "cpu_ms": 1.089,
+            "child_cpu_ms": 740.545,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "recognition": [
+          {
+            "duration_ms": 1734.336,
+            "cpu_ms": 1.708,
+            "child_cpu_ms": 1413.007,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr": [
+          {
+            "duration_ms": 3054.869,
+            "cpu_ms": 9.971,
+            "child_cpu_ms": 2208.788,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 3189.855,
+            "cpu_ms": 42.238,
+            "child_cpu_ms": 2208.788,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "hybrid"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 8.91,
+            "cpu_ms": 8.415,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1.24,
+            "method": null
+          },
+          {
+            "duration_ms": 18.516,
+            "cpu_ms": 17.487,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.46,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 13.632,
+            "cpu_ms": 12.875,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.78,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 40.708,
+            "cpu_ms": 14.145,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.26,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "hybrid.pdf",
+      "state": "warm",
+      "iteration": 2,
+      "stages": {
+        "http": [
+          {
+            "duration_ms": 3.939,
+            "cpu_ms": 3.721,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.43,
+            "method": null
+          },
+          {
+            "duration_ms": 3229.364,
+            "cpu_ms": 64.238,
+            "child_cpu_ms": 2182.576,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 31,
+            "query_ms": 2.28,
+            "method": null
+          },
+          {
+            "duration_ms": 23.23,
+            "cpu_ms": 21.938,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 25,
+            "query_ms": 2.09,
+            "method": null
+          },
+          {
+            "duration_ms": 45.083,
+            "cpu_ms": 18.193,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 73924608,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 6,
+            "query_ms": 0.42,
+            "method": null
+          }
+        ],
+        "page_count": [
+          {
+            "duration_ms": 12.227,
+            "cpu_ms": 2.257,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          },
+          {
+            "duration_ms": 23.357,
+            "cpu_ms": 3.269,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 22.51,
+            "cpu_ms": 3.407,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "native_extraction": [
+          {
+            "duration_ms": 12.648,
+            "cpu_ms": 2.367,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_engine": [
+          {
+            "duration_ms": 119.328,
+            "cpu_ms": 0.783,
+            "child_cpu_ms": 26.321,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr_metadata": [
+          {
+            "duration_ms": 163.28,
+            "cpu_ms": 0.966,
+            "child_cpu_ms": 36.481,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "render": [
+          {
+            "duration_ms": 968.152,
+            "cpu_ms": 1.161,
+            "child_cpu_ms": 736.073,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "recognition": [
+          {
+            "duration_ms": 1702.713,
+            "cpu_ms": 1.337,
+            "child_cpu_ms": 1383.701,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "ocr": [
+          {
+            "duration_ms": 3023.513,
+            "cpu_ms": 9.707,
+            "child_cpu_ms": 2182.576,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 3159.113,
+            "cpu_ms": 41.738,
+            "child_cpu_ms": 2182.576,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "hybrid"
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 8.885,
+            "cpu_ms": 8.392,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 19,
+            "query_ms": 1.23,
+            "method": null
+          },
+          {
+            "duration_ms": 18.341,
+            "cpu_ms": 17.321,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 17,
+            "query_ms": 1.46,
+            "method": null
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 13.41,
+            "cpu_ms": 12.665,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 72880128,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 8,
+            "query_ms": 0.8,
+            "method": null
+          }
+        ],
+        "pdf": [
+          {
+            "duration_ms": 43.654,
+            "cpu_ms": 16.845,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 73924608,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 4,
+            "query_ms": 0.25,
+            "method": null
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "batch_native",
+      "state": "warm",
+      "iteration": 0,
+      "stages": {
+        "page_count": [
+          {
+            "duration_ms": 10.965,
+            "cpu_ms": 1.588,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 73924608,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "upload_validation": [
+          {
+            "duration_ms": 26.595,
+            "cpu_ms": 2.955,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 73924608,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "http": [
+          {
+            "duration_ms": 568.123,
+            "cpu_ms": 48.487,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 74977280,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 7,
+            "query_ms": 0.48,
+            "method": null
+          }
+        ],
+        "native_extraction": [
+          {
+            "duration_ms": 12.246,
+            "cpu_ms": 2.076,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 74977280,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": null
+          }
+        ],
+        "document_read": [
+          {
+            "duration_ms": 60.311,
+            "cpu_ms": 13.237,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 74977280,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 0,
+            "query_ms": 0,
+            "method": "native"
+          }
+        ],
+        "calculation": [
+          {
+            "duration_ms": 14.428,
+            "cpu_ms": 13.626,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 74977280,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 10,
+            "query_ms": 0.94,
+            "method": null
+          }
+        ],
+        "persistence": [
+          {
+            "duration_ms": 25.537,
+            "cpu_ms": 24.103,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 74977280,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": null,
+            "outcome": "ok",
+            "queries": 29,
+            "query_ms": 2.44,
+            "method": null
+          }
+        ],
+        "job": [
+          {
+            "duration_ms": 292.799,
+            "cpu_ms": 57.129,
+            "child_cpu_ms": 0,
+            "php_peak_bytes": 74977280,
+            "child_peak_rss_kib": 140560,
+            "attempt": 1,
+            "queue_wait_ms": 996.4509010314941,
+            "outcome": "ok",
+            "queries": 40,
+            "query_ms": 3.21,
+            "method": null
+          }
+        ]
+      }
+    }
+  ],
+  "calculation_query_shapes": [
+    {
+      "table": "regulatory_parameters",
+      "count": 6,
+      "time_ms": 0.52,
+      "fingerprint": "8e0d979066c44df6be1afeef393ecbc288923db925f568b4aa3cd02675553729"
+    },
+    {
+      "table": "tariffs",
+      "count": 2,
+      "time_ms": 0.22,
+      "fingerprint": "6a95768c9161cf7603f3e3b0b5c0c929ae5d04966f5c4d537ab7089568e04328"
+    }
+  ]
+}
