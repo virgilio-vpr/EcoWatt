@@ -82,6 +82,16 @@ describe('sequential invoice import', () => {
     expect(screen.queryByRole('region', { name: 'Arquivos selecionados' })).not.toBeInTheDocument()
   })
 
+  it('shows the cumulative summary when reopening a saved import without uploading again', async () => {
+    const months = Array.from({ length: 12 }, (_, index) => `2026-${String(index + 1).padStart(2, '0')}`)
+    window.localStorage.setItem('ecowatt_invoice_import_id', '12')
+    const fetchMock = setupFetch(() => json(200, { data: session(months) }))
+    render(<InvoiceUploadPage />)
+
+    await screen.findByText('Você já enviou 12 faturas no total. Todas foram lidas e salvas. A lista está organizada pelo mês da medição.')
+    expect(fetchMock.mock.calls.filter(([url, options]) => url.endsWith('/invoices') && options?.method === 'POST')).toHaveLength(0)
+  })
+
   it('reports all twelve saved invoices after adding six files to a resumed import', async () => {
     const months = Array.from({ length: 12 }, (_, index) => `2026-${String(index + 1).padStart(2, '0')}`)
     window.localStorage.setItem('ecowatt_invoice_import_id', '12')
@@ -95,7 +105,7 @@ describe('sequential invoice import', () => {
 
     fireEvent.change(picker, { target: { files: months.slice(6).map((month) => pdf(`${month}.pdf`)) } })
 
-    await screen.findByText('12 faturas foram lidas e salvas; a lista está em ordem do mês de medição.', {}, { timeout: 5000 })
+    await screen.findByText('Você já enviou 12 faturas no total. Todas foram lidas e salvas. A lista está organizada pelo mês da medição.', {}, { timeout: 5000 })
     expect(uploads).toBe(6)
     expect(screen.getByText('12 de 12 faturas lidas e salvas')).toBeInTheDocument()
     expect(screen.queryByLabelText(/Selecionar faturas/)).not.toBeInTheDocument()
@@ -117,7 +127,7 @@ describe('sequential invoice import', () => {
 
     fireEvent.change(picker, { target: { files: [pdf('duplicate.pdf'), pdf('july.pdf')] } })
 
-    await screen.findByText('7 faturas foram lidas e salvas; a lista está em ordem do mês de medição.')
+    await screen.findByText('Você já enviou 7 faturas no total. Todas foram lidas e salvas. A lista está organizada pelo mês da medição.')
     expect(uploads).toBe(2)
     expect(screen.getByText('7 de 12 faturas lidas e salvas')).toBeInTheDocument()
     expect(screen.getByRole('alert')).toHaveTextContent('duplicate.pdf: Esta fatura já foi enviada.')
@@ -188,6 +198,7 @@ describe('sequential invoice import', () => {
     await act(async () => { finishSecond(json(201, { data: session(['2026-04']) })) })
     await screen.findByText('1 de 12 faturas lidas e salvas')
     expect(screen.getByRole('alert')).toHaveTextContent('duplicate.pdf: Esta fatura já foi enviada.')
+    expect(screen.getByRole('status')).toHaveTextContent('Você já enviou 1 fatura no total. Ela foi lida e salva.')
     expect(screen.getByRole('button', { name: 'Simular relatório' })).toBeEnabled()
   })
 
