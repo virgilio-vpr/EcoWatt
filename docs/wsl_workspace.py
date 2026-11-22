@@ -46,6 +46,13 @@ def inventory(source: Path, links: list[str] | None = None) -> tuple[list[str], 
                 path = Path(entry.path)
                 relative = path.relative_to(source).as_posix()
                 if excluded(relative):
+                    if entry.name == '.gitignore':
+                        files.append(relative)
+                    elif entry.is_dir(follow_symlinks=False):
+                        ignore = path / '.gitignore'
+                        if ignore.is_file() and not ignore.is_symlink():
+                            directories.append(relative)
+                            files.append(relative + '/.gitignore')
                     continue
                 if entry.is_symlink():
                     files.append(relative)

@@ -36,6 +36,10 @@ class WslWorkspaceCopyTest extends TestCase
             'untracked.txt' => 'untracked work',
             'backend/bootstrap/cache/config.php' => 'stale absolute paths',
             'backend/storage/framework/testing/synthetic.txt' => 'old test data',
+            'backend/storage/framework/cache/data/.gitignore' => "*\n!.gitignore\n",
+            'backend/storage/framework/sessions/.gitignore' => "*\n!.gitignore\n",
+            'backend/storage/framework/testing/.gitignore' => "*\n!.gitignore\n",
+            'backend/storage/framework/views/.gitignore' => "*\n!.gitignore\n",
         ] as $relative => $contents) {
             $path = $this->source.'/'.$relative;
             (new Filesystem)->ensureDirectoryExists(dirname($path));
@@ -77,7 +81,7 @@ class WslWorkspaceCopyTest extends TestCase
         $this->assertSame($before, file_get_contents($this->source.'/backend/.env'));
         $expected = str_replace('OCR_TESSERACT="'.$this->source, 'OCR_TESSERACT="'.$this->destination, $before);
         $this->assertSame($expected, file_get_contents($this->destination.'/backend/.env'));
-        foreach (['.git/HEAD', '.env', 'dirty.txt', 'untracked.txt', 'docker-compose.yml', 'backend/storage/app/private/backups/restore.sql'] as $file) {
+        foreach (['.git/HEAD', '.env', 'dirty.txt', 'untracked.txt', 'docker-compose.yml', 'backend/storage/app/private/backups/restore.sql', 'backend/storage/framework/cache/data/.gitignore', 'backend/storage/framework/sessions/.gitignore', 'backend/storage/framework/testing/.gitignore', 'backend/storage/framework/views/.gitignore'] as $file) {
             $this->assertFileEquals($this->source.'/'.$file, $this->destination.'/'.$file);
         }
         $this->assertSame('uncommitted change', file_get_contents($this->destination.'/relative-link'));
