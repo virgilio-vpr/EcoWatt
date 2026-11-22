@@ -269,8 +269,9 @@ export function InvoiceUploadPage() {
         }
       }
 
+      const totalSavedCount = activeSession.invoice_count
       setNotice(savedCount > 0
-        ? `${savedCount} ${savedCount === 1 ? 'fatura foi lida e salva' : 'faturas foram lidas e salvas'}; a lista está em ordem do mês de medição.`
+        ? `${totalSavedCount} ${totalSavedCount === 1 ? 'fatura foi lida e salva' : 'faturas foram lidas e salvas'}; a lista está em ordem do mês de medição.`
         : '')
     } finally {
       picker.value = ''

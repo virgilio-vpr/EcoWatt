@@ -82,6 +82,47 @@ describe('sequential invoice import', () => {
     expect(screen.queryByRole('region', { name: 'Arquivos selecionados' })).not.toBeInTheDocument()
   })
 
+  it('reports all twelve saved invoices after adding six files to a resumed import', async () => {
+    const months = Array.from({ length: 12 }, (_, index) => `2026-${String(index + 1).padStart(2, '0')}`)
+    window.localStorage.setItem('ecowatt_invoice_import_id', '12')
+    let uploads = 0
+    setupFetch((url) => url.endsWith('/invoices')
+      ? json(201, { data: session(months.slice(0, 6 + ++uploads)) })
+      : json(200, { data: session(months.slice(0, 6)) }))
+    render(<InvoiceUploadPage />)
+    const picker = await screen.findByLabelText(/Selecionar faturas/)
+    await screen.findByText('6 de 12 faturas lidas e salvas')
+
+    fireEvent.change(picker, { target: { files: months.slice(6).map((month) => pdf(`${month}.pdf`)) } })
+
+    await screen.findByText('12 faturas foram lidas e salvas; a lista está em ordem do mês de medição.', {}, { timeout: 5000 })
+    expect(uploads).toBe(6)
+    expect(screen.getByText('12 de 12 faturas lidas e salvas')).toBeInTheDocument()
+    expect(screen.queryByLabelText(/Selecionar faturas/)).not.toBeInTheDocument()
+  })
+
+  it('counts only saved invoices in the total when an additional file is rejected', async () => {
+    const months = Array.from({ length: 7 }, (_, index) => `2026-${String(index + 1).padStart(2, '0')}`)
+    window.localStorage.setItem('ecowatt_invoice_import_id', '12')
+    let uploads = 0
+    setupFetch((url) => {
+      if (!url.endsWith('/invoices')) return json(200, { data: session(months.slice(0, 6)) })
+      uploads++
+      return uploads === 1
+        ? json(422, { message: 'Fatura repetida.', errors: { invoice: ['Esta fatura já foi enviada.'] } })
+        : json(201, { data: session(months) })
+    })
+    render(<InvoiceUploadPage />)
+    const picker = await screen.findByLabelText(/Selecionar faturas/)
+
+    fireEvent.change(picker, { target: { files: [pdf('duplicate.pdf'), pdf('july.pdf')] } })
+
+    await screen.findByText('7 faturas foram lidas e salvas; a lista está em ordem do mês de medição.')
+    expect(uploads).toBe(2)
+    expect(screen.getByText('7 de 12 faturas lidas e salvas')).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent('duplicate.pdf: Esta fatura já foi enviada.')
+  })
+
   it('does not upload a pending file removed while another file is being read', async () => {
     let finishFirst!: (response: Response) => void
     const first = new Promise<Response>((resolve) => { finishFirst = resolve })
