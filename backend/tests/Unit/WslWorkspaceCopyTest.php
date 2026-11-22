@@ -69,7 +69,11 @@ class WslWorkspaceCopyTest extends TestCase
         symlink($this->source.'/untracked.txt', $this->source.'/absolute-link');
         $process = $this->runTool(['--copy', '--source-paused']);
         $this->assertTrue($process->isSuccessful(), $process->getErrorOutput());
-        $this->assertTrue(json_decode($process->getOutput(), true)['verified']);
+        $result = json_decode($process->getOutput(), true);
+        $this->assertTrue($result['verified']);
+        $this->assertTrue($result['runtime_directories_prepared']);
+        $this->assertSame(8, $result['copy_workers']);
+        $this->assertDirectoryExists($this->destination.'/backend/storage/framework/views');
         $this->assertSame($before, file_get_contents($this->source.'/backend/.env'));
         $expected = str_replace('OCR_TESSERACT="'.$this->source, 'OCR_TESSERACT="'.$this->destination, $before);
         $this->assertSame($expected, file_get_contents($this->destination.'/backend/.env'));
@@ -162,6 +166,38 @@ class WslWorkspaceCopyTest extends TestCase
         $process = $this->runTool(['--copy', '--source-paused']);
         $this->assertTrue($process->isSuccessful(), $process->getErrorOutput());
         $this->assertSame($environment, file_get_contents($this->destination.'/backend/.env'));
+    }
+
+    public function test_a_source_change_during_copy_invalidates_the_destination(): void
+    {
+        $script = <<<'PYTHON'
+import runpy, sys
+from pathlib import Path
+module = runpy.run_path(sys.argv[1])
+source, destination = Path(sys.argv[2]), Path(sys.argv[3])
+copy = module['shutil'].copy2
+
+def copy_and_change(original, copied):
+    result = copy(original, copied)
+    if Path(original).name == 'dirty.txt':
+        Path(original).write_text('changed during copy')
+    return result
+
+module['shutil'].copy2 = copy_and_change
+plan, files, directories = module['prepare'](source, destination)
+try:
+    module['copy_workspace'](source, destination, plan, files, directories)
+except module['CopyError']:
+    print('copy_rejected')
+else:
+    sys.exit(1)
+PYTHON;
+        $process = new Process(['python3', '-B', '-c', $script, dirname(__DIR__, 3).'/docs/wsl_workspace.py', $this->source, $this->destination]);
+        $process->setTimeout(30);
+        $process->mustRun();
+        $this->assertStringContainsString('copy_rejected', $process->getOutput());
+        $this->assertSame('changed during copy', file_get_contents($this->source.'/dirty.txt'));
+        $this->assertSame('uncommitted change', file_get_contents($this->destination.'/dirty.txt'));
     }
 
     /** @param list<string> $options */

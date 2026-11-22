@@ -2,6 +2,7 @@
 """Plan an opt-in workspace copy without accessing the application's database."""
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import os
@@ -21,6 +22,7 @@ EXCLUDED_TREES = (
 )
 OCR_KEYS = ('OCR_TESSERACT', 'OCR_PDFTOPPM', 'OCR_PDFINFO', 'OCR_PYTHON', 'OCR_LOCK_PATH')
 NATIVE_FILESYSTEMS = ('ext4', 'xfs', 'btrfs', 'overlay')
+COPY_WORKERS = 8
 
 
 class CopyError(Exception):
@@ -34,32 +36,34 @@ def excluded(relative: str) -> bool:
             or relative == 'backend/storage/app/private/invoice-ocr.lock')
 
 
-def inventory(source: Path) -> tuple[list[str], list[str]]:
+def inventory(source: Path, links: list[str] | None = None) -> tuple[list[str], list[str]]:
     files, directories = [], []
-    for current, names, leaves in os.walk(source, followlinks=False):
-        names.sort()
-        leaves.sort()
-        for name in names[:]:
-            entry = Path(current) / name
-            relative = entry.relative_to(source).as_posix()
-            if excluded(relative):
-                names.remove(name)
-            elif entry.is_symlink():
-                files.append(relative)
-                names.remove(name)
-            else:
-                directories.append(relative)
-        for name in leaves:
-            relative = (Path(current) / name).relative_to(source).as_posix()
-            if not excluded(relative):
-                files.append(relative)
+    pending = [source]
+    while pending:
+        current = pending.pop()
+        with os.scandir(current) as entries:
+            for entry in entries:
+                path = Path(entry.path)
+                relative = path.relative_to(source).as_posix()
+                if excluded(relative):
+                    continue
+                if entry.is_symlink():
+                    files.append(relative)
+                    if links is not None:
+                        links.append(relative)
+                elif entry.is_dir(follow_symlinks=False):
+                    directories.append(relative)
+                    pending.append(path)
+                else:
+                    files.append(relative)
     return sorted(files), sorted(directories)
 
 
 def fingerprint(path: Path) -> str:
-    if path.is_symlink():
+    mode = path.lstat().st_mode
+    if stat.S_ISLNK(mode):
         return 'link:' + os.readlink(path)
-    if not stat.S_ISREG(path.lstat().st_mode):
+    if not stat.S_ISREG(mode):
         raise CopyError('A origem contém um arquivo especial; revise antes de copiar.')
     digest = hashlib.sha256()
     with path.open('rb') as stream:
@@ -102,8 +106,9 @@ def prepare(source: Path, destination: Path) -> tuple[dict, list[str], list[str]
                                 check=True, capture_output=True, text=True).stdout.strip()
     if filesystem not in NATIVE_FILESYSTEMS:
         raise CopyError('O destino precisa estar em um sistema de arquivos Linux local suportado.')
-    files, directories = inventory(source)
-    external_links = sum((source / file).is_symlink() and not (source / file).resolve().is_relative_to(source) for file in files)
+    links = []
+    files, directories = inventory(source, links)
+    external_links = sum(not (source / file).resolve().is_relative_to(source) for file in links)
     locks = sum(file.startswith('.git/') and file.endswith('.lock') for file in files)
     temporary = source / 'backend/storage/app/private/invoice-temp'
     pending_originals = temporary.exists() and any(path.is_file() and path.name != '.gitignore' for path in temporary.rglob('*'))
@@ -128,47 +133,63 @@ def copy_workspace(source: Path, destination: Path, plan: dict, files: list[str]
         raise CopyError('Há links externos/configurações vinculadas, locks do Git ou originais pendentes; resolva antes da cópia.')
     if not destination.parent.is_dir():
         raise CopyError('Crie o diretório pai escolhido antes da cópia.')
-    before = {file: fingerprint(source / file) for file in files}
-    destination.mkdir(mode=0o700)
-    try:
-        for directory in directories:
-            (destination / directory).mkdir(mode=0o700)
+    def copy_file(file: str) -> list[str]:
+        original, copied = source / file, destination / file
         remapped = []
-        for file in files:
-            original, copied = source / file, destination / file
-            if original.is_symlink():
-                target = os.readlink(original)
-                if os.path.isabs(target):
-                    target = str(destination / original.resolve().relative_to(source))
-                copied.symlink_to(target)
-            else:
-                shutil.copy2(original, copied)
-                if original.name == '.env' or original.name.startswith('.env.'):
-                    copied.chmod(0o600)
-                if file == 'backend/.env':
-                    contents, remapped = remap_ocr(copied.read_bytes(), source, destination)
-                    copied.write_bytes(contents)
-        if inventory(source) != (files, directories):
-            raise CopyError('A lista de arquivos da origem mudou durante a cópia; a cópia não foi validada.')
-        for file in files:
-            original, copied = source / file, destination / file
-            if fingerprint(original) != before[file]:
-                raise CopyError('A origem mudou durante a cópia; a cópia não foi validada.')
-            if original.is_symlink():
-                expected = original.resolve().relative_to(source)
-                if copied.resolve() != destination / expected:
-                    raise CopyError('Um link da cópia não passou pela verificação.')
-            elif file == 'backend/.env':
-                expected, _ = remap_ocr(original.read_bytes(), source, destination)
-                if copied.read_bytes() != expected:
-                    raise CopyError('A configuração copiada não passou pela verificação.')
-            elif fingerprint(copied) != before[file]:
-                raise CopyError('Um arquivo copiado não passou pela verificação.')
-        return plan | {'mode': 'copied', 'verified': True, 'ocr_keys_remapped': remapped,
-                       'application_validation': 'pending', 'performance_comparison': 'pending'}
-    except Exception:
-        # Keep an incomplete destination for inspection; never erase the source or overwrite a retry.
-        raise CopyError('A cópia ficou incompleta e foi mantida para revisão. A origem foi preservada.') from None
+        if original.is_symlink():
+            target = os.readlink(original)
+            if os.path.isabs(target):
+                target = str(destination / original.resolve().relative_to(source))
+            copied.symlink_to(target)
+        else:
+            shutil.copy2(original, copied)
+            if original.name == '.env' or original.name.startswith('.env.'):
+                copied.chmod(0o600)
+            if file == 'backend/.env':
+                contents, remapped = remap_ocr(copied.read_bytes(), source, destination)
+                copied.write_bytes(contents)
+        return remapped
+
+    def verify_file(file: str) -> None:
+        original, copied = source / file, destination / file
+        if fingerprint(original) != before[file]:
+            raise CopyError('A origem mudou durante a cópia; a cópia não foi validada.')
+        if original.is_symlink():
+            expected = original.resolve().relative_to(source)
+            if copied.resolve() != destination / expected:
+                raise CopyError('Um link da cópia não passou pela verificação.')
+        elif file == 'backend/.env':
+            expected, _ = remap_ocr(original.read_bytes(), source, destination)
+            if copied.read_bytes() != expected:
+                raise CopyError('A configuração copiada não passou pela verificação.')
+        elif fingerprint(copied) != before[file]:
+            raise CopyError('Um arquivo copiado não passou pela verificação.')
+
+    with ThreadPoolExecutor(max_workers=COPY_WORKERS) as executor:
+        before = dict(zip(files, executor.map(lambda file: fingerprint(source / file), files)))
+        destination.mkdir(mode=0o700)
+        try:
+            for directory in directories:
+                (destination / directory).mkdir(mode=0o700)
+            remapped = []
+            for keys in executor.map(copy_file, files):
+                remapped.extend(keys)
+            # Laravel resolves the views directory during bootstrap, before it can recreate it.
+            for relative in EXCLUDED_TREES:
+                if relative.startswith('backend/'):
+                    current = destination
+                    for part in Path(relative).parts:
+                        current /= part
+                        current.mkdir(mode=0o700, exist_ok=True)
+            if inventory(source) != (files, directories):
+                raise CopyError('A lista de arquivos da origem mudou durante a cópia; a cópia não foi validada.')
+            list(executor.map(verify_file, files))
+            return plan | {'mode': 'copied', 'verified': True, 'ocr_keys_remapped': remapped,
+                           'copy_workers': COPY_WORKERS, 'runtime_directories_prepared': True,
+                           'application_validation': 'pending', 'performance_comparison': 'pending'}
+        except Exception:
+            # Keep an incomplete destination for inspection; never erase the source or overwrite a retry.
+            raise CopyError('A cópia ficou incompleta e foi mantida para revisão. A origem foi preservada.') from None
 
 
 def main() -> int:
