@@ -77,7 +77,8 @@ describe('sequential invoice import', () => {
     expect(screen.queryByText(/Nenhuma fatura salva. Selecione/)).not.toBeInTheDocument()
     await waitFor(() => expect(requests).toBe(1))
     await act(async () => { finishFirst(json(201, { data: session([months[0]!]) })) })
-    await screen.findByText('12 de 12 faturas lidas e salvas')
+    // Wait for the whole batch, including twelve FileReader callbacks and review-table renders.
+    await screen.findByText('12 de 12 faturas lidas e salvas', {}, { timeout: 5000 })
     expect(screen.queryByRole('region', { name: 'Arquivos selecionados' })).not.toBeInTheDocument()
   })
 

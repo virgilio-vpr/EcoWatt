@@ -6,13 +6,13 @@ Sistema web para análise de faturas de energia do Grupo A. O repositório cont�
 
 A fonte da verdade é [docs/PROJECT_SPEC.md](docs/PROJECT_SPEC.md); as instruções de execução ficam em [docs/AGENT.md](docs/AGENT.md).
 
-Em 21/11/2026, a **Fase 11 foi encerrada no escopo local entregue até 11.5**. Isso registra a implementação disponível, sem declarar implantação, homologação de todos os layouts ou capacidade de carga. A sequência é **Fase 12 — desempenho e concorrência**, com **12.1 concluída** e próxima tarefa **12.2**, seguida da **Fase 13 — implantação e pendências finais**. A implantação antes incluída em 11.5 foi para 13.1, a antiga 11.6 para 13.2 e a antiga 11.7 para 13.3; validações funcionais ainda abertas do leitor ficam em 13.4. Os detalhes de tarefas e testes estão somente no spec.
+Em 21/11/2026, a **Fase 11 foi encerrada no escopo local entregue até 11.5**. Isso registra a implementação disponível, sem declarar implantação, homologação de todos os layouts ou capacidade de carga. A sequência é **Fase 12 — desempenho e concorrência**, com **12.1 e 12.2 concluídas** e próxima tarefa **12.3**, seguida da **Fase 13 — implantação e pendências finais**. A implantação antes incluída em 11.5 foi para 13.1, a antiga 11.6 para 13.2 e a antiga 11.7 para 13.3; validações funcionais ainda abertas do leitor ficam em 13.4. Os detalhes de tarefas e testes estão somente no spec.
 
-No estado atual, o envio individual lê cada documento durante a requisição e o cálculo das faturas salvas também ocorre pela API. O OCR permite uma leitura por vez por host/volume e pode responder que está ocupado. A fila `database` já existe para o fluxo antigo em lote e o e-mail do fluxo atual. A tarefa 12.1 entregou a instrumentação opcional e a linha de base sintética documentadas abaixo. As próximas tarefas da Fase 12 preveem melhoria do ambiente WSL, leitura assíncrona, concorrência controlada, eliminação de trabalho repetido, avaliação do cálculo, cache, testes com 1/3/5 usuários simultâneos e preparação de desempenho para produção. Essas próximas tarefas permanecem pendentes; não houve teste de carga que comprove cinco usuários simultâneos.
+No estado atual, o envio individual lê cada documento durante a requisição e o cálculo das faturas salvas também ocorre pela API. O OCR permite uma leitura por vez por host/volume e pode responder que está ocupado. A fila `database` já existe para o fluxo antigo em lote e o e-mail do fluxo atual. A tarefa 12.1 entregou a instrumentação opcional e a linha de base sintética documentadas abaixo. A tarefa 12.2 validou a cópia para o sistema de arquivos Linux do WSL. As próximas tarefas da Fase 12 preveem leitura assíncrona, concorrência controlada, eliminação de trabalho repetido, avaliação do cálculo, cache, testes com 1/3/5 usuários simultâneos e preparação de desempenho para produção. Essas próximas tarefas permanecem pendentes; não houve teste de carga que comprove cinco usuários simultâneos.
 
 Para retomar em outro chat:
 
-> Leia docs/AGENT.md e a seção 0 de docs/PROJECT_SPEC.md. Continue a Fase 12 pela tarefa 12.2, seguindo as referências e os critérios de teste; preserve o trabalho local existente e as regras de cálculo.
+> Leia docs/AGENT.md e a seção 0 de docs/PROJECT_SPEC.md. Continue a Fase 12 pela tarefa 12.3, seguindo as referências e os critérios de teste; preserve o trabalho local existente e as regras de cálculo.
 
 ## Atualização de EnerDiag para EcoWatt
 
@@ -98,7 +98,7 @@ A API ficará disponível na porta 8000, com a documentação em `/docs` e o Ope
 
 O comando `serve` mantém as dependências em OPcache para reduzir a inicialização das requisições. Os diretórios da aplicação, rotas e configurações ficam fora desse cache, de modo que alterações nesses arquivos aparecem imediatamente. Reinicie a API após instalar ou atualizar dependências com Composer. A primeira requisição após iniciar o servidor aquece o cache e pode levar mais tempo.
 
-No WSL, arquivos em `/mnt/c` exigem acesso ao sistema de arquivos do Windows. Para desenvolvimento com menor latência também na instalação, compilação e testes, prefira manter o projeto no sistema de arquivos Linux, por exemplo `~/projetos/ecowatt`, e abri-lo com o VS Code conectado ao WSL. O PostgreSQL pode continuar no Docker Desktop.
+No WSL, arquivos em `/mnt/c` exigem acesso ao sistema de arquivos do Windows. Para desenvolvimento com menor latência também na instalação, compilação e testes, prefira manter o projeto no sistema de arquivos Linux, por exemplo `~/projetos/EcoWatt`, e abri-lo com o VS Code conectado ao WSL. O PostgreSQL pode continuar no Docker Desktop.
 
 Em outro terminal, mantenha o processamento das simulações ativo:
 
@@ -237,9 +237,11 @@ Mapa inicial de chamadas e consultas para as próximas tarefas:
 
 Para repetir apenas um formato em um processo novo, acrescente `ECOWATT_BASELINE_SCENARIO=native.pdf` (ou `invoice.png`, `scanned.pdf`, `hybrid.pdf`). O campo `application_boot_ms` registra a inicialização da aplicação nesse processo separadamente do primeiro uso e das repetições aquecidas. O ambiente medido contém o OCR configurado localmente; outra instalação precisa dos executáveis e idiomas descritos na seção de OCR.
 
-## Preparação da cópia para o WSL — tarefa 12.2
+## Cópia para o WSL — tarefa 12.2
 
-**Preparação entregue; validação da instalação copiada pendente.** A pasta original continua em `/mnt/c/Users/virgi/Documents/projetos/EcoWatt`. O destino sugerido é `$HOME/projetos/EcoWatt`, em um sistema de arquivos Linux. A cópia real exige escolher e autorizar esse destino; não é executada automaticamente pela tarefa. Somente PostgreSQL permanece no Docker.
+**Concluída em 22/11/2026, após autorização explícita.** A pasta ativa é `/home/vpr/projetos/EcoWatt`, em ext4 no Linux do WSL. A origem em `/mnt/c/users/virgi/documents/projetos/ecowatt` foi preservada; seus servidores foram parados. PostgreSQL permanece no mesmo container e volume. API e frontend de desenvolvimento foram iniciados a partir da cópia, nas portas 8000 e 5173. Os 19 jobs existentes continuam pendentes; o worker foi validado em uma fila PostgreSQL vazia e nos cenários E2E com SMTP/SQLite isolados.
+
+Os comandos de cópia abaixo registram o procedimento e servem para novas instalações. A pasta de destino existente é bloqueada pela ferramenta; para outra cópia, escolha um novo nome. O padrão continua sendo apenas apresentar o plano.
 
 A ferramenta [docs/wsl_workspace.py](docs/wsl_workspace.py) usa Python 3 e `findmnt` (util-linux). Por padrão, ela apenas faz o inventário e apresenta um plano, sem criar o destino, iniciar processos ou acessar o banco. Na raiz do projeto:
 
@@ -249,9 +251,9 @@ python3 docs/wsl_workspace.py --destination "$HOME/projetos/EcoWatt"
 
 O plano informa a quantidade de arquivos, o sistema de arquivos de destino, locks do Git, originais pendentes e as **chaves** de OCR a ajustar. Não imprime segredos ou conteúdo dos arquivos. Para esta instalação, os wrappers em `backend/storage/ocr-local/bin/` localizam o runtime por caminhos relativos; a pasta `backend/storage/ocr-local/` precisa acompanhar a cópia inteira.
 
-O modo explícito de cópia preserva `.git` (incluindo index/staging), arquivos alterados, não rastreados e ignorados, dependências, documentos privados e backups. O destino é privado, com permissões 0700 nos diretórios e 0600 nos arquivos de ambiente. Somente os valores de `OCR_TESSERACT`, `OCR_PDFTOPPM`, `OCR_PDFINFO`, `OCR_PYTHON` e `OCR_LOCK_PATH` que começam com o caminho absoluto da origem são redirecionados no **backend/.env copiado**; caminhos externos são mantidos. Variações de maiúsculas/minúsculas no caminho Windows são aceitas quando apontam comprovadamente para o mesmo diretório. `APP_KEY`, credenciais do banco e as demais linhas dos arquivos de ambiente são preservadas. Valores com aspas e finais de linha são conservados. Outros caminhos absolutos personalizados exigem revisão privada no destino.
+A cópia e os hashes usam até oito operações de I/O em paralelo. O modo explícito de cópia preserva `.git` (incluindo index/staging), arquivos alterados, não rastreados e ignorados, dependências, documentos privados e backups. O destino é privado, com permissões 0700 nos diretórios e 0600 nos arquivos de ambiente. Somente os valores de `OCR_TESSERACT`, `OCR_PDFTOPPM`, `OCR_PDFINFO`, `OCR_PYTHON` e `OCR_LOCK_PATH` que começam com o caminho absoluto da origem são redirecionados no **backend/.env copiado**; caminhos externos são mantidos. Variações de maiúsculas/minúsculas no caminho Windows são aceitas quando apontam comprovadamente para o mesmo diretório. `APP_KEY`, credenciais do banco e as demais linhas dos arquivos de ambiente são preservadas. Valores com aspas e finais de linha são conservados. Outros caminhos absolutos personalizados exigem revisão privada no destino.
 
-Caches PHP gerados em `backend/bootstrap/cache`, dados de cache/sessões/views/testes em `backend/storage/framework`, `frontend/dist` e o lock padrão do OCR são regenerados no destino. A pasta de documentos temporários não é copiada; a ferramenta bloqueia a execução enquanto houver originais nela. Links internos são preservados, com redirecionamento dos links absolutos para a cópia. Links externos, `.env` vinculado por symlink, worktrees com `.git` externo e locks do Git exigem revisão antes de copiar. Não há sobrescrita de destino existente. Arquivos regulares são conferidos por SHA-256, e a origem é verificada novamente; alterações durante a operação invalidam a cópia. Uma cópia incompleta é mantida para inspeção e não é reutilizada automaticamente.
+Os `.gitignore` das pastas de runtime são preservados e os diretórios vazios necessários ao Laravel são preparados. Caches PHP gerados em `backend/bootstrap/cache`, dados de cache/sessões/views/testes em `backend/storage/framework`, `frontend/dist` e o lock padrão do OCR são regenerados no destino. A pasta de documentos temporários não é copiada; a ferramenta bloqueia a execução enquanto houver originais nela. Links internos são preservados, com redirecionamento dos links absolutos para a cópia. Links externos, `.env` vinculado por symlink, worktrees com `.git` externo e locks do Git exigem revisão antes de copiar. Não há sobrescrita de destino existente. Arquivos regulares são conferidos por SHA-256, e a origem é verificada novamente; alterações durante a operação invalidam a cópia. Uma cópia incompleta é mantida para inspeção e não é reutilizada automaticamente.
 
 ### Antes da cópia real
 
@@ -313,4 +315,21 @@ cd backend
 vendor/bin/phpunit tests/Unit/WslWorkspaceCopyTest.php
 ```
 
-A 12.2 permanece desmarcada até executar e validar a instalação real no destino autorizado. A preparação e os testes sintéticos não comprovam ganho no Linux nem substituem essa validação.
+### Resultados da validação e comparação
+
+Foram aprovados 384 testes da API (mais a amostra opcional executada separadamente), 137 testes do frontend, os dois cenários E2E com 1 e 12 faturas, build e ESLint. Os testes reais de OCR também passaram. Os estados e contagens do banco foram conferidos antes e depois; os arquivos de ambiente e o backup foram verificados sem exibir segredos. A cópia inicial conferiu a integridade de 27.079 entradas, incluindo arquivos e links; os quatro `.gitignore` de runtime foram preservados na cópia e na ferramenta.
+
+A validação encontrou dois problemas nos testes existentes: a espera de um segundo não cobria o lote completo de 12 arquivos no frontend, e o E2E reutilizava uma fixture de cálculo cujo total não fechava. A espera específica agora cobre a conclusão do lote, e o E2E usa `enel-e2e-balanced-blue.txt`, conferida pelo leitor em decimal: total R$ 95.042,77, medições de 221,760/269,641 kW e reativos de R$ 54,42. O arquivo de referência anterior, os valores dos clientes, o leitor e as regras de cálculo foram preservados.
+
+Medições em processos PHP novos, executadas em sequência nas duas pastas, com as mesmas fixtures, versões e opções da 12.1. Foram três jornadas por formato: primeiro uso e duas repetições aquecidas. Dados por etapa, CPU/memória, ambiente e hashes em [docs/performance-comparison-12.2.json](docs/performance-comparison-12.2.json).
+
+| Cenário | Mediana aquecida em `/mnt/c` (ms) | Mediana aquecida no Linux (ms) | Redução observada |
+|---|---:|---:|---:|
+| Upload de PDF nativo | 151,472 | 26,264 | 82,66% |
+| Upload de PNG/OCR | 1.929,311 | 1.265,607 | 34,40% |
+| Upload de PDF digitalizado | 4.138,775 | 2.655,360 | 35,84% |
+| Upload de PDF híbrido | 3.414,275 | 2.210,229 | 35,27% |
+
+O bootstrap da aplicação passou de 6.303,867 para 162,128 ms. O comando completo da amostra passou de 66,64 para 20,11 s; CPU em usuário, de 19,40 para 18,20 s; CPU em sistema, de 6,54 para 1,83 s. O RSS máximo observado foi de 140.636 para 141.748 KiB. Esses valores incluem o processo de teste e seus filhos; as definições de picos e etapas inclusivas continuam as da 12.1.
+
+A amostra é sequencial, com banco sintético em memória e sem transporte HTTP; não calcula p95 nem comprova capacidade concorrente. Os caches do sistema operacional não foram esvaziados. O frontend usa agora a observação nativa de arquivos prevista no Vite para pastas Linux; a preparação de produção e os testes de carga permanecem nas tarefas seguintes. Para continuar, abra `/home/vpr/projetos/EcoWatt` no editor conectado ao WSL e siga pela **12.3**.

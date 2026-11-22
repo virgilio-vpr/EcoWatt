@@ -23,7 +23,7 @@ function pdfFromText(text: string) {
 }
 
 export function invoiceFixtures(count = 6) {
-  const reference = readFileSync(new URL('../../backend/tests/Fixtures/enel-reference-blue.txt', import.meta.url), 'utf8')
+  const reference = readFileSync(new URL('../../backend/tests/Fixtures/enel-e2e-balanced-blue.txt', import.meta.url), 'utf8')
   return Array.from({ length: count }, (_, index) => String(index + 1).padStart(2, '0')).map((month) => ({
     name: `invoice-2025-${month}.pdf`,
     mimeType: 'application/pdf',
