@@ -9,6 +9,8 @@ use App\Invoices\Pdf\TemporaryPdfTextExtractor;
 use App\Invoices\Readers\InvoiceReader;
 use App\Invoices\Readers\OcrInvoiceReader;
 use App\Invoices\Validation\InvoiceExtractionValidator;
+use App\Services\PerformanceMetrics;
+use App\Services\PerformanceStage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -26,6 +28,11 @@ final class InvoiceDocumentReader
 
     public function read(string $contents, InvoiceReader $reader): ExtractedInvoiceData
     {
+        return app(PerformanceMetrics::class)->measure(PerformanceStage::DocumentRead, fn () => $this->readDocument($contents, $reader));
+    }
+
+    private function readDocument(string $contents, InvoiceReader $reader): ExtractedInvoiceData
+    {
         $native = null;
         $pdf = (new \finfo(FILEINFO_MIME_TYPE))->buffer($contents) === 'application/pdf';
         if ($pdf) {
@@ -33,6 +40,7 @@ final class InvoiceDocumentReader
                 $native = $reader->read($this->native->extract($contents));
                 $this->validator->validate([$native]);
                 if ($this->sufficient($native)) {
+                    app(PerformanceMetrics::class)->extractionMethod('native');
                     Log::info('invoice_extraction', ['method' => 'native']);
 
                     return $native;
@@ -54,6 +62,7 @@ final class InvoiceDocumentReader
                 if ($native === null || ! collect($native->items)->contains(fn ($item) => $item->itemType === 'measured_demand')) {
                     throw $exception;
                 }
+                app(PerformanceMetrics::class)->extractionMethod('native');
                 Log::info('invoice_extraction', ['method' => 'native', 'ocr' => 'unavailable_or_unreadable']);
 
                 return $this->copy($native, $native->items, array_values(array_unique([...$native->warnings, 'ocr_support_unavailable'])));
@@ -70,6 +79,7 @@ final class InvoiceDocumentReader
             if ($result->items === [] || ! collect($result->items)->contains(fn ($item) => $item->itemType === 'measured_demand')) {
                 throw new InvalidArgumentException('O quadro de faturamento está incompleto. Envie uma cópia mais nítida para revisão.');
             }
+            app(PerformanceMetrics::class)->extractionMethod($native === null ? 'ocr' : 'hybrid');
             Log::info('invoice_extraction', ['method' => $native === null ? 'ocr' : 'hybrid']);
 
             return $result;

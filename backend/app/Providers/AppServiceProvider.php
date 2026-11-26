@@ -12,8 +12,17 @@ use App\Invoices\Pdf\SmalotPdfPageCounter;
 use App\Invoices\Pdf\SmalotPdfTextParser;
 use App\Invoices\Readers\EnelInvoiceReader;
 use App\Invoices\Readers\InvoiceReaderResolver;
+use App\Services\PerformanceMetrics;
+use App\Services\PerformanceStage;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
+use Illuminate\Queue\Events\JobExceptionOccurred;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Queue\Jobs\DatabaseJob;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(PerformanceMetrics::class);
         $this->app->singleton(InvoiceReaderResolver::class, function (): InvoiceReaderResolver {
             return new InvoiceReaderResolver([new EnelInvoiceReader]);
         });
@@ -38,6 +48,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        DB::listen(fn (QueryExecuted $query) => app(PerformanceMetrics::class)->query($query));
+        $jobSpans = [];
+        Event::listen(JobProcessing::class, function (JobProcessing $event) use (&$jobSpans): void {
+            $wait = $event->job instanceof DatabaseJob
+                ? max(0, microtime(true) - $event->job->getJobRecord()->available_at) * 1000
+                : null;
+            $jobSpans[spl_object_id($event->job)] = app(PerformanceMetrics::class)->start(
+                PerformanceStage::Job, $event->job->attempts(), $wait,
+            );
+        });
+        $finishJob = function (JobProcessed|JobExceptionOccurred $event) use (&$jobSpans): void {
+            $key = spl_object_id($event->job);
+            app(PerformanceMetrics::class)->finish($jobSpans[$key] ?? null, $event instanceof JobExceptionOccurred ? $event->exception : null);
+            unset($jobSpans[$key]);
+        };
+        Event::listen(JobProcessed::class, $finishJob);
+        Event::listen(JobExceptionOccurred::class, $finishJob);
+
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });

@@ -10,6 +10,8 @@ use App\Invoices\Validation\InvoiceExtractionValidator;
 use App\Invoices\Validation\InvoiceProcessingFailureRecorder;
 use App\Mail\SimulationCompleted;
 use App\Models\Simulation;
+use App\Services\PerformanceMetrics;
+use App\Services\PerformanceStage;
 use App\Services\RunSavedSimulation;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -116,7 +118,7 @@ class ProcessSimulation implements ShouldQueue
         }
 
         $this->activeStage = 'persisting';
-        DB::transaction(function () use ($simulation, $invoices, $calculationEngine): void {
+        app(PerformanceMetrics::class)->measure(PerformanceStage::Persistence, fn () => DB::transaction(function () use ($simulation, $invoices, $calculationEngine): void {
             $locked = Simulation::query()->lockForUpdate()->findOrFail($simulation->id);
             $locked->invoices()->delete();
             $locked->report()->delete();
@@ -171,7 +173,7 @@ class ProcessSimulation implements ShouldQueue
                 'total_monthly_savings' => $attributes['total_monthly_savings'] ?? '0.00',
                 'total_yearly_savings' => $attributes['total_yearly_savings'] ?? '0.00',
             ])->save();
-        });
+        }));
 
         $completed = Simulation::query()->with(['user', 'report'])->findOrFail($simulation->id);
         if ($completed->user !== null && $completed->report !== null) {

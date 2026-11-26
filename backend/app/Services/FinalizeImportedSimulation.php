@@ -17,7 +17,7 @@ final class FinalizeImportedSimulation
 
     public function handle(Simulation $simulation): void
     {
-        $finished = DB::transaction(function () use ($simulation): bool {
+        $finished = app(PerformanceMetrics::class)->measure(PerformanceStage::Persistence, fn () => DB::transaction(function () use ($simulation): bool {
             $locked = Simulation::query()->lockForUpdate()->findOrFail($simulation->id);
             if ($locked->status === 'completed') {
                 return false;
@@ -53,7 +53,7 @@ final class FinalizeImportedSimulation
             ])->save();
 
             return true;
-        });
+        }));
 
         if (! $finished) {
             return;

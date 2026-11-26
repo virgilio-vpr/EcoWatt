@@ -10,6 +10,21 @@ use Tests\TestCase;
 
 class EnelInvoiceReaderTest extends TestCase
 {
+    public function test_the_e2e_fixture_balances_with_explicit_measurements_and_reactive_charges(): void
+    {
+        $invoice = (new EnelInvoiceReader)->read(file_get_contents(__DIR__.'/../Fixtures/enel-e2e-balanced-blue.txt'));
+        $sum = collect($invoice->items)->reduce(fn ($sum, $item) => bcadd($sum, $item->amount, 2), '0.00');
+        $reactive = collect($invoice->items)->filter(fn ($item) => str_starts_with($item->sourceLabel ?? '', 'UFER') || str_starts_with($item->sourceLabel ?? '', 'UFDR'))
+            ->reduce(fn ($sum, $item) => bcadd($sum, $item->amount, 2), '0.00');
+
+        $this->assertSame('95042.77', $invoice->totalPaid);
+        $this->assertSame($invoice->totalPaid, $sum);
+        $this->assertSame('54.42', $reactive);
+        $this->assertSame(['peak' => '221.760', 'off_peak' => '269.641'], collect($invoice->items)->where('itemType', 'metered_demand')->pluck('quantity', 'timeSlot')->all());
+        $this->assertNotContains('invoice_billing_total_mismatch', $invoice->warnings);
+        $this->assertNull((new InvoiceExtractionValidator)->validate([$invoice]));
+    }
+
     public function test_discounted_unique_demand_preserves_the_printed_quantity_rates_and_taxes(): void
     {
         $text = file_get_contents(__DIR__.'/../Fixtures/enel-unique-demand-green.txt');

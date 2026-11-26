@@ -8,6 +8,12 @@ const MAX_FILE_BYTES = 20 * 1024 * 1024
 const MAX_FILES = 12
 const IMPORT_SESSION_KEY = 'ecowatt_invoice_import_id'
 
+function savedInvoiceSummary(count: number): string {
+  const invoices = count === 1 ? 'fatura' : 'faturas'
+  const confirmation = count === 1 ? 'Ela foi lida e salva' : 'Todas foram lidas e salvas'
+  return `Você já enviou ${count} ${invoices} no total. ${confirmation}. A lista está organizada pelo mês da medição.`
+}
+
 function readInvoiceSignature(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -91,6 +97,7 @@ export function InvoiceUploadPage() {
           const response = await apiRequest<{ data: ImportSession & { status: string } }>(`/invoice-imports/${savedId}`, {}, { notifyGlobalError: false })
           if (mounted && response.data.status === 'draft') {
             setImportSession(response.data)
+            if (response.data.invoice_count > 0) setNotice(savedInvoiceSummary(response.data.invoice_count))
             window.localStorage.setItem(IMPORT_SESSION_KEY, String(response.data.id))
           } else if (mounted && ['queued', 'processing', 'completed', 'failed'].includes(response.data.status)) {
             setQueuedSimulation({ id: response.data.id, status: response.data.status as SimulationStatus })
@@ -269,8 +276,9 @@ export function InvoiceUploadPage() {
         }
       }
 
+      const totalSavedCount = activeSession.invoice_count
       setNotice(savedCount > 0
-        ? `${savedCount} ${savedCount === 1 ? 'fatura foi lida e salva' : 'faturas foram lidas e salvas'}; a lista está em ordem do mês de medição.`
+        ? savedInvoiceSummary(totalSavedCount)
         : '')
     } finally {
       picker.value = ''

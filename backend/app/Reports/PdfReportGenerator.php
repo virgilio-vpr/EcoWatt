@@ -3,10 +3,17 @@
 namespace App\Reports;
 
 use App\Models\Report;
+use App\Services\PerformanceMetrics;
+use App\Services\PerformanceStage;
 
 class PdfReportGenerator
 {
     public function generate(Report $report): string
+    {
+        return app(PerformanceMetrics::class)->measure(PerformanceStage::Pdf, fn () => $this->buildDocument($report));
+    }
+
+    private function buildDocument(Report $report): string
     {
         $report->loadMissing(['simulation.user.profile', 'simulation.invoices']);
         $months = (int) ($report->simulation?->months_count ?? 0);
