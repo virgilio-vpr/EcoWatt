@@ -6,13 +6,13 @@ Sistema web para análise de faturas de energia do Grupo A. O repositório cont�
 
 A fonte da verdade é [docs/PROJECT_SPEC.md](docs/PROJECT_SPEC.md); as instruções de execução ficam em [docs/AGENT.md](docs/AGENT.md).
 
-Em 21/11/2026, a **Fase 11 foi encerrada no escopo local entregue até 11.5**. Isso registra a implementação disponível, sem declarar implantação, homologação de todos os layouts ou capacidade de carga. A sequência é **Fase 12 — desempenho e concorrência**, com **12.1 e 12.2 concluídas** e próxima tarefa **12.3**, seguida da **Fase 13 — implantação e pendências finais**. A implantação antes incluída em 11.5 foi para 13.1, a antiga 11.6 para 13.2 e a antiga 11.7 para 13.3; validações funcionais ainda abertas do leitor ficam em 13.4. Os detalhes de tarefas e testes estão somente no spec.
+Em 21/11/2026, a **Fase 11 foi encerrada no escopo local entregue até 11.5**. Em 26/11/2026, a **Fase 12 foi encerrada no escopo entregue até 12.2**, preservando medições e transferindo tarefas pendentes. O próximo passo é **13.1 — diagnóstico e avaliação tecnológica**. Fase 13: extração inteligente, adaptativa e multimodal, com Plano B preferencial condicionado à prova de conceito 13.2 e aprovação explícita. Fase 14: desempenho, concorrência e controle operacional (incluindo protocolo único e limites de custos). Fase 15: implantação e pendências finais. Os detalhes e testes ficam no [spec](docs/PROJECT_SPEC.md). Nenhuma dessas novas tarefas foi implementada nesta revisão documental.
 
-No estado atual, o envio individual lê cada documento durante a requisição e o cálculo das faturas salvas também ocorre pela API. O OCR permite uma leitura por vez por host/volume e pode responder que está ocupado. A fila `database` já existe para o fluxo antigo em lote e o e-mail do fluxo atual. A tarefa 12.1 entregou a instrumentação opcional e a linha de base sintética documentadas abaixo. A tarefa 12.2 validou a cópia para o sistema de arquivos Linux do WSL. As próximas tarefas da Fase 12 preveem leitura assíncrona, concorrência controlada, eliminação de trabalho repetido, avaliação do cálculo, cache, testes com 1/3/5 usuários simultâneos e preparação de desempenho para produção. Essas próximas tarefas permanecem pendentes; não houve teste de carga que comprove cinco usuários simultâneos.
+No estado atual, o envio individual lê cada documento durante a requisição e o cálculo das faturas salvas também ocorre pela API. O OCR permite uma leitura por vez por host/volume e pode responder que está ocupado. A fila `database` já existe para o fluxo antigo em lote e o e-mail do fluxo atual. A tarefa 12.1 entregou a instrumentação opcional e a linha de base sintética documentadas abaixo. A tarefa 12.2 validou a cópia para o sistema de arquivos Linux do WSL. As próximas fases preveem LLM sob demanda para layouts desconhecidos ou falhas de leitura, padrões declarativos homologados reutilizados por PDF/OCR, biblioteca central sem dados pessoais, leitura assíncrona, concorrência controlada, eliminação de trabalho repetido, avaliação do cálculo, cache, testes com 1/3/5 usuários simultâneos e preparação de desempenho para produção. A leitura atual continua operacional; cálculos permanecem determinísticos. Essas próximas tarefas permanecem pendentes; não houve teste de carga que comprove cinco usuários simultâneos.
 
 Para retomar em outro chat:
 
-> Leia docs/AGENT.md e a seção 0 de docs/PROJECT_SPEC.md. Continue a Fase 12 pela tarefa 12.3, seguindo as referências e os critérios de teste; preserve o trabalho local existente e as regras de cálculo.
+> Leia docs/AGENT.md e a seção 0 de docs/PROJECT_SPEC.md. Inicie exclusivamente a Fase 13 pela tarefa 13.1, seguindo as referências e os critérios de teste; preserve o trabalho local existente e as regras de cálculo.
 
 ## Atualização de EnerDiag para EcoWatt
 
@@ -142,7 +142,7 @@ npm audit
 
 ## OCR de faturas — entrega local da etapa 11.5
 
-A Fase 11 está encerrada nesse recorte. As instruções abaixo descrevem a instalação e as limitações locais atuais; otimizações pertencem à Fase 12 e implantação/validação funcional restante à Fase 13, conforme o [spec](docs/PROJECT_SPEC.md).
+A Fase 11 está encerrada nesse recorte. As instruções abaixo descrevem a instalação e as limitações locais atuais; a evolução adaptativa pertence à Fase 13, otimizações à Fase 14 e implantação/validação final à Fase 15, conforme o [spec](docs/PROJECT_SPEC.md).
 
 O seletor aceita PDF, PNG e JPEG. PDFs mantêm a leitura nativa pelo Smalot; Tesseract local apoia leituras incompletas e processa imagens. Instale no Ubuntu/Debian antes de iniciar a API e o worker:
 
@@ -207,7 +207,7 @@ Os tempos e contadores das etapas são inclusivos: não some pai e filhos. `cpu_
 
 Jobs registram tentativas e resultado. Na fila `database`, `queue_wait_ms` mede o tempo desde `available_at` até o início do atendimento, descontando o atraso programado; a precisão do timestamp da fila é de um segundo. Outras filas deixam o campo nulo. O tempo do job inclui sua execução, sem a espera. Interrupção abrupta do processo pode impedir o evento final: ausência de evento final não comprova sucesso.
 
-Metas iniciais para comparação, definidas antes de avaliar ganhos: upload nativo aquecido p95 ≤ 2 s; cálculo aquecido de até 12 meses p95 ≤ 3 s; geração de PDF aquecida p95 ≤ 1 s; consultas leves p95 ≤ 500 ms durante processamento; espera de job pronto com worker ocioso p95 ≤ 2 s. Manter o limite de OCR de 40 s por documento, sem reduzir a qualidade. Meta inicial de vazão para a tarefa 12.8: concluir os 60 documentos sintéticos de cinco usuários em até 10 minutos, preservando integridade e ausência de erros inesperados. São metas a validar no ambiente documentado, sem garantia de capacidade; a amostra de 12.1 é sequencial e pequena, não estima p95 nem demonstra concorrência.
+Metas iniciais para comparação, definidas antes de avaliar ganhos: upload nativo aquecido p95 ≤ 2 s; cálculo aquecido de até 12 meses p95 ≤ 3 s; geração de PDF aquecida p95 ≤ 1 s; consultas leves p95 ≤ 500 ms durante processamento; espera de job pronto com worker ocioso p95 ≤ 2 s. Manter o limite de OCR de 40 s por documento, sem reduzir a qualidade. Meta inicial de vazão para a tarefa 14.9 (transferida de 12.8): concluir os 60 documentos sintéticos de cinco usuários em até 10 minutos, preservando integridade e ausência de erros inesperados. São metas a validar no ambiente documentado, sem garantia de capacidade; a amostra de 12.1 é sequencial e pequena, não estima p95 nem demonstra concorrência.
 
 A amostra reproduzível usa SQLite em memória, contas sintéticas, e-mail falso e temporários isolados; exercita as fixtures nativa, PNG/OCR, digitalizada e híbrida, com três jornadas de importação/cálculo/PDF por formato e uma passagem pelo worker `database`. Confira também igualdade dos campos normalizados, crédito negativo e limpeza. Execute em `backend/`:
 

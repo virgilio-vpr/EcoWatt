@@ -1,6 +1,6 @@
 # EcoWatt
 
-Sistema web que lê faturas de energia do Grupo A (ENEL) e simula a economia. API Laravel 13 + SPA React/TypeScript.
+Sistema web que lê faturas de energia do Grupo A (suporte atual ENEL) e simula a economia. API Laravel 13 + SPA React/TypeScript.
 
 ## Spec
 - `PROJECT_SPEC.md` é a fonte da verdade (fases, tarefas, regras). Não duplique seu conteúdo aqui.
@@ -8,11 +8,11 @@ Sistema web que lê faturas de energia do Grupo A (ENEL) e simula a economia. AP
 - Se este arquivo e o spec divergirem, vale o spec.
 
 ## Retomada do projeto
-- Leia a seção 0 do spec e o início da fase solicitada para conferir o estado atual. A Fase 11 foi encerrada no escopo local entregue até 11.5; implantação e pendências finais foram transferidas para a Fase 13.
-- As tarefas **12.1 e 12.2** foram concluídas; métricas, linha de base, metas e comparação de ambientes estão no README, em `docs/performance-baseline-12.1.json` e `docs/performance-comparison-12.2.json`. A próxima tarefa é **12.3**. A Fase 12 trata desempenho e concorrência, incluindo a preparação de desempenho para produção ao final. A Fase 13 utiliza essas entregas e fecha implantação, documentação e validações pendentes; não duplique tarefas entre as duas.
+- Leia a seção 0 do spec e o início da fase solicitada para conferir o estado atual. Fase 11 encerrada no escopo local até 11.5; Fase 12 encerrada no escopo entregue até 12.2. Implantação e pendências finais estão na Fase 15.
+- As tarefas **12.1 e 12.2** foram concluídas; métricas, linha de base, metas e comparação de ambientes estão no README e nos JSONs de desempenho em `docs/`. Próxima tarefa **13.1**. Fase 13: extração adaptativa e multimodal; 13.2 é prova de conceito com decisão explícita antes de implementar definitivamente. Fase 14: desempenho, concorrência e controle operacional. Fase 15: implantação.
 - Ambiente ativo desde 22/11/2026: `/home/vpr/projetos/EcoWatt`, no sistema de arquivos Linux do WSL. Execute as próximas tarefas nessa pasta. A origem em `/mnt/c/users/virgi/documents/projetos/ecowatt` foi preservada, com seus servidores parados. PostgreSQL continua no mesmo container/volume; os 19 jobs pendentes foram mantidos, sem consumir a fila original durante a validação. O roteiro e a ferramenta opt-in de cópia estão no README e em `docs/wsl_workspace.py`.
 - O estado descrito no spec distingue código existente de comportamento planejado: ainda há leitura/cálculo síncronos no fluxo individual e trava exclusiva no OCR. Não afirmar suporte a cinco usuários simultâneos sem o teste de carga previsto.
-- Em um novo chat, pode-se iniciar com: “Leia docs/AGENT.md e a seção 0 de docs/PROJECT_SPEC.md. Continue a Fase 12 pela tarefa 12.3, seguindo as referências e os critérios de teste; preserve o trabalho local existente e as regras de cálculo.”
+- Em um novo chat: “Leia docs/AGENT.md e a seção 0 de docs/PROJECT_SPEC.md. Inicie exclusivamente a tarefa 13.1, seguindo as referências e os critérios de teste; preserve o trabalho local existente e as regras de cálculo.”
 
 ## Fluxo
 - Uma tarefa por vez, na ordem. Em tarefas com vários arquivos, use plan mode e espere aprovação.
@@ -41,9 +41,9 @@ O "como testar" de cada tarefa está na linha `Teste:` do spec. Regras gerais:
 ## Regras fixas
 - Código, pastas, tabelas, métodos e comentários em inglês. Interface, mensagens e relatórios em português (BR). Responda ao usuário em português.
 - Dinheiro sempre em decimal, nunca float. Parâmetros regulatórios vêm da tabela `regulatory_parameters`, nunca do código.
-- PDFs de faturas nunca são salvos: ficam só em temporário e são apagados logo após a extração, também em erro.
+- Originais de faturas ficam apenas em temporário privado durante processamento e novas tentativas; apagar após sucesso, falha definitiva ou cancelamento. Não armazenar originais, texto integral ou dados pessoais na biblioteca de padrões.
 - SQL só com bindings; validação em Form Requests; autorização por policies; nunca commitar `.env`.
 - Laravel e React rodam sem container no desenvolvimento; só o PostgreSQL usa Docker.
 - Orçamento etapa 2 (tarefa 10.3): já autorizado e concluído no spec; mudanças de escopo continuam exigindo instrução do usuário.
-- Não altere as regras de cálculo (RC) nem as decisões D1 a D19 sem confirmar com o usuário.
+- Não altere as regras de cálculo (RC) nem as decisões D1 a D24 sem confirmar com o usuário. Plano B é preferencial, não homologado; não avance além de 13.2 sem aprovação explícita. Não envie faturas reais a terceiros nem faça chamadas pagas sem avaliação de privacidade e orçamento/autorização pertinentes.
 - Tarifas da ANEEL são sem tributos: converter para a base da fatura só pelo fator `k` (RC-1c). Nunca usar percentual fixo entre Azul e Verde.
